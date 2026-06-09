@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>🌙 Cosern · Produtividade</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    body {
+      font-family:'Inter',sans-serif;
+      background:#f4f7fc;
+      color:#1a2c3e;
+      transition: background 0.3s, color 0.2s;
+      padding:20px;
+    }
+    body.dark {
+      background:#0a0c12;
+      color:#edf2f8;
+    }
+    .dashboard-container { max-width:1400px; margin:0 auto; }
+    .card {
+      background:white;
+      border-radius:28px;
+      padding:20px;
+      margin-bottom:24px;
+      box-shadow:0 8px 20px rgba(0,0,0,0.05);
+      transition: background 0.3s, box-shadow 0.2s;
+    }
+    body.dark .card {
+      background:#10131c;
+      box-shadow:0 8px 20px rgba(0,0,0,0.3);
+      border:1px solid rgba(255,255,255,0.05);
+    }
+    .top-bar {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-bottom:24px;
+    }
+    .user-info {
+      display:flex;
+      align-items:center;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+    .theme-toggle {
+      cursor:pointer;
+      font-size:28px;
+      background:transparent;
+      border:none;
+      transition:transform 0.2s;
+    }
+    .theme-toggle:hover { transform:scale(1.1); }
+    .btn-logout {
+      background:#e2e8f0;
+      border:none;
+      padding:8px 20px;
+      border-radius:40px;
+      font-weight:600;
+      cursor:pointer;
+      color:#1e4a6b;
+      transition:0.2s;
+    }
+    body.dark .btn-logout {
+      background:#1f2538;
+      color:#9ea7bb;
+    }
+    .btn-logout:hover { background:#cbd5e1; }
+    .metric-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(160px,1fr));
+      gap:16px;
+      margin-bottom:24px;
+    }
+    .metric-card {
+      background:white;
+      border-radius:24px;
+      padding:16px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.03);
+    }
+    body.dark .metric-card {
+      background:#10131c;
+      border:1px solid rgba(255,255,255,0.05);
+    }
+    .metric-label {
+      font-size:12px;
+      text-transform:uppercase;
+      color:#5a6874;
+      letter-spacing:0.5px;
+      margin-bottom:8px;
+    }
+    .metric-value {
+      font-size:32px;
+      font-weight:800;
+      font-family:'JetBrains Mono',monospace;
+    }
+    .progress-bar {
+      background:#e2e8f0;
+      border-radius:20px;
+      height:8px;
+      overflow:hidden;
+      margin-top:8px;
+    }
+    .progress-fill {
+      height:100%;
+      border-radius:20px;
+      transition:width 0.3s;
+      background:#2c7da0;
+    }
+    .badge {
+      display:inline-flex;
+      padding:4px 12px;
+      border-radius:40px;
+      font-size:11px;
+      font-weight:600;
+    }
+    .badge-finl { background:#e0f2e9; color:#0f5c3f; }
+    .badge-redi { background:#fff0db; color:#b45f06; }
+    .badge-veri { background:#e0f2fe; color:#0c6b7e; }
+    .badge-vite { background:#fee2e2; color:#b91c1c; }
+    body.dark .badge-finl { background:#1a3c2c; color:#2bc48a; }
+    body.dark .badge-redi { background:#3e2e1a; color:#f4b342; }
+    body.dark .badge-veri { background:#1a3e44; color:#2ad4cf; }
+    body.dark .badge-vite { background:#4a1a1a; color:#f05a5a; }
+    .table-wrapper { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th { text-align:left; padding:12px 8px; color:#5a6874; font-weight:600; border-bottom:1px solid #e2e8f0; }
+    td { padding:10px 8px; border-bottom:1px solid #e2e8f0; }
+    body.dark th { border-bottom-color:rgba(255,255,255,0.1); }
+    body.dark td { border-bottom-color:rgba(255,255,255,0.05); }
+    .filter-bar { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; }
+    .filter-bar input, .filter-bar select {
+      padding:10px 16px;
+      border-radius:40px;
+      border:1px solid #cbd5e1;
+      background:white;
+      font-size:14px;
+      flex:1;
+      min-width:140px;
+    }
+    body.dark .filter-bar input, body.dark .filter-bar select {
+      background:#171c2a;
+      border-color:rgba(255,255,255,0.1);
+      color:#edf2f8;
+    }
+    .btn {
+      background:#2c7da0;
+      border:none;
+      padding:10px 20px;
+      border-radius:40px;
+      color:white;
+      font-weight:600;
+      cursor:pointer;
+      transition:0.2s;
+    }
+    .btn-primary { background:#2c7da0; }
+    .btn-primary:hover { background:#1f5e7a; }
+    .btn-secondary { background:#4a6a7c; }
+    .fab {
+      position:fixed;
+      bottom:20px;
+      right:20px;
+      width:52px;
+      height:52px;
+      border-radius:50%;
+      background:#2c7da0;
+      border:none;
+      color:white;
+      font-size:22px;
+      cursor:pointer;
+      box-shadow:0 4px 12px rgba(0,0,0,0.2);
+      z-index:99;
+      transition:transform 0.2s;
+    }
+    .fab:active { transform:scale(0.94); }
+    .login-container {
+      max-width:420px;
+      margin:60px auto;
+      background:white;
+      border-radius:32px;
+      padding:32px;
+      box-shadow:0 20px 35px -8px rgba(0,0,0,0.1);
+    }
+    body.dark .login-container {
+      background:#10131c;
+      border:1px solid rgba(255,255,255,0.05);
+    }
+    .login-container input {
+      width:100%;
+      padding:12px 16px;
+      border-radius:40px;
+      border:1px solid #cbd5e1;
+      margin-top:8px;
+    }
+    body.dark .login-container input {
+      background:#171c2a;
+      border-color:rgba(255,255,255,0.1);
+      color:white;
+    }
+    .error-msg {
+      color:#d32f2f;
+      margin-top:12px;
+      display:none;
+    }
+    .slider { width:100%; margin:12px 0; }
+    .flex { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    canvas { max-height:200px; width:100%; }
+    .inline-number { width:100px; }
+    .progress-small { height:4px; margin-top:4px; }
+    .last-hour-card {
+      background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+      border-radius: 28px;
+      padding: 20px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    body.dark .last-hour-card {
+      background: linear-gradient(135deg, #1a2c3e 0%, #0f1a24 100%);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .last-hour-count {
+      font-size: 48px;
+      font-weight: 800;
+      color: #0f2b24;
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1;
+    }
+    body.dark .last-hour-count { color: #5f8aff; }
+    .last-hour-label {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #5a6874;
+      margin-top: 8px;
+    }
+    @media (max-width:700px) {
+      .metric-value { font-size:24px; }
+      .card { padding:16px; }
+      .last-hour-count { font-size: 36px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="loginContainer" class="login-container">
+  <h2 style="margin-bottom:16px;">🔐 Acesso · Cosern</h2>
+  <div><label>Matrícula</label><input type="text" id="matricula" placeholder="Ex: E738097"></div>
+  <div style="margin-top:16px;"><label>Senha</label><input type="password" id="senha" placeholder="••••••"></div>
+  <button id="btnLogin" class="btn btn-primary" style="width:100%; margin-top:24px;">Entrar</button>
+  <div id="loginError" class="error-msg"></div>
+</div>
+
+<div id="dashboard" style="display:none;">
+  <div class="dashboard-container">
+    <div class="top-bar">
+      <div class="user-info">
+        <button id="themeToggle" class="theme-toggle">☀️</button>
+        <div><strong id="userName"></strong> <span id="userRoleBadge"></span></div>
+        <button id="toggleSupervisorBtn" class="btn btn-secondary" style="display:none;">🔄 Modo Supervisor</button>
+      </div>
+      <button id="logoutBtn" class="btn-logout">🚪 Sair</button>
+    </div>
+
+    <!-- Card Notas na Última Hora -->
+    <div class="last-hour-card">
+      <div class="last-hour-count" id="lastHourCount">0</div>
+      <div class="last-hour-label">📊 Notas registradas na última hora</div>
+      <div id="lastHourList" style="margin-top: 12px; font-size: 12px; color: #5a6874;"></div>
+    </div>
+
+    <!-- Métricas -->
+    <div class="metric-grid">
+      <div class="metric-card"><div class="metric-label">📆 Feitas hoje</div><div class="metric-value" id="feitasHoje">—</div></div>
+      <div class="metric-card"><div class="metric-label">📅 Feitas no mês</div><div class="metric-value" id="feitasMes">—</div></div>
+      <div class="metric-card"><div class="metric-label">🏁 Faltam hoje</div><div class="metric-value" id="faltamHoje">—</div></div>
+      <div class="metric-card"><div class="metric-label">📈 Média diária</div><div class="metric-value" id="mediaDiaria">—</div></div>
+      <div class="metric-card"><div class="metric-label">🎯 Dias para meta</div><div class="metric-value" id="diasParaMeta">—</div></div>
+    </div>
+
+    <!-- Progresso e metas -->
+    <div class="card">
+      <div class="flex" style="justify-content:space-between;"><span><strong>Progresso da meta diária</strong></span><span id="pctDia" class="badge" style="background:#e2e8f0;">0%</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="barDia" style="width:0%"></div></div>
+      <div id="metaIndividualArea" style="margin-top:16px;">
+        <div><label>Minha meta por dia: <span id="metaDiaValue">40</span></label><input type="range" id="metaDiaSlider" min="1" max="200" value="40" class="slider"></div>
+        <div><label>Minha meta do mês (40×26): <span id="metaMesValue">1040</span></label><input type="range" id="metaMesSlider" min="1" max="2000" value="1040" step="10" class="slider"></div>
+      </div>
+      <div id="metaEquipeArea" style="display:none; margin-top:16px; border-top:1px solid #e2e8f0; padding-top:16px;">
+        <label><strong>👥 Notas a tratar hoje (equipe):</strong> <input type="number" id="metaEquipeDia" class="inline-number" style="width:120px;"> notas</label>
+        <div style="margin-top:8px;"><span id="integrantesEquipe"></span> integrantes ativos no mês</div>
+      </div>
+    </div>
+
+    <!-- Produção individual (apenas supervisor) -->
+    <div id="individualProductionArea" class="card" style="display:none;">
+      <div><strong>📊 Produção individual por matrícula</strong> <span style="font-size:12px;">(Feitas hoje | Feitas no mês)</span></div>
+      <div class="table-wrapper"><table id="individualTable"><thead><tr><th>Matrícula</th><th>Feitas hoje</th><th>Feitas no mês</th><th>% meta mensal</th></tr></thead><tbody id="individualTableBody"></tbody></table></div>
+    </div>
+
+    <!-- Gráfico e últimas notas -->
+    <div class="card"><div><strong>📊 Distribuição por status</strong></div><canvas id="statusChart" height="150"></canvas></div>
+    <div class="card"><div><strong>📋 Últimas notas</strong></div><div class="table-wrapper"><table><thead><tr><th>Data/Hora</th><th>Matrícula</th><th>Nº nota</th><th>Status</th><th>Tipo</th></tr></thead><tbody id="ultimas"></tbody></table></div></div>
+
+    <!-- Tabulação completa -->
+    <div class="card">
+      <div><strong>🔎 Tabulação completa</strong> <span id="tabScopeMsg" style="font-size:12px;"></span></div>
+      <div class="filter-bar">
+        <input type="text" id="searchTab" placeholder="Buscar (data, matrícula, nota...)">
+        <select id="filterStatus"><option value="">Todos status</option><option value="FINL">Finalizado (FINL)</option><option value="REDI">Redirecionado (REDI)</option><option value="VERI">Verificação (VERI)</option><option value="VITE">Urgente (VITE)</option></select>
+      </div>
+      <div class="table-wrapper"></table><thead><tr><th>Data/Hora</th><th>Matrícula</th><th>Nº nota</th><th>Status</th><th>Tipo</th></tr></thead><tbody id="tabBody"></tbody></table></div>
+      <div id="tabCount" style="font-size:12px; margin-top:12px; text-align:right;"></div>
+    </div>
+
+    <!-- Pesquisa de nota -->
+    <div class="card">
+      <div><strong>🔍 Pesquisar nota específica</strong> <span id="searchScopeMsg"></span></div>
+      <div class="flex"><input type="text" id="notaBusca" placeholder="Número da nota (ex: 700000825242)" style="flex:1"><button id="btnBuscarNota" class="btn">Buscar</button></div>
+      <div id="resultadoBusca" style="margin-top:16px;"></div>
+    </div>
+  </div>
+  <button class="fab" id="refreshFab">↻</button>
+</div>
+
+<script>
+  // ================= CONFIGURAÇÃO COSERN (ABAS ATUALIZADAS) =================
+  const DIST = "Cosern";
+  const SHEET_ID = '18fouQ0lBF5fKKB8kovxNNK-ww187kQVqZiETMfK-x3o';
+  const ABA_CREDENCIAIS = 'credenciais';
+  const ABA_PRINCIPAL = 'Tabulação Cosern';   // ← NOME CORRIGIDO
+  const DIAS_UTEIS_MES = 26;
+
+  // Somente a matrícula E738097 usará a aba individual
+  const ABA_INDIVIDUAL_RONITON = "Produtividade Mensal Roniton";
+  const MATRICULA_ESPECIAL = "E738097";
+
+  let currentUser = null;
+  let supervisorMode = false;
+  let allRows = [];
+  let metaIndividualDia = 40, metaIndividualMes = 40 * DIAS_UTEIS_MES;
+  let metaEquipeDia = 200;
+  let statusChart = null;
+  let refreshInterval = null;
+
+  // ================= UTILITÁRIOS GViz =================
+  async function gviz(sheetName) {
+    try {
+      const ts = Date.now();
+      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&ts=${ts}`;
+      const resp = await fetch(url, { cache: 'no-store' });
+      const txt = await resp.text();
+      const match = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);?\s*$/);
+      if (!match) throw new Error("Resposta inválida");
+      return JSON.parse(match[1]).table;
+    } catch(e) { console.error(e); return null; }
+  }
+
+  function parseTable(tbl) {
+    if (!tbl || !tbl.rows) return [];
+    const cols = tbl.cols.map(c => c.label);
+    return tbl.rows.map(row => {
+      const obj = {};
+      (row.c || []).forEach((cell, i) => {
+        let val = cell?.v ?? '';
+        if (cell?.v && typeof cell.v === 'string' && cell.v.startsWith('Date(')) val = cell.f || cell.v;
+        obj[cols[i]] = val;
+      });
+      return obj;
+    });
+  }
+
+  async function carregarAba(nome) {
+    const tbl = await gviz(nome);
+    return parseTable(tbl);
+  }
+
+  // ================= DADOS CONSOLIDADOS =================
+  async function carregarDadosConsolidados() {
+    let dados = await carregarAba(ABA_PRINCIPAL);
+    
+    try {
+      const dadosIndividuais = await carregarAba(ABA_INDIVIDUAL_RONITON);
+      if (dadosIndividuais && dadosIndividuais.length > 0) {
+        dados = dados.filter(row => String(row.Matricula || row.matricula) !== MATRICULA_ESPECIAL);
+        dadosIndividuais.forEach(row => {
+          dados.push({
+            "Carimbo de data/hora": row["Carimbo de data/hora"] || row["Carimbo de data/hora"],
+            "Matricula": MATRICULA_ESPECIAL,
+            "Nº da nota": row["N.º da nota"] || row["Nº da nota"] || "",
+            "Status": row["Status"] || "",
+            "Back ou Cria?": row["Back ou Cria?"] || row["Tipo de resposta"] || ""
+          });
+        });
+        console.log(`✅ Dados individuais inseridos para ${MATRICULA_ESPECIAL}`);
+      }
+    } catch(e) {
+      console.warn(`Aba individual ${ABA_INDIVIDUAL_RONITON} não encontrada.`);
+    }
+    return dados;
+  }
+
+  // ================= LOGIN =================
+  async function fazerLogin(mat, sen) {
+    const creds = await carregarAba(ABA_CREDENCIAIS);
+    const usuario = creds.find(r => String(r.Matrícula || r.matricula) === mat && String(r.Senha || r.senha) === sen);
+    if (!usuario) { mostrarErro("Matrícula ou senha inválidos"); return; }
+    const cargo = (usuario.Cargo || usuario.cargo || "").toLowerCase();
+    const nome = usuario.Nome || usuario.nome || mat;
+    let papel = "user";
+    if (cargo === "gm") papel = "gm";
+    else if (cargo === "supervisor") papel = "supervisor";
+    currentUser = { matricula: mat, nome, cargo, papel };
+    supervisorMode = (papel === "supervisor");
+    document.getElementById('userName').innerText = nome;
+    const roleSpan = document.getElementById('userRoleBadge');
+    roleSpan.innerHTML = (papel === "supervisor" || papel === "gm") ? '<span class="badge" style="background:#2c7da0; color:white;">👁️ Supervisor</span>' : '';
+    const toggleBtn = document.getElementById('toggleSupervisorBtn');
+    toggleBtn.style.display = (papel === "gm") ? 'inline-flex' : 'none';
+    document.getElementById('loginContainer').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    
+    const savedDia = localStorage.getItem(`metaIndDia_${DIST}`);
+    const savedMes = localStorage.getItem(`metaIndMes_${DIST}`);
+    if (savedDia) metaIndividualDia = parseInt(savedDia);
+    if (savedMes) metaIndividualMes = parseInt(savedMes);
+    const savedEquipe = localStorage.getItem(`metaEquipeDia_${DIST}`);
+    if (savedEquipe) metaEquipeDia = parseInt(savedEquipe);
+    
+    document.getElementById('metaDiaSlider').value = metaIndividualDia;
+    document.getElementById('metaMesSlider').value = metaIndividualMes;
+    document.getElementById('metaDiaValue').innerText = metaIndividualDia;
+    document.getElementById('metaMesValue').innerText = metaIndividualMes;
+    document.getElementById('metaEquipeDia').value = metaEquipeDia;
+    
+    atualizarEscopoMsg();
+    await carregarDadosEAtualizar();
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(refresh, 30000);
+  }
+
+  function atualizarEscopoMsg() {
+    const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
+    const scopeText = isSupervisor ? " (todos os colaboradores)" : ` (apenas ${currentUser.matricula})`;
+    document.getElementById('tabScopeMsg').innerText = scopeText;
+    document.getElementById('searchScopeMsg').innerHTML = isSupervisor ? "Você pode buscar qualquer nota." : "Você só pode buscar notas que você mesmo tratou.";
+    
+    const metaIndDiv = document.getElementById('metaIndividualArea');
+    const metaEquipeDiv = document.getElementById('metaEquipeArea');
+    const individualProdDiv = document.getElementById('individualProductionArea');
+    if (isSupervisor) {
+      metaIndDiv.style.display = 'none';
+      metaEquipeDiv.style.display = 'block';
+      individualProdDiv.style.display = 'block';
+    } else {
+      metaIndDiv.style.display = 'block';
+      metaEquipeDiv.style.display = 'none';
+      individualProdDiv.style.display = 'none';
+    }
+  }
+
+  function filtrarDados(dados) {
+    const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
+    if (isSupervisor) return dados;
+    return dados.filter(row => String(row.Matricula || row.matricula) === currentUser.matricula);
+  }
+
+  // ================= MÉTRICAS =================
+  function parseDataHora(str) {
+    if (!str) return null;
+    const [dataPart, horaPart] = str.split(' ');
+    if (!dataPart) return null;
+    const [dia, mes, ano] = dataPart.split('/');
+    if (!ano) return null;
+    return new Date(parseInt(ano), parseInt(mes)-1, parseInt(dia));
+  }
+
+  function parseTimestampFull(str) {
+    if (!str) return null;
+    const [dataPart, horaPart] = str.split(' ');
+    if (!dataPart || !horaPart) return null;
+    const [dia, mes, ano] = dataPart.split('/');
+    const [hora, minuto, segundo] = horaPart.split(':');
+    if (!ano || !hora) return null;
+    return new Date(parseInt(ano), parseInt(mes)-1, parseInt(dia), parseInt(hora), parseInt(minuto), parseInt(segundo));
+  }
+
+  function calcularMetricas(dadosFiltrados, usarMetaEquipe = false) {
+    const hoje = new Date();
+    let feitasHoje = 0, feitasMes = 0;
+    const statusCount = { FINL:0, REDI:0, VERI:0, VITE:0 };
+    let ultimas = [];
+    for (const row of dadosFiltrados) {
+      const timestamp = row["Carimbo de data/hora"] || '';
+      const dataObj = parseDataHora(timestamp);
+      if (dataObj) {
+        if (dataObj.toDateString() === hoje.toDateString()) feitasHoje++;
+        if (dataObj.getMonth() === hoje.getMonth() && dataObj.getFullYear() === hoje.getFullYear()) feitasMes++;
+      }
+      const status = (row.Status || '').toUpperCase();
+      if (statusCount[status] !== undefined) statusCount[status]++;
+      ultimas.push(row);
+    }
+    ultimas = ultimas.slice(-5).reverse();
+    
+    let metaDiaUsar = usarMetaEquipe ? metaEquipeDia : metaIndividualDia;
+    let faltamHoje = Math.max(0, metaDiaUsar - feitasHoje);
+    let pctDia = Math.min(100, Math.round((feitasHoje / metaDiaUsar) * 100));
+    const diasNoMes = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0).getDate();
+    const mediaDiaria = (feitasMes / Math.max(1, hoje.getDate())).toFixed(1);
+    const ritmoAtual = feitasMes / Math.max(1, hoje.getDate());
+    const diasRestantes = diasNoMes - hoje.getDate();
+    const projFinal = Math.round(feitasMes + ritmoAtual * diasRestantes);
+    const metaMesUsar = usarMetaEquipe ? metaEquipeDia * DIAS_UTEIS_MES : metaIndividualMes;
+    const diasParaMeta = projFinal >= metaMesUsar ? 0 : Math.ceil((metaMesUsar - feitasMes) / Math.max(0.1, ritmoAtual));
+    
+    return { feitasHoje, feitasMes, faltamHoje, pctDia, mediaDiaria, diasParaMeta, statusCount, ultimas };
+  }
+
+  function calcularProducaoIndividual(dados) {
+    const hoje = new Date();
+    const mapa = new Map();
+    for (const row of dados) {
+      const mat = row.Matricula || row.matricula;
+      if (!mat) continue;
+      const timestamp = row["Carimbo de data/hora"] || '';
+      const dataObj = parseDataHora(timestamp);
+      if (!dataObj) continue;
+      if (!mapa.has(mat)) mapa.set(mat, { hoje:0, mes:0 });
+      const prod = mapa.get(mat);
+      if (dataObj.toDateString() === hoje.toDateString()) prod.hoje++;
+      if (dataObj.getMonth() === hoje.getMonth() && dataObj.getFullYear() === hoje.getFullYear()) prod.mes++;
+    }
+    return Array.from(mapa.entries()).sort((a,b) => a[0].localeCompare(b[0])).map(([mat, prod]) => ({ mat, hoje: prod.hoje, mes: prod.mes }));
+  }
+
+  function calcularUltimaHora(dados) {
+    const agora = new Date();
+    const umaHoraAtras = new Date(agora.getTime() - 60 * 60 * 1000);
+    const notasUltimaHora = [];
+    for (const row of dados) {
+      const timestamp = row["Carimbo de data/hora"] || '';
+      const dataCompleta = parseTimestampFull(timestamp);
+      if (dataCompleta && dataCompleta >= umaHoraAtras && dataCompleta <= agora) {
+        notasUltimaHora.push(row);
+      }
+    }
+    const count = notasUltimaHora.length;
+    let listaHtml = '';
+    if (count > 0) {
+      const resumo = notasUltimaHora.slice(-3).map(r => `${r["Nº da nota"] || 'N/A'} (${r.Matricula || r.matricula})`).join(', ');
+      listaHtml = `Últimas: ${resumo}${count > 3 ? '...' : ''}`;
+    }
+    return { count, listaHtml };
+  }
+
+  function atualizarUI(metricas, isSupervisor, dadosCompletos) {
+    document.getElementById('feitasHoje').innerText = metricas.feitasHoje;
+    document.getElementById('feitasMes').innerText = metricas.feitasMes;
+    document.getElementById('faltamHoje').innerText = metricas.faltamHoje;
+    document.getElementById('mediaDiaria').innerText = metricas.mediaDiaria;
+    document.getElementById('diasParaMeta').innerText = metricas.diasParaMeta > 0 ? metricas.diasParaMeta : '✅';
+    document.getElementById('pctDia').innerText = `${metricas.pctDia}%`;
+    document.getElementById('barDia').style.width = `${metricas.pctDia}%`;
+    
+    if (statusChart) statusChart.destroy();
+    const ctx = document.getElementById('statusChart').getContext('2d');
+    statusChart = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: Object.keys(metricas.statusCount), datasets: [{ data: Object.values(metricas.statusCount), backgroundColor: '#2c7da0', borderRadius: 8 }] },
+      options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } } }
+    });
+    
+    const badge = (status) => {
+      const s = (status || '').toUpperCase();
+      if (s === 'FINL') return '<span class="badge badge-finl">FINL</span>';
+      if (s === 'REDI') return '<span class="badge badge-redi">REDI</span>';
+      if (s === 'VERI') return '<span class="badge badge-veri">VERI</span>';
+      if (s === 'VITE') return '<span class="badge badge-vite">VITE</span>';
+      return '<span class="badge">—</span>';
+    };
+    document.getElementById('ultimas').innerHTML = metricas.ultimas.map(row => `
+      <tr>
+        <td>${row["Carimbo de data/hora"] || '-'}</td>
+        <td>${row.Matricula || row.matricula || '-'}</td>
+        <td>${row["Nº da nota"] || '-'}</td>
+        <td>${badge(row.Status)}</td>
+        <td>${row["Back ou Cria?"] || '-'}</td>
+      </tr>
+    `).join('');
+    
+    if (isSupervisor && dadosCompletos) {
+      const individuais = calcularProducaoIndividual(dadosCompletos);
+      const totalEquipe = individuais.length;
+      document.getElementById('integrantesEquipe').innerText = totalEquipe;
+      const tbody = document.getElementById('individualTableBody');
+      tbody.innerHTML = individuais.map(p => {
+        const perc = Math.min(100, Math.round((p.mes / metaIndividualMes) * 100));
+        return `<tr><td><strong>${p.mat}</strong></td><td>${p.hoje}</td><td>${p.mes}</td><td><div class="progress-bar progress-small"><div class="progress-fill" style="width:${perc}%"></div></div>${perc}%</td></tr>`;
+      }).join('');
+    }
+
+    const { count, listaHtml } = calcularUltimaHora(dadosCompletos);
+    document.getElementById('lastHourCount').innerText = count;
+    document.getElementById('lastHourList').innerHTML = listaHtml;
+  }
+
+  function renderizarTabelaCompleta(dadosFiltrados) {
+    const search = (document.getElementById('searchTab')?.value || '').toLowerCase();
+    const statusFilter = (document.getElementById('filterStatus')?.value || '').toUpperCase();
+    let filtered = [...dadosFiltrados];
+    if (search) {
+      filtered = filtered.filter(r => 
+        (r["Carimbo de data/hora"] || '').toLowerCase().includes(search) ||
+        (r.Matricula || '').toLowerCase().includes(search) ||
+        (r["Nº da nota"] || '').toLowerCase().includes(search)
+      );
+    }
+    if (statusFilter) filtered = filtered.filter(r => (r.Status || '').toUpperCase() === statusFilter);
+    const badge = (status) => {
+      const s = (status || '').toUpperCase();
+      if (s === 'FINL') return '<span class="badge badge-finl">FINL</span>';
+      if (s === 'REDI') return '<span class="badge badge-redi">REDI</span>';
+      if (s === 'VERI') return '<span class="badge badge-veri">VERI</span>';
+      if (s === 'VITE') return '<span class="badge badge-vite">VITE</span>';
+      return '<span class="badge">—</span>';
+    };
+    document.getElementById('tabBody').innerHTML = filtered.slice(0, 300).map(row => `
+      <tr>
+        <td>${row["Carimbo de data/hora"] || '-'}</td>
+        <td>${row.Matricula || row.matricula || '-'}</td>
+        <td>${row["Nº da nota"] || '-'}</td>
+        <td>${badge(row.Status)}</td>
+        <td>${row["Back ou Cria?"] || '-'}</td>
+      </tr>
+    `).join('');
+    document.getElementById('tabCount').innerText = `Exibindo ${Math.min(filtered.length,300)} de ${filtered.length} registros`;
+  }
+
+  // ================= PESQUISA DE NOTA =================
+  async function buscarNota(numero) {
+    const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
+    let dados = allRows;
+    if (!isSupervisor) dados = dados.filter(r => String(r.Matricula || r.matricula) === currentUser.matricula);
+    const encontrado = dados.find(r => String(r["Nº da nota"] || '') === numero);
+    const resultDiv = document.getElementById('resultadoBusca');
+    if (encontrado) {
+      resultDiv.innerHTML = `<div style="background:#e6f4fa; padding:16px; border-radius:20px;"><strong>✅ Nota encontrada</strong><br>
+        Data/Hora: ${encontrado["Carimbo de data/hora"]}<br>
+        Matrícula: ${encontrado.Matricula}<br>
+        Status: ${encontrado.Status}<br>
+        Tipo: ${encontrado["Back ou Cria?"]}<br>
+        Nota: ${numero}
+      </div>`;
+    } else {
+      resultDiv.innerHTML = `<div style="background:#fee2e2; padding:16px; border-radius:20px;">❌ Nota não encontrada na sua base de dados.</div>`;
+    }
+  }
+
+  // ================= CARREGAMENTO PRINCIPAL =================
+  async function carregarDadosEAtualizar() {
+    try {
+      const dados = await carregarDadosConsolidados();
+      allRows = dados;
+      const dadosFiltrados = filtrarDados(allRows);
+      const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
+      const metricas = calcularMetricas(dadosFiltrados, isSupervisor);
+      atualizarUI(metricas, isSupervisor, allRows);
+      renderizarTabelaCompleta(dadosFiltrados);
+    } catch(e) { console.error(e); }
+  }
+
+  async function refresh() {
+    const fab = document.getElementById('refreshFab');
+    fab.style.transform = 'rotate(360deg)';
+    await carregarDadosEAtualizar();
+    setTimeout(() => fab.style.transform = '', 300);
+  }
+
+  // ================= TEMA =================
+  function initTheme() {
+    const btn = document.getElementById('themeToggle');
+    const isDark = localStorage.getItem('theme') === 'dark';
+    if (isDark) {
+      document.body.classList.add('dark');
+      btn.innerHTML = '🌙';
+    } else {
+      btn.innerHTML = '☀️';
+    }
+    btn.addEventListener('click', () => {
+      const body = document.body;
+      if (body.classList.contains('dark')) {
+        body.classList.remove('dark');
+        btn.innerHTML = '☀️';
+        localStorage.setItem('theme', 'light');
+      } else {
+        body.classList.add('dark');
+        btn.innerHTML = '🌙';
+        localStorage.setItem('theme', 'dark');
+      }
+    });
+  }
+
+  // ================= METAS =================
+  function initMetas() {
+    document.getElementById('metaDiaSlider').addEventListener('input', (e) => {
+      metaIndividualDia = parseInt(e.target.value);
+      document.getElementById('metaDiaValue').innerText = metaIndividualDia;
+      localStorage.setItem(`metaIndDia_${DIST}`, metaIndividualDia);
+      carregarDadosEAtualizar();
+    });
+    document.getElementById('metaMesSlider').addEventListener('input', (e) => {
+      metaIndividualMes = parseInt(e.target.value);
+      document.getElementById('metaMesValue').innerText = metaIndividualMes;
+      localStorage.setItem(`metaIndMes_${DIST}`, metaIndividualMes);
+      carregarDadosEAtualizar();
+    });
+    document.getElementById('metaEquipeDia').addEventListener('change', (e) => {
+      metaEquipeDia = parseInt(e.target.value);
+      localStorage.setItem(`metaEquipeDia_${DIST}`, metaEquipeDia);
+      carregarDadosEAtualizar();
+    });
+  }
+
+  // ================= EVENTOS =================
+  function initEvents() {
+    document.getElementById('btnLogin').addEventListener('click', () => {
+      const mat = document.getElementById('matricula').value.trim();
+      const sen = document.getElementById('senha').value;
+      if (mat && sen) fazerLogin(mat, sen);
+      else mostrarErro("Preencha ambos os campos.");
+    });
+    document.getElementById('logoutBtn').addEventListener('click', () => location.reload());
+    document.getElementById('refreshFab').addEventListener('click', refresh);
+    document.getElementById('btnBuscarNota').addEventListener('click', () => {
+      const nota = document.getElementById('notaBusca').value.trim();
+      if (!nota) { document.getElementById('resultadoBusca').innerHTML = '<span>Digite um número de nota.</span>'; return; }
+      buscarNota(nota);
+    });
+    document.getElementById('searchTab')?.addEventListener('input', () => {
+      const dadosFiltrados = filtrarDados(allRows);
+      renderizarTabelaCompleta(dadosFiltrados);
+    });
+    document.getElementById('filterStatus')?.addEventListener('change', () => {
+      const dadosFiltrados = filtrarDados(allRows);
+      renderizarTabelaCompleta(dadosFiltrados);
+    });
+    document.getElementById('toggleSupervisorBtn')?.addEventListener('click', () => {
+      if (currentUser.papel === "gm") {
+        supervisorMode = !supervisorMode;
+        atualizarEscopoMsg();
+        carregarDadosEAtualizar();
+      }
+    });
+  }
+
+  function mostrarErro(msg) { const e = document.getElementById('loginError'); e.innerText = msg; e.style.display = 'block'; setTimeout(() => e.style.display='none', 3000); }
+
+  initTheme();
+  initMetas();
+  initEvents();
+</script>
+</body>
+</html>
