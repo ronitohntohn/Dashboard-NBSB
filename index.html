@@ -2,228 +2,98 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>🌙 Cosern · Produtividade</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>Cosern · Produtividade</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     body {
       font-family:'Inter',sans-serif;
-      background:#f4f7fc;
+      background:#f0f2f5;
       color:#1a2c3e;
       transition: background 0.3s, color 0.2s;
-      padding:20px;
-      overflow-x:hidden;
     }
     body.dark {
       background:#0a0c12;
       color:#edf2f8;
     }
-    /* Layout principal com sidebar expansível */
-    .app-wrapper {
-      display:flex;
-      gap:24px;
-      max-width:1600px;
-      margin:0 auto;
-      position:relative;
-    }
-    /* Sidebar (expansível) */
-    .sidebar-panel {
-      width:0;
-      overflow-x:hidden;
-      transition:width 0.3s ease;
+    /* --- LOGIN ESTILO INSTAGRAM --- */
+    .login-container {
+      max-width:380px;
+      width:90%;
+      margin:60px auto;
       background:white;
-      border-radius:28px;
-      box-shadow:0 8px 20px rgba(0,0,0,0.05);
-      position:sticky;
-      top:20px;
-      height:calc(100vh - 40px);
-      display:flex;
-      flex-direction:column;
+      border-radius:24px;
+      padding:32px 24px;
+      box-shadow:0 12px 28px rgba(0,0,0,0.08);
+      text-align:center;
     }
-    body.dark .sidebar-panel {
+    body.dark .login-container {
       background:#10131c;
       border:1px solid rgba(255,255,255,0.05);
     }
-    .sidebar-panel.open {
-      width:380px;
+    .login-container h2 {
+      font-weight:600;
+      margin-bottom:28px;
+      font-size:28px;
     }
-    .sidebar-content {
-      padding:20px;
-      overflow-y:auto;
-      flex:1;
-    }
-    .sidebar-header {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:20px;
-      padding-bottom:12px;
-      border-bottom:1px solid #e2e8f0;
-    }
-    body.dark .sidebar-header {
-      border-bottom-color:rgba(255,255,255,0.1);
-    }
-    .close-sidebar {
-      background:transparent;
-      border:none;
-      font-size:24px;
-      cursor:pointer;
-      color:#5a6874;
-    }
-    .sidebar-section {
-      margin-bottom:24px;
-    }
-    .sidebar-section h4 {
-      font-size:14px;
-      margin-bottom:12px;
-      color:#2c7da0;
-    }
-    .filter-input {
+    .login-container input {
       width:100%;
-      padding:8px 12px;
-      border-radius:40px;
-      border:1px solid #cbd5e1;
-      margin-bottom:12px;
-      background:white;
+      padding:14px 16px;
+      border-radius:16px;
+      border:1px solid #dbdbdb;
+      background:#fafafa;
+      font-size:14px;
+      margin-top:8px;
     }
-    body.dark .filter-input {
-      background:#171c2a;
+    body.dark .login-container input {
+      background:#1e2436;
       border-color:rgba(255,255,255,0.1);
       color:white;
     }
-    .notas-lista {
-      max-height:300px;
-      overflow-y:auto;
-      font-size:12px;
-    }
-    .nota-item {
-      padding:8px;
-      border-bottom:1px solid #e2e8f0;
-      display:flex;
-      justify-content:space-between;
-    }
-    body.dark .nota-item {
-      border-bottom-color:rgba(255,255,255,0.05);
-    }
-    .resultado-pesquisa {
-      background:#e6f4fa;
-      padding:12px;
-      border-radius:16px;
-      margin-top:12px;
-      font-size:12px;
-    }
-    body.dark .resultado-pesquisa {
-      background:#1a2c3e;
-    }
-    /* Dashboard principal */
-    .dashboard-container {
-      flex:1;
-      min-width:0;
-    }
-    /* ... resto dos estilos (cards, métricas, etc) mantidos ... */
-    .card {
-      background:white;
-      border-radius:28px;
-      padding:20px;
-      margin-bottom:24px;
-      box-shadow:0 8px 20px rgba(0,0,0,0.05);
-      transition: background 0.3s, box-shadow 0.2s;
-    }
-    body.dark .card {
-      background:#10131c;
-      box-shadow:0 8px 20px rgba(0,0,0,0.3);
-      border:1px solid rgba(255,255,255,0.05);
-    }
-    .top-bar {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      flex-wrap:wrap;
-      gap:12px;
-      margin-bottom:24px;
-    }
-    .user-info {
-      display:flex;
-      align-items:center;
-      gap:16px;
-      flex-wrap:wrap;
-    }
-    .theme-toggle {
-      cursor:pointer;
-      font-size:28px;
-      background:transparent;
-      border:none;
-      transition:transform 0.2s;
-    }
-    .btn-logout, .btn-sidebar {
-      background:#e2e8f0;
-      border:none;
-      padding:8px 20px;
-      border-radius:40px;
-      font-weight:600;
-      cursor:pointer;
-      color:#1e4a6b;
-      transition:0.2s;
-    }
-    body.dark .btn-logout, body.dark .btn-sidebar {
-      background:#1f2538;
-      color:#9ea7bb;
-    }
-    .btn-sidebar {
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
-    .metric-grid {
-      display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(160px,1fr));
-      gap:16px;
-      margin-bottom:24px;
-    }
-    .metric-card {
-      background:white;
-      border-radius:24px;
-      padding:16px;
-      box-shadow:0 4px 12px rgba(0,0,0,0.03);
-    }
-    body.dark .metric-card {
-      background:#10131c;
-      border:1px solid rgba(255,255,255,0.05);
-    }
-    .metric-label {
-      font-size:12px;
-      text-transform:uppercase;
-      color:#5a6874;
-      letter-spacing:0.5px;
-      margin-bottom:8px;
-    }
-    .metric-value {
-      font-size:28px;
-      font-weight:800;
-      font-family:'JetBrains Mono',monospace;
-    }
-    .progress-bar {
-      background:#e2e8f0;
-      border-radius:20px;
-      height:8px;
-      overflow:hidden;
-      margin-top:8px;
-    }
-    .progress-fill {
-      height:100%;
-      border-radius:20px;
-      transition:width 0.3s;
+    .login-container .btn {
+      width:100%;
+      margin-top:24px;
       background:#2c7da0;
-    }
-    .badge {
-      display:inline-flex;
-      padding:4px 12px;
+      border:none;
+      padding:12px;
       border-radius:40px;
-      font-size:11px;
+      color:white;
       font-weight:600;
+      cursor:pointer;
     }
+    .error-msg {
+      color:#ed4956;
+      margin-top:16px;
+      font-size:14px;
+      display:none;
+    }
+    /* --- DASHBOARD --- */
+    #dashboard { display:none; padding:20px; }
+    .app-wrapper { display:flex; gap:24px; max-width:1600px; margin:0 auto; position:relative; }
+    /* Sidebar */
+    .sidebar-panel {
+      width:0; overflow-x:hidden; transition:width 0.3s ease;
+      background:white; border-radius:28px; box-shadow:0 8px 24px rgba(0,0,0,0.08);
+      position:sticky; top:20px; height:calc(100vh - 40px); display:flex; flex-direction:column;
+    }
+    body.dark .sidebar-panel { background:#10131c; border:1px solid rgba(255,255,255,0.05); }
+    .sidebar-panel.open { width:380px; }
+    .sidebar-content { padding:20px; overflow-y:auto; flex:1; }
+    .sidebar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid #e2e8f0; }
+    .close-sidebar { background:transparent; border:none; font-size:24px; cursor:pointer; }
+    /* Cards */
+    .card { background:white; border-radius:28px; padding:20px; margin-bottom:24px; box-shadow:0 4px 12px rgba(0,0,0,0.04); }
+    body.dark .card { background:#10131c; border:1px solid rgba(255,255,255,0.05); }
+    .metric-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px,1fr)); gap:16px; margin-bottom:24px; }
+    .metric-card { background:white; border-radius:24px; padding:18px 16px; border:1px solid #eef2f6; transition:transform 0.2s; }
+    body.dark .metric-card { background:#10131c; border-color:rgba(255,255,255,0.05); }
+    .metric-label { font-size:12px; text-transform:uppercase; color:#5a6874; margin-bottom:8px; }
+    .metric-value { font-size:26px; font-weight:800; font-family:'JetBrains Mono',monospace; }
+    .progress-bar { background:#e2e8f0; border-radius:20px; height:8px; margin-top:8px; }
+    .progress-fill { height:100%; background:#2c7da0; width:0%; }
+    .badge { display:inline-flex; padding:4px 12px; border-radius:40px; font-size:11px; font-weight:600; }
     .badge-finl { background:#e0f2e9; color:#0f5c3f; }
     .badge-redi { background:#fff0db; color:#b45f06; }
     .badge-veri { background:#e0f2fe; color:#0c6b7e; }
@@ -234,132 +104,50 @@
     body.dark .badge-vite { background:#4a1a1a; color:#f05a5a; }
     .table-wrapper { overflow-x:auto; }
     table { width:100%; border-collapse:collapse; font-size:13px; }
-    th { text-align:left; padding:12px 8px; color:#5a6874; font-weight:600; border-bottom:1px solid #e2e8f0; }
-    td { padding:10px 8px; border-bottom:1px solid #e2e8f0; }
-    body.dark th { border-bottom-color:rgba(255,255,255,0.1); }
-    body.dark td { border-bottom-color:rgba(255,255,255,0.05); }
+    th, td { text-align:left; padding:12px 8px; border-bottom:1px solid #e2e8f0; }
+    body.dark th, body.dark td { border-bottom-color:rgba(255,255,255,0.05); }
     .filter-bar { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; }
-    .filter-bar input, .filter-bar select {
-      padding:10px 16px;
-      border-radius:40px;
-      border:1px solid #cbd5e1;
-      background:white;
-      font-size:14px;
-      flex:1;
-      min-width:140px;
-    }
-    body.dark .filter-bar input, body.dark .filter-bar select {
-      background:#171c2a;
-      border-color:rgba(255,255,255,0.1);
-      color:#edf2f8;
-    }
-    .btn {
-      background:#2c7da0;
-      border:none;
-      padding:10px 20px;
-      border-radius:40px;
-      color:white;
-      font-weight:600;
-      cursor:pointer;
-      transition:0.2s;
-    }
-    .fab {
-      position:fixed;
-      bottom:20px;
-      right:20px;
-      width:52px;
-      height:52px;
-      border-radius:50%;
-      background:#2c7da0;
-      border:none;
-      color:white;
-      font-size:22px;
-      cursor:pointer;
-      box-shadow:0 4px 12px rgba(0,0,0,0.2);
-      z-index:99;
-    }
-    .login-container {
-      max-width:420px;
-      margin:60px auto;
-      background:white;
-      border-radius:32px;
-      padding:32px;
-      box-shadow:0 20px 35px -8px rgba(0,0,0,0.1);
-    }
-    body.dark .login-container {
-      background:#10131c;
-      border:1px solid rgba(255,255,255,0.05);
-    }
-    .login-container input {
-      width:100%;
-      padding:12px 16px;
-      border-radius:40px;
-      border:1px solid #cbd5e1;
-      margin-top:8px;
-    }
-    body.dark .login-container input {
-      background:#171c2a;
-      border-color:rgba(255,255,255,0.1);
-      color:white;
-    }
-    .error-msg { color:#d32f2f; margin-top:12px; display:none; }
+    .filter-bar input, .filter-bar select { padding:10px 16px; border-radius:40px; border:1px solid #cbd5e1; background:white; flex:1; }
+    body.dark .filter-bar input, body.dark .filter-bar select { background:#171c2a; border-color:rgba(255,255,255,0.1); color:white; }
+    .btn { background:#2c7da0; border:none; padding:10px 20px; border-radius:40px; color:white; font-weight:600; cursor:pointer; }
+    .btn-sidebar, .btn-logout { background:#e2e8f0; border:none; padding:8px 20px; border-radius:40px; font-weight:600; cursor:pointer; }
+    body.dark .btn-sidebar, body.dark .btn-logout { background:#1f2538; color:#9ea7bb; }
+    .top-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:24px; }
+    .user-info { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+    .theme-toggle { cursor:pointer; font-size:28px; background:transparent; border:none; }
+    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter:blur(5px); align-items:center; justify-content:center; z-index:1000; }
+    .modal-content { background:white; border-radius:32px; width:90%; max-width:500px; padding:24px; animation:fadeInUp 0.2s ease; }
+    body.dark .modal-content { background:#10131c; }
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    .fab { position:fixed; bottom:20px; right:20px; width:52px; height:52px; border-radius:50%; background:#2c7da0; border:none; color:white; font-size:22px; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.2); z-index:99; }
     .slider { width:100%; margin:12px 0; }
     .flex { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
-    canvas { max-height:200px; width:100%; }
-    .inline-number { width:100px; }
-    .progress-small { height:4px; margin-top:4px; }
-    @media (max-width:800px) {
-      .sidebar-panel.open { width:300px; }
-      .metric-value { font-size:24px; }
-    }
+    .nota-item { padding:8px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; font-size:12px; }
+    .meta-fixa { font-size:12px; color:#5a6874; margin-top:4px; }
+    @media (max-width:800px) { .sidebar-panel.open { width:300px; } .metric-value { font-size:22px; } }
   </style>
 </head>
 <body>
 
+<!-- TELA DE LOGIN -->
 <div id="loginContainer" class="login-container">
-  <h2 style="margin-bottom:16px;">🔐 Acesso · Cosern</h2>
-  <div><label>Matrícula</label><input type="text" id="matricula" placeholder="Ex: E738097"></div>
-  <div style="margin-top:16px;"><label>Senha</label><input type="password" id="senha" placeholder="••••••"></div>
-  <button id="btnLogin" class="btn" style="width:100%; margin-top:24px;">Entrar</button>
+  <h2>🔐 Cosern</h2>
+  <div><input type="text" id="matricula" placeholder="Matrícula" autocomplete="off"></div>
+  <div style="margin-top:12px;"><input type="password" id="senha" placeholder="Senha"></div>
+  <button id="btnLogin" class="btn">Entrar</button>
   <div id="loginError" class="error-msg"></div>
 </div>
 
-<div id="dashboard" style="display:none;">
+<!-- DASHBOARD -->
+<div id="dashboard">
   <div class="app-wrapper">
-    <!-- SIDEBAR EXPANSÍVEL -->
+    <!-- SIDEBAR -->
     <div class="sidebar-panel" id="sidebarPanel">
       <div class="sidebar-content">
-        <div class="sidebar-header">
-          <h3>📋 Painel de Notas</h3>
-          <button class="close-sidebar" id="closeSidebarBtn">✕</button>
-        </div>
-        
-        <!-- Pesquisa de nota específica -->
-        <div class="sidebar-section">
-          <h4>🔍 Pesquisar nota</h4>
-          <input type="text" id="sidebarNotaBusca" placeholder="Número da nota" class="filter-input">
-          <button id="sidebarBuscarBtn" class="btn" style="width:100%; margin-top:8px;">Buscar</button>
-          <div id="sidebarResultadoBusca" class="resultado-pesquisa" style="display:none;"></div>
-        </div>
-
-        <!-- Todas as notas da equipe (supervisor) -->
-        <div class="sidebar-section" id="teamNotesSection" style="display:none;">
-          <h4>📌 Todas as notas (equipe)</h4>
-          <input type="text" id="filtroMatricula" placeholder="Filtrar por matrícula" class="filter-input">
-          <div class="notas-lista" id="teamNotesList"></div>
-        </div>
-
-        <!-- Notas da última hora -->
-        <div class="sidebar-section">
-          <h4>⏱️ Notas da última hora</h4>
-          <div class="notas-lista" id="lastHourNotesList"></div>
-        </div>
-
-        <!-- Gráfico de evolução por hora -->
-        <div class="sidebar-section">
-          <h4>📈 Evolução de notas por hora</h4>
-          <canvas id="hourlyEvolutionChart" height="200"></canvas>
-        </div>
+        <div class="sidebar-header"><h3>📊 Análise por Hora</h3><button class="close-sidebar" id="closeSidebarBtn">✕</button></div>
+        <div style="margin-bottom:20px;"><canvas id="hourlyEvolutionChart" height="180"></canvas></div>
+        <div style="margin-bottom:20px;"><h4>⏱️ Notas da última hora</h4><div id="lastHourNotesList"></div></div>
+        <div id="teamNotesSection" style="display:none;"><h4>📌 Últimas notas da equipe</h4><input type="text" id="filtroMatricula" placeholder="Filtrar matrícula" style="width:100%; margin-bottom:8px; padding:8px; border-radius:20px; border:1px solid #ccc;"><div id="teamNotesList"></div></div>
       </div>
     </div>
 
@@ -367,65 +155,69 @@
     <div class="dashboard-container">
       <div class="top-bar">
         <div class="user-info">
-          <button id="openSidebarBtn" class="btn-sidebar">☰ Notas</button>
+          <button id="openSidebarBtn" class="btn-sidebar">☰ Análise Hora</button>
           <button id="themeToggle" class="theme-toggle">☀️</button>
           <div><strong id="userName"></strong> <span id="userRoleBadge"></span></div>
           <button id="toggleSupervisorBtn" class="btn" style="display:none;">🔄 Modo Supervisor</button>
+          <button id="searchIconBtn" style="background:transparent; border:none; font-size:24px; cursor:pointer;">🔍</button>
         </div>
-        <div class="flex">
-          <button id="gerarRespostaBtn" class="btn">✉️ Gerar resposta</button>
-          <button id="logoutBtn" class="btn-logout">🚪 Sair</button>
-        </div>
+        <div class="flex"><button id="gerarRespostaBtn" class="btn">✉️ Gerar resposta</button><button id="logoutBtn" class="btn-logout">🚪 Sair</button></div>
       </div>
 
       <!-- Métricas principais -->
       <div class="metric-grid">
-        <div class="metric-card"><div class="metric-label">📆 Feitas hoje</div><div class="metric-value" id="feitasHoje">—</div></div>
+        <div class="metric-card">
+          <div class="metric-label">📆 Feitas hoje</div>
+          <div class="metric-value" id="feitasHoje">—</div>
+          <div id="metaDiaHint" class="meta-fixa"></div>
+        </div>
         <div class="metric-card"><div class="metric-label">📅 Feitas no mês</div><div class="metric-value" id="feitasMes">—</div></div>
         <div class="metric-card"><div class="metric-label">🏁 Faltam hoje</div><div class="metric-value" id="faltamHoje">—</div></div>
         <div class="metric-card"><div class="metric-label">📈 Média diária</div><div class="metric-value" id="mediaDiaria">—</div></div>
         <div class="metric-card"><div class="metric-label">🎯 Dias para meta</div><div class="metric-value" id="diasParaMeta">—</div></div>
+        <div class="metric-card"><div class="metric-label">🕒 Notas última hora</div><div class="metric-value" id="notasUltimaHoraMetrica">—</div></div>
       </div>
 
-      <!-- Novas métricas detalhadas -->
+      <!-- Métricas FINALIZADAS por TIPO -->
       <div class="metric-grid">
-        <div class="metric-card"><div class="metric-label">✅ Finalizadas (Cria)</div><div class="metric-value" id="finalizadasCria">—</div></div>
-        <div class="metric-card"><div class="metric-label">✅ Finalizadas (Backlog)</div><div class="metric-value" id="finalizadasBacklog">—</div></div>
-        <div class="metric-card"><div class="metric-label">🔄 VERI+REDI (Cria)</div><div class="metric-value" id="veriRediCria">—</div></div>
-        <div class="metric-card"><div class="metric-label">🔄 VERI+REDI (Backlog)</div><div class="metric-value" id="veriRediBacklog">—</div></div>
+        <div class="metric-card"><div class="metric-label">✅ Finalizadas Cria (hoje)</div><div class="metric-value" id="finalizadasCriaHoje">—</div></div>
+        <div class="metric-card"><div class="metric-label">✅ Finalizadas Cria (mês)</div><div class="metric-value" id="finalizadasCriaMes">—</div></div>
+        <div class="metric-card"><div class="metric-label">✅ Finalizadas Backlog (hoje)</div><div class="metric-value" id="finalizadasBacklogHoje">—</div></div>
+        <div class="metric-card"><div class="metric-label">✅ Finalizadas Backlog (mês)</div><div class="metric-value" id="finalizadasBacklogMes">—</div></div>
+      </div>
+
+      <!-- Métricas VERI+REDI e VITE -->
+      <div class="metric-grid">
+        <div class="metric-card"><div class="metric-label">🔄 VERI+REDI Cria</div><div class="metric-value" id="veriRediCria">—</div></div>
+        <div class="metric-card"><div class="metric-label">🔄 VERI+REDI Backlog</div><div class="metric-value" id="veriRediBacklog">—</div></div>
+        <div class="metric-card"><div class="metric-label">⚠️ VITE (urgente)</div><div class="metric-value" id="viteTotal">—</div></div>
       </div>
 
       <!-- Progresso e metas -->
       <div class="card">
         <div class="flex" style="justify-content:space-between;"><span><strong>Progresso da meta diária</strong></span><span id="pctDia" class="badge">0%</span></div>
-        <div class="progress-bar"><div class="progress-fill" id="barDia" style="width:0%"></div></div>
-        <div id="metaIndividualArea" style="margin-top:16px;">
-          <div><label>Minha meta por dia: <span id="metaDiaValue">40</span></label><input type="range" id="metaDiaSlider" min="1" max="200" value="40" class="slider"></div>
-          <div><label>Minha meta do mês (40×26): <span id="metaMesValue">1040</span></label><input type="range" id="metaMesSlider" min="1" max="2000" value="1040" step="10" class="slider"></div>
-        </div>
+        <div class="progress-bar"><div class="progress-fill" id="barDia"></div></div>
+        <div id="metaIndividualArea"></div> <!-- Aqui será inserido o controle de meta (sliders só para supervisor) -->
         <div id="metaEquipeArea" style="display:none; margin-top:16px; border-top:1px solid #e2e8f0; padding-top:16px;">
-          <label><strong>👥 Notas a tratar hoje (equipe):</strong> <input type="number" id="metaEquipeDia" class="inline-number" style="width:120px;"> notas</label>
+          <label><strong>👥 Notas a tratar hoje (equipe):</strong> <input type="number" id="metaEquipeDia" style="width:120px;"> notas</label>
           <div style="margin-top:8px;"><span id="integrantesEquipe"></span> integrantes ativos no mês</div>
         </div>
       </div>
 
-      <!-- Produção individual (apenas supervisor) -->
+      <!-- Produção individual (supervisor) -->
       <div id="individualProductionArea" class="card" style="display:none;">
         <div><strong>📊 Produção individual por matrícula</strong></div>
-        <div class="table-wrapper"><table id="individualTable"><thead><tr><th>Matrícula</th><th>Feitas hoje</th><th>Feitas no mês</th><th>% meta</th></tr></thead><tbody id="individualTableBody"></tbody></table></div>
+        <div class="table-wrapper"><table id="individualTable"><thead><th>Matrícula</th><th>Feitas hoje</th><th>Feitas no mês</th><th>% meta</th></thead><tbody id="individualTableBody"></tbody></table></div>
       </div>
 
-      <!-- Gráfico de status (barras) -->
+      <!-- Gráfico de status -->
       <div class="card"><div><strong>📊 Distribuição por status</strong></div><canvas id="statusChart" height="150"></canvas></div>
 
-      <!-- Tabela de tabulação completa -->
+      <!-- Tabela completa -->
       <div class="card">
         <div><strong>🔎 Tabulação completa</strong> <span id="tabScopeMsg" style="font-size:12px;"></span></div>
-        <div class="filter-bar">
-          <input type="text" id="searchTab" placeholder="Buscar (data, matrícula, nota...)">
-          <select id="filterStatus"><option value="">Todos status</option><option value="FINL">Finalizado</option><option value="REDI">Redirecionado</option><option value="VERI">Verificação</option><option value="VITE">Urgente</option></select>
-        </div>
-        <div class="table-wrapper"><table><thead><tr><th>Data/Hora</th><th>Matrícula</th><th>Nº nota</th><th>Status</th><th>Tipo</th></tr></thead><tbody id="tabBody"></tbody></table></div>
+        <div class="filter-bar"><input type="text" id="searchTab" placeholder="Buscar (data, matrícula, nota...)"><select id="filterStatus"><option value="">Todos status</option><option value="FINL">Finalizado</option><option value="REDI">Redirecionado</option><option value="VERI">Verificação</option><option value="VITE">Urgente</option></select></div>
+        <div class="table-wrapper"><table><thead><th>Data/Hora</th><th>Matrícula</th><th>Nº nota</th><th>Status</th><th>Tipo</th></thead><tbody id="tabBody"></tbody></table></div>
         <div id="tabCount" style="font-size:12px; margin-top:12px; text-align:right;"></div>
       </div>
     </div>
@@ -433,31 +225,38 @@
   <button class="fab" id="refreshFab">↻</button>
 </div>
 
+<!-- MODAL DE PESQUISA -->
+<div id="searchModal" class="modal">
+  <div class="modal-content"><h3>🔎 Pesquisar nota</h3><input type="text" id="modalNotaBusca" placeholder="Número da nota"><button id="modalBuscarBtn" class="btn" style="width:100%; margin-top:12px;">Buscar</button><div id="modalResultado" style="margin-top:16px;"></div><button id="closeModalBtn" style="margin-top:16px; background:transparent; border:none; float:right; cursor:pointer;">Fechar</button></div>
+</div>
+
 <script>
-  // ================= CONFIGURAÇÃO =================
+  // ================= CONFIGURAÇÕES =================
   const SHEET_ID = '18fouQ0lBF5fKKB8kovxNNK-ww187kQVqZiETMfK-x3o';
   const ABA_CREDENCIAIS = 'credenciais';
   const ABA_PRINCIPAL = 'Tabulação Cosern';
-  const ABA_INDIVIDUAL_RONITON = "Produtividade Mensal Roniton";
-  const MATRICULA_ESPECIAL = "E738097";
+  const ABA_PROD_DIARIA = 'Produtividade Diária';  // Ajuste conforme sua planilha
   const DIAS_UTEIS_MES = 26;
+  const META_MENSAL_FIXA_ATENDENTE = 800;          // Meta fixa de 800 notas para o mês
+  const META_DIARIA_FIXA_ATENDENTE = Math.ceil(META_MENSAL_FIXA_ATENDENTE / DIAS_UTEIS_MES); // 31
 
   let currentUser = null;
   let supervisorMode = false;
-  let allRows = [];           // todos os dados (principal + individual)
-  let metaIndividualDia = 40, metaIndividualMes = 1040;
+  let allRows = [];
+  let prodDiariaData = [];
+  let metaIndividualDia = META_DIARIA_FIXA_ATENDENTE;
+  let metaIndividualMes = META_MENSAL_FIXA_ATENDENTE;
   let metaEquipeDia = 200;
-  let statusChart = null;
-  let hourlyChart = null;
+  let statusChart = null, hourlyChart = null;
   let refreshInterval = null;
 
-  // ================= GViz =================
+  // ================= FUNÇÕES GOOGLE SHEETS =================
   async function gviz(sheetName) {
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&t=${Date.now()}`;
     const resp = await fetch(url, { cache: 'no-store' });
     const txt = await resp.text();
     const match = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);?\s*$/);
-    if (!match) throw new Error("Resposta inválida");
+    if (!match) throw new Error("Erro ao carregar dados");
     return JSON.parse(match[1]).table;
   }
 
@@ -476,29 +275,50 @@
   }
 
   async function carregarAba(nome) {
-    const tbl = await gviz(nome);
-    return parseTable(tbl);
+    try {
+      const tbl = await gviz(nome);
+      return parseTable(tbl);
+    } catch(e) {
+      console.warn(`Aba "${nome}" não encontrada:`, e);
+      return [];
+    }
   }
 
-  // ================= DADOS CONSOLIDADOS =================
+  // ================= CARREGAR DADOS =================
   async function carregarDadosConsolidados() {
-    let dados = await carregarAba(ABA_PRINCIPAL);
-    try {
-      const dadosIndividuais = await carregarAba(ABA_INDIVIDUAL_RONITON);
-      if (dadosIndividuais && dadosIndividuais.length > 0) {
-        dados = dados.filter(row => String(row.Matricula || row.matricula) !== MATRICULA_ESPECIAL);
-        dadosIndividuais.forEach(row => {
-          dados.push({
-            "Carimbo de data/hora": row["Carimbo de data/hora"] || row["Carimbo de data/hora"],
-            "Matricula": MATRICULA_ESPECIAL,
-            "Nº da nota": row["N.º da nota"] || row["Nº da nota"] || "",
-            "Status": row["Status"] || "",
-            "Back ou Cria?": row["Back ou Cria?"] || row["Tipo de resposta"] || ""
-          });
-        });
-      }
-    } catch(e) { console.warn("Aba individual não encontrada"); }
-    return dados;
+    // Aba Tabulação Cosern
+    const principal = await carregarAba(ABA_PRINCIPAL);
+    allRows = principal.map(row => {
+      let timestamp = row["Carimbo de data/hora"] || "";
+      let mat = row.Matricula || row.matricula || row["Matrícula"] || "";
+      let nota = row["Nº da nota"] || row["N.º da nota"] || "";
+      let statusRaw = (row.Status || "").toUpperCase();
+      if (statusRaw === "FINALIZADO") statusRaw = "FINL";
+      if (statusRaw === "REDIRECIONADO") statusRaw = "REDI";
+      if (statusRaw === "VERIFICAÇÃO") statusRaw = "VERI";
+      if (statusRaw === "URGENTE") statusRaw = "VITE";
+      let tipoRaw = row["Back ou Cria?"] || row["Tipo de resposta"] || "";
+      tipoRaw = tipoRaw.toLowerCase().trim();
+      let tipo = "";
+      if (tipoRaw.includes("cria")) tipo = "cria";
+      else if (tipoRaw.includes("backlog")) tipo = "backlog";
+      return { "Carimbo de data/hora": timestamp, "Matricula": mat, "Nº da nota": nota, "Status": statusRaw, "Back ou Cria?": tipo };
+    });
+
+    // Aba Produtividade Diária
+    let rawProdDiaria = await carregarAba(ABA_PROD_DIARIA);
+    if (rawProdDiaria.length === 0) rawProdDiaria = await carregarAba("Tabela de Produtividade");
+    prodDiariaData = rawProdDiaria.map(row => ({
+      matricula: String(row.Matrícula || row.matricula || "").trim(),
+      feitasDia: parseInt(row["Feitas no dia"] ?? row["Feitas hoje"] ?? 0),
+      feitasMes: parseInt(row["Feitas no mês"] ?? 0),
+      finalizadasCria: parseInt(row["Finalizadas - Cria"] ?? row["Finalizadas Cria"] ?? 0),
+      finalizadasBacklog: parseInt(row["Finalizadas - Backlog"] ?? row["Finalizadas Backlog"] ?? 0),
+      vite: parseInt(row["VITE"] ?? 0),
+      direcionadasCria: parseInt(row["direcionadas - Cria"] ?? row["Direcionadas Cria"] ?? 0),
+      direcionadasBacklog: parseInt(row["direcionadas - Backlog"] ?? row["Direcionadas Backlog"] ?? 0),
+      data: row["Data"] || ""
+    }));
   }
 
   // ================= LOGIN =================
@@ -519,20 +339,54 @@
     document.getElementById('loginContainer').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
     
-    const savedDia = localStorage.getItem('metaIndDia_Cosern');
-    const savedMes = localStorage.getItem('metaIndMes_Cosern');
-    if (savedDia) metaIndividualDia = parseInt(savedDia);
-    if (savedMes) metaIndividualMes = parseInt(savedMes);
-    const savedEquipe = localStorage.getItem('metaEquipeDia_Cosern');
-    if (savedEquipe) metaEquipeDia = parseInt(savedEquipe);
-    
-    document.getElementById('metaDiaSlider').value = metaIndividualDia;
-    document.getElementById('metaMesSlider').value = metaIndividualMes;
-    document.getElementById('metaDiaValue').innerText = metaIndividualDia;
-    document.getElementById('metaMesValue').innerText = metaIndividualMes;
+    // Carregar metas salvas (para supervisor) ou fixar para usuário comum
+    const isSupervisorFull = (papel === "supervisor") || (papel === "gm");
+    if (!isSupervisorFull) {
+      // Usuário comum: metas fixas
+      metaIndividualDia = META_DIARIA_FIXA_ATENDENTE;
+      metaIndividualMes = META_MENSAL_FIXA_ATENDENTE;
+      // Esconder sliders e mostrar texto fixo
+      document.getElementById('metaIndividualArea').innerHTML = `
+        <div class="meta-fixa" style="margin-top:8px;">🎯 Meta diária: ${META_DIARIA_FIXA_ATENDENTE} notas</div>
+        <div class="meta-fixa">📆 Meta mensal: ${META_MENSAL_FIXA_ATENDENTE} notas</div>
+      `;
+    } else {
+      // Supervisor ou GM: carregar metas salvas ou padrão ajustável
+      const savedDia = localStorage.getItem('metaIndDia_Cosern');
+      const savedMes = localStorage.getItem('metaIndMes_Cosern');
+      if (savedDia) metaIndividualDia = parseInt(savedDia);
+      if (savedMes) metaIndividualMes = parseInt(savedMes);
+      const savedEquipe = localStorage.getItem('metaEquipeDia_Cosern');
+      if (savedEquipe) metaEquipeDia = parseInt(savedEquipe);
+      // Mostrar sliders
+      document.getElementById('metaIndividualArea').innerHTML = `
+        <div><label>Minha meta por dia: <span id="metaDiaValue">${metaIndividualDia}</span></label><input type="range" id="metaDiaSlider" min="1" max="200" value="${metaIndividualDia}" class="slider"></div>
+        <div><label>Minha meta do mês: <span id="metaMesValue">${metaIndividualMes}</span></label><input type="range" id="metaMesSlider" min="1" max="2000" value="${metaIndividualMes}" step="10" class="slider"></div>
+      `;
+      document.getElementById('metaDiaSlider').addEventListener('input', (e) => {
+        metaIndividualDia = parseInt(e.target.value);
+        document.getElementById('metaDiaValue').innerText = metaIndividualDia;
+        localStorage.setItem('metaIndDia_Cosern', metaIndividualDia);
+        carregarDadosEAtualizar();
+      });
+      document.getElementById('metaMesSlider').addEventListener('input', (e) => {
+        metaIndividualMes = parseInt(e.target.value);
+        document.getElementById('metaMesValue').innerText = metaIndividualMes;
+        localStorage.setItem('metaIndMes_Cosern', metaIndividualMes);
+        carregarDadosEAtualizar();
+      });
+    }
     document.getElementById('metaEquipeDia').value = metaEquipeDia;
+    document.getElementById('metaEquipeDia').addEventListener('change', (e) => {
+      if (isSupervisorFull) {
+        metaEquipeDia = parseInt(e.target.value);
+        localStorage.setItem('metaEquipeDia_Cosern', metaEquipeDia);
+        carregarDadosEAtualizar();
+      }
+    });
     
     atualizarEscopoMsg();
+    await carregarDadosConsolidados();
     await carregarDadosEAtualizar();
     if (refreshInterval) clearInterval(refreshInterval);
     refreshInterval = setInterval(refresh, 30000);
@@ -541,22 +395,80 @@
   function atualizarEscopoMsg() {
     const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
     document.getElementById('tabScopeMsg').innerText = isSupervisor ? " (todos)" : ` (${currentUser.matricula})`;
-    document.getElementById('metaIndividualArea').style.display = isSupervisor ? 'none' : 'block';
     document.getElementById('metaEquipeArea').style.display = isSupervisor ? 'block' : 'none';
     document.getElementById('individualProductionArea').style.display = isSupervisor ? 'block' : 'none';
     document.getElementById('teamNotesSection').style.display = isSupervisor ? 'block' : 'none';
   }
 
-  function filtrarDados(dados) {
+  function filtrarDadosTabulacao() {
     const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
-    if (isSupervisor) return dados;
-    return dados.filter(row => String(row.Matricula || row.matricula) === currentUser.matricula);
+    if (isSupervisor) return allRows;
+    return allRows.filter(row => String(row.Matricula) === currentUser.matricula);
   }
 
-  // ================= MÉTRICAS E UTILITÁRIOS =================
+  // ================= MÉTRICAS BASEADAS NA PRODUTIVIDADE DIÁRIA =================
+  function getMetricasFromProdDiaria() {
+    const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
+    let dadosUsuario = [];
+    if (isSupervisor) {
+      dadosUsuario = prodDiariaData;
+    } else {
+      dadosUsuario = prodDiariaData.filter(item => item.matricula === currentUser.matricula);
+    }
+    const soma = dadosUsuario.reduce((acc, cur) => {
+      acc.feitasDia += cur.feitasDia;
+      acc.feitasMes += cur.feitasMes;
+      acc.finalizadasCria += cur.finalizadasCria;
+      acc.finalizadasBacklog += cur.finalizadasBacklog;
+      acc.vite += cur.vite;
+      acc.direcionadasCria += cur.direcionadasCria;
+      acc.direcionadasBacklog += cur.direcionadasBacklog;
+      return acc;
+    }, { feitasDia:0, feitasMes:0, finalizadasCria:0, finalizadasBacklog:0, vite:0, direcionadasCria:0, direcionadasBacklog:0 });
+    
+    return {
+      feitasHoje: soma.feitasDia,
+      feitasMes: soma.feitasMes,
+      finalizadasCriaHoje: soma.finalizadasCria,   // assumindo que é total mensal; para hoje, se não houver separado, usamos o mesmo
+      finalizadasCriaMes: soma.finalizadasCria,
+      finalizadasBacklogHoje: soma.finalizadasBacklog,
+      finalizadasBacklogMes: soma.finalizadasBacklog,
+      veriRediCria: soma.direcionadasCria,
+      veriRediBacklog: soma.direcionadasBacklog,
+      viteTotal: soma.vite
+    };
+  }
+
+  function calcularMetricasAdicionais(feitasHoje, feitasMes, usarMetaEquipe) {
+    const hoje = new Date();
+    let metaDiaUsar = usarMetaEquipe ? metaEquipeDia : metaIndividualDia;
+    let faltamHoje = Math.max(0, metaDiaUsar - feitasHoje);
+    let pctDia = Math.min(100, Math.round((feitasHoje / metaDiaUsar) * 100));
+    const mediaDiaria = (feitasMes / Math.max(1, hoje.getDate())).toFixed(1);
+    const ritmoAtual = feitasMes / Math.max(1, hoje.getDate());
+    const diasRestantes = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0).getDate() - hoje.getDate();
+    const projFinal = Math.round(feitasMes + ritmoAtual * diasRestantes);
+    const metaMesUsar = usarMetaEquipe ? metaEquipeDia * DIAS_UTEIS_MES : metaIndividualMes;
+    const diasParaMeta = projFinal >= metaMesUsar ? 0 : Math.ceil((metaMesUsar - feitasMes) / Math.max(0.1, ritmoAtual));
+    return { faltamHoje, pctDia, mediaDiaria, diasParaMeta };
+  }
+
+  function getNotasUltimaHora() {
+    const agora = new Date();
+    const umaHoraAtras = new Date(agora.getTime() - 3600000);
+    const dadosFiltrados = filtrarDadosTabulacao();
+    let count = 0;
+    for (const row of dadosFiltrados) {
+      const ts = parseTimestampFull(row["Carimbo de data/hora"]);
+      if (ts && ts >= umaHoraAtras && ts <= agora) count++;
+    }
+    return count;
+  }
+
+  // ================= UTILITÁRIOS =================
   function parseDataHora(str) {
     if (!str) return null;
-    const [dataPart, horaPart] = str.split(' ');
+    const [dataPart] = str.split(' ');
     if (!dataPart) return null;
     const [dia, mes, ano] = dataPart.split('/');
     if (!ano) return null;
@@ -570,68 +482,21 @@
     const [dia, mes, ano] = dataPart.split('/');
     const [hora, minuto, segundo] = horaPart.split(':');
     if (!ano || !hora) return null;
-    return new Date(parseInt(ano), parseInt(mes)-1, parseInt(dia), parseInt(hora), parseInt(minuto), parseInt(segundo));
+    return new Date(parseInt(ano), parseInt(mes)-1, parseInt(dia), parseInt(hora), parseInt(minuto), parseInt(segundo||0));
   }
 
-  function calcularMetricas(dadosFiltrados, usarMetaEquipe = false) {
-    const hoje = new Date();
-    let feitasHoje = 0, feitasMes = 0;
-    let finalizadasCria = 0, finalizadasBacklog = 0;
-    let veriRediCria = 0, veriRediBacklog = 0;
-    const statusCount = { FINL:0, REDI:0, VERI:0, VITE:0 };
-    
+  function calcularStatusCount() {
+    const dadosFiltrados = filtrarDadosTabulacao();
+    const count = { FINL:0, REDI:0, VERI:0, VITE:0 };
     for (const row of dadosFiltrados) {
-      const timestamp = row["Carimbo de data/hora"] || '';
-      const dataObj = parseDataHora(timestamp);
-      if (dataObj) {
-        if (dataObj.toDateString() === hoje.toDateString()) feitasHoje++;
-        if (dataObj.getMonth() === hoje.getMonth() && dataObj.getFullYear() === hoje.getFullYear()) feitasMes++;
-      }
-      const status = (row.Status || '').toUpperCase();
-      const tipo = (row["Back ou Cria?"] || '').toLowerCase();
-      if (statusCount[status] !== undefined) statusCount[status]++;
-      
-      if (status === 'FINL') {
-        if (tipo === 'cria') finalizadasCria++;
-        else if (tipo === 'backlog') finalizadasBacklog++;
-      }
-      if (status === 'VERI' || status === 'REDI') {
-        if (tipo === 'cria') veriRediCria++;
-        else if (tipo === 'backlog') veriRediBacklog++;
-      }
+      const s = row.Status;
+      if (count[s] !== undefined) count[s]++;
     }
-    
-    let metaDiaUsar = usarMetaEquipe ? metaEquipeDia : metaIndividualDia;
-    let faltamHoje = Math.max(0, metaDiaUsar - feitasHoje);
-    let pctDia = Math.min(100, Math.round((feitasHoje / metaDiaUsar) * 100));
-    const mediaDiaria = (feitasMes / Math.max(1, hoje.getDate())).toFixed(1);
-    const ritmoAtual = feitasMes / Math.max(1, hoje.getDate());
-    const diasRestantes = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0).getDate() - hoje.getDate();
-    const projFinal = Math.round(feitasMes + ritmoAtual * diasRestantes);
-    const metaMesUsar = usarMetaEquipe ? metaEquipeDia * DIAS_UTEIS_MES : metaIndividualMes;
-    const diasParaMeta = projFinal >= metaMesUsar ? 0 : Math.ceil((metaMesUsar - feitasMes) / Math.max(0.1, ritmoAtual));
-    
-    return { feitasHoje, feitasMes, faltamHoje, pctDia, mediaDiaria, diasParaMeta, statusCount,
-             finalizadasCria, finalizadasBacklog, veriRediCria, veriRediBacklog };
+    return count;
   }
 
-  function calcularProducaoIndividual(dados) {
-    const hoje = new Date();
-    const mapa = new Map();
-    for (const row of dados) {
-      const mat = row.Matricula || row.matricula;
-      if (!mat) continue;
-      const dataObj = parseDataHora(row["Carimbo de data/hora"] || '');
-      if (!dataObj) continue;
-      if (!mapa.has(mat)) mapa.set(mat, { hoje:0, mes:0 });
-      const prod = mapa.get(mat);
-      if (dataObj.toDateString() === hoje.toDateString()) prod.hoje++;
-      if (dataObj.getMonth() === hoje.getMonth() && dataObj.getFullYear() === hoje.getFullYear()) prod.mes++;
-    }
-    return Array.from(mapa.entries()).sort().map(([mat, prod]) => ({ mat, hoje: prod.hoje, mes: prod.mes }));
-  }
-
-  function calcularNotasPorHora(dados) {
+  function calcularNotasPorHora() {
+    const dados = filtrarDadosTabulacao();
     const agora = new Date();
     const horas = [];
     for (let i = 11; i >= 0; i--) {
@@ -641,7 +506,7 @@
     }
     const contagem = new Array(12).fill(0);
     for (const row of dados) {
-      const ts = parseTimestampFull(row["Carimbo de data/hora"] || '');
+      const ts = parseTimestampFull(row["Carimbo de data/hora"]);
       if (!ts) continue;
       for (let i=0; i<horas.length; i++) {
         if (ts >= horas[i] && ts < new Date(horas[i].getTime() + 3600000)) {
@@ -650,43 +515,55 @@
         }
       }
     }
-    const labels = horas.map(h => `${h.getHours()}:00`);
+    const labels = horas.map(h => `${h.getHours().toString().padStart(2,'0')}:00`);
     return { labels, contagem };
   }
 
-  function atualizarUI(metricas, isSupervisor, dadosCompletos) {
-    document.getElementById('feitasHoje').innerText = metricas.feitasHoje;
-    document.getElementById('feitasMes').innerText = metricas.feitasMes;
-    document.getElementById('faltamHoje').innerText = metricas.faltamHoje;
-    document.getElementById('mediaDiaria').innerText = metricas.mediaDiaria;
-    document.getElementById('diasParaMeta').innerText = metricas.diasParaMeta > 0 ? metricas.diasParaMeta : '✅';
-    document.getElementById('pctDia').innerText = `${metricas.pctDia}%`;
-    document.getElementById('barDia').style.width = `${metricas.pctDia}%`;
-    document.getElementById('finalizadasCria').innerText = metricas.finalizadasCria;
-    document.getElementById('finalizadasBacklog').innerText = metricas.finalizadasBacklog;
-    document.getElementById('veriRediCria').innerText = metricas.veriRediCria;
-    document.getElementById('veriRediBacklog').innerText = metricas.veriRediBacklog;
+  // ================= ATUALIZAÇÃO COMPLETA =================
+  async function atualizarTudo() {
+    await carregarDadosConsolidados();
     
+    const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
+    const prodMetrics = getMetricasFromProdDiaria();
+    const adicionais = calcularMetricasAdicionais(prodMetrics.feitasHoje, prodMetrics.feitasMes, isSupervisor);
+    const notasUltimaHora = getNotasUltimaHora();
+    const statusCount = calcularStatusCount();
+    
+    // Atualizar DOM
+    document.getElementById('feitasHoje').innerText = prodMetrics.feitasHoje;
+    // Mostrar meta diária de forma discreta
+    const metaDiaHint = document.getElementById('metaDiaHint');
+    if (!isSupervisor) {
+      metaDiaHint.innerText = `meta: ${metaIndividualDia} notas/dia`;
+    } else {
+      metaDiaHint.innerText = '';
+    }
+    document.getElementById('feitasMes').innerText = prodMetrics.feitasMes;
+    document.getElementById('faltamHoje').innerText = adicionais.faltamHoje;
+    document.getElementById('mediaDiaria').innerText = adicionais.mediaDiaria;
+    document.getElementById('diasParaMeta').innerText = adicionais.diasParaMeta > 0 ? adicionais.diasParaMeta : '✅';
+    document.getElementById('pctDia').innerText = `${adicionais.pctDia}%`;
+    document.getElementById('barDia').style.width = `${adicionais.pctDia}%`;
+    document.getElementById('finalizadasCriaHoje').innerText = prodMetrics.finalizadasCriaHoje;
+    document.getElementById('finalizadasCriaMes').innerText = prodMetrics.finalizadasCriaMes;
+    document.getElementById('finalizadasBacklogHoje').innerText = prodMetrics.finalizadasBacklogHoje;
+    document.getElementById('finalizadasBacklogMes').innerText = prodMetrics.finalizadasBacklogMes;
+    document.getElementById('veriRediCria').innerText = prodMetrics.veriRediCria;
+    document.getElementById('veriRediBacklog').innerText = prodMetrics.veriRediBacklog;
+    document.getElementById('viteTotal').innerText = prodMetrics.viteTotal;
+    document.getElementById('notasUltimaHoraMetrica').innerText = notasUltimaHora;
+    
+    // Gráfico de status
     if (statusChart) statusChart.destroy();
     const ctx = document.getElementById('statusChart').getContext('2d');
     statusChart = new Chart(ctx, {
       type: 'bar',
-      data: { labels: Object.keys(metricas.statusCount), datasets: [{ data: Object.values(metricas.statusCount), backgroundColor: '#2c7da0' }] },
+      data: { labels: Object.keys(statusCount), datasets: [{ data: Object.values(statusCount), backgroundColor: '#2c7da0' }] },
       options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } } }
     });
     
-    // Tabela individual
-    if (isSupervisor && dadosCompletos) {
-      const individuais = calcularProducaoIndividual(dadosCompletos);
-      document.getElementById('integrantesEquipe').innerText = individuais.length;
-      document.getElementById('individualTableBody').innerHTML = individuais.map(p => `
-        <tr><td><strong>${p.mat}</strong></td><td>${p.hoje}</td><td>${p.mes}</td>
-        <td><div class="progress-bar progress-small"><div class="progress-fill" style="width:${Math.min(100, Math.round(p.mes/metaIndividualMes*100))}%"></div></div>${Math.round(p.mes/metaIndividualMes*100)}%</td></tr>
-      `).join('');
-    }
-    
-    // Gráfico de evolução por hora (sidebar)
-    const { labels, contagem } = calcularNotasPorHora(dadosCompletos);
+    // Gráfico de evolução por hora
+    const { labels, contagem } = calcularNotasPorHora();
     const hourlyCtx = document.getElementById('hourlyEvolutionChart').getContext('2d');
     if (hourlyChart) hourlyChart.destroy();
     hourlyChart = new Chart(hourlyCtx, {
@@ -695,27 +572,43 @@
       options: { responsive: true, maintainAspectRatio: true }
     });
     
-    // Notas da última hora (sidebar)
+    // Lista da última hora
     const agora = new Date();
     const umaHoraAtras = new Date(agora.getTime() - 3600000);
-    const notasUltimaHora = dadosCompletos.filter(row => {
-      const ts = parseTimestampFull(row["Carimbo de data/hora"] || '');
+    const dadosFiltrados = filtrarDadosTabulacao();
+    const notasUltimaHoraList = dadosFiltrados.filter(row => {
+      const ts = parseTimestampFull(row["Carimbo de data/hora"]);
       return ts && ts >= umaHoraAtras && ts <= agora;
     }).slice(-20).reverse();
-    document.getElementById('lastHourNotesList').innerHTML = notasUltimaHora.map(row => `
-      <div class="nota-item"><span>${row["Nº da nota"] || '-'}</span><span>${row.Matricula || row.matricula}</span><span class="badge">${row.Status || '-'}</span></div>
+    document.getElementById('lastHourNotesList').innerHTML = notasUltimaHoraList.map(row => `
+      <div class="nota-item"><span>${row["Nº da nota"] || '-'}</span><span>${row.Matricula}</span><span class="badge">${row.Status || '-'}</span></div>
     `).join('') || '<div>Nenhuma nota na última hora.</div>';
     
-    // Lista de todas as notas da equipe (sidebar supervisor)
+    // Lista equipe (supervisor)
     if (isSupervisor) {
       const filtroMat = document.getElementById('filtroMatricula')?.value || '';
-      const notasEquipe = dadosCompletos.filter(row => !filtroMat || String(row.Matricula || row.matricula).includes(filtroMat)).slice(-50).reverse();
+      const notasEquipe = dadosFiltrados.filter(row => !filtroMat || String(row.Matricula).includes(filtroMat)).slice(-50).reverse();
       document.getElementById('teamNotesList').innerHTML = notasEquipe.map(row => `
-        <div class="nota-item"><span>${row["Carimbo de data/hora"]?.split(' ')[0] || '-'}</span><span>${row["Nº da nota"] || '-'}</span><span>${row.Matricula || row.matricula}</span><span class="badge">${row.Status || '-'}</span></div>
+        <div class="nota-item"><span>${row["Carimbo de data/hora"]?.split(' ')[0] || '-'}</span><span>${row["Nº da nota"] || '-'}</span><span>${row.Matricula}</span><span class="badge">${row.Status || '-'}</span></div>
       `).join('') || '<div>Nenhuma nota encontrada.</div>';
     }
+    
+    // Tabela individual (supervisor)
+    if (isSupervisor && prodDiariaData.length) {
+      const individuais = prodDiariaData.map(p => ({ mat: p.matricula, hoje: p.feitasDia, mes: p.feitasMes }));
+      document.getElementById('integrantesEquipe').innerText = individuais.length;
+      document.getElementById('individualTableBody').innerHTML = individuais.map(p => `
+        <tr>
+          <td><strong>${p.mat}</strong></td>
+          <td>${p.hoje}</td><td>${p.mes}</td>
+          <td><div class="progress-bar progress-small"><div class="progress-fill" style="width:${Math.min(100, Math.round(p.mes/metaIndividualMes*100))}%"></div></div>${Math.round(p.mes/metaIndividualMes*100)}%</td>
+        </tr>
+      `).join('');
+    }
+    
+    renderizarTabelaCompleta(dadosFiltrados);
   }
-
+  
   function renderizarTabelaCompleta(dadosFiltrados) {
     const search = document.getElementById('searchTab')?.value.toLowerCase() || '';
     const statusFilter = document.getElementById('filterStatus')?.value.toUpperCase() || '';
@@ -724,11 +617,11 @@
         (r["Carimbo de data/hora"] || '').toLowerCase().includes(search) ||
         (r.Matricula || '').toLowerCase().includes(search) ||
         (r["Nº da nota"] || '').toLowerCase().includes(search);
-      const matchStatus = !statusFilter || (r.Status || '').toUpperCase() === statusFilter;
+      const matchStatus = !statusFilter || (r.Status || '') === statusFilter;
       return matchSearch && matchStatus;
     }).slice(0, 300);
     const badge = (s) => {
-      const u = (s || '').toUpperCase();
+      const u = s || '';
       if (u === 'FINL') return '<span class="badge badge-finl">FINL</span>';
       if (u === 'REDI') return '<span class="badge badge-redi">REDI</span>';
       if (u === 'VERI') return '<span class="badge badge-veri">VERI</span>';
@@ -736,41 +629,19 @@
       return '<span class="badge">—</span>';
     };
     document.getElementById('tabBody').innerHTML = filtered.map(row => `
-      <tr><td>${row["Carimbo de data/hora"] || '-'}</td><td>${row.Matricula || row.matricula || '-'}</td>
-      <td>${row["Nº da nota"] || '-'}</td><td>${badge(row.Status)}</td><td>${row["Back ou Cria?"] || '-'}</td></tr>
+      <tr>
+        <td>${row["Carimbo de data/hora"] || '-'}</td>
+        <td>${row.Matricula || '-'}</td>
+        <td>${row["Nº da nota"] || '-'}</td>
+        <td>${badge(row.Status)}</td>
+        <td>${row["Back ou Cria?"] === 'cria' ? 'Cria' : (row["Back ou Cria?"] === 'backlog' ? 'Backlog' : '-')}</td>
+      </tr>
     `).join('');
     document.getElementById('tabCount').innerText = `Exibindo ${filtered.length} de ${dadosFiltrados.length} registros`;
   }
 
-  // ================= PESQUISA NA SIDEBAR =================
-  function setupSidebarSearch() {
-    document.getElementById('sidebarBuscarBtn').addEventListener('click', async () => {
-      const numero = document.getElementById('sidebarNotaBusca').value.trim();
-      const resultDiv = document.getElementById('sidebarResultadoBusca');
-      if (!numero) { resultDiv.style.display='none'; return; }
-      const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
-      let dados = allRows;
-      if (!isSupervisor) dados = dados.filter(r => String(r.Matricula || r.matricula) === currentUser.matricula);
-      const encontrado = dados.find(r => String(r["Nº da nota"] || '') === numero);
-      if (encontrado) {
-        resultDiv.innerHTML = `<strong>✅ Nota encontrada</strong><br>Data: ${encontrado["Carimbo de data/hora"]}<br>Matrícula: ${encontrado.Matricula}<br>Status: ${encontrado.Status}<br>Tipo: ${encontrado["Back ou Cria?"]}`;
-        resultDiv.style.display = 'block';
-      } else {
-        resultDiv.innerHTML = '<strong>❌ Nota não encontrada</strong>';
-        resultDiv.style.display = 'block';
-      }
-    });
-  }
-
-  // ================= CARREGAMENTO PRINCIPAL =================
   async function carregarDadosEAtualizar() {
-    const dados = await carregarDadosConsolidados();
-    allRows = dados;
-    const dadosFiltrados = filtrarDados(allRows);
-    const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
-    const metricas = calcularMetricas(dadosFiltrados, isSupervisor);
-    atualizarUI(metricas, isSupervisor, allRows);
-    renderizarTabelaCompleta(dadosFiltrados);
+    await atualizarTudo();
   }
 
   async function refresh() {
@@ -780,7 +651,35 @@
     setTimeout(() => fab.style.transform = '', 300);
   }
 
-  // ================= TEMA E METAS =================
+  // ================= MODAL DE PESQUISA =================
+  function setupSearchModal() {
+    const modal = document.getElementById('searchModal');
+    const openBtn = document.getElementById('searchIconBtn');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const buscarBtn = document.getElementById('modalBuscarBtn');
+    const inputBusca = document.getElementById('modalNotaBusca');
+    const resultDiv = document.getElementById('modalResultado');
+
+    openBtn.addEventListener('click', () => modal.style.display = 'flex');
+    closeBtn.addEventListener('click', () => modal.style.display = 'none');
+    window.addEventListener('click', (e) => { if(e.target === modal) modal.style.display = 'none'; });
+
+    buscarBtn.addEventListener('click', () => {
+      const numero = inputBusca.value.trim();
+      if (!numero) { resultDiv.innerHTML = '<span style="color:gray;">Digite um número</span>'; return; }
+      const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
+      let dados = allRows;
+      if (!isSupervisor) dados = dados.filter(r => String(r.Matricula) === currentUser.matricula);
+      const encontrado = dados.find(r => String(r["Nº da nota"] || '') === numero);
+      if (encontrado) {
+        resultDiv.innerHTML = `<div style="background:#e6f4fa; padding:12px; border-radius:16px;"><strong>✅ Nota encontrada</strong><br>📅 ${encontrado["Carimbo de data/hora"]}<br>🆔 ${encontrado.Matricula}<br>📌 ${encontrado.Status}<br>📂 ${encontrado["Back ou Cria?"] === 'cria' ? 'Cria' : (encontrado["Back ou Cria?"] === 'backlog' ? 'Backlog' : '-')}</div>`;
+      } else {
+        resultDiv.innerHTML = '<div style="color:#d32f2f;">❌ Nota não encontrada.</div>';
+      }
+    });
+  }
+
+  // ================= INICIALIZAÇÕES =================
   function initTheme() {
     const btn = document.getElementById('themeToggle');
     const isDark = localStorage.getItem('theme') === 'dark';
@@ -793,27 +692,6 @@
     });
   }
 
-  function initMetas() {
-    document.getElementById('metaDiaSlider').addEventListener('input', (e) => {
-      metaIndividualDia = parseInt(e.target.value);
-      document.getElementById('metaDiaValue').innerText = metaIndividualDia;
-      localStorage.setItem('metaIndDia_Cosern', metaIndividualDia);
-      carregarDadosEAtualizar();
-    });
-    document.getElementById('metaMesSlider').addEventListener('input', (e) => {
-      metaIndividualMes = parseInt(e.target.value);
-      document.getElementById('metaMesValue').innerText = metaIndividualMes;
-      localStorage.setItem('metaIndMes_Cosern', metaIndividualMes);
-      carregarDadosEAtualizar();
-    });
-    document.getElementById('metaEquipeDia').addEventListener('change', (e) => {
-      metaEquipeDia = parseInt(e.target.value);
-      localStorage.setItem('metaEquipeDia_Cosern', metaEquipeDia);
-      carregarDadosEAtualizar();
-    });
-  }
-
-  // ================= EVENTOS =================
   function initEvents() {
     document.getElementById('btnLogin').addEventListener('click', () => {
       const mat = document.getElementById('matricula').value.trim();
@@ -832,27 +710,26 @@
     });
     document.getElementById('gerarRespostaBtn').addEventListener('click', () => window.open('https://wondrous-maamoul-c490d6.netlify.app/', '_blank'));
     document.getElementById('searchTab').addEventListener('input', () => {
-      const dadosFiltrados = filtrarDados(allRows);
+      const dadosFiltrados = filtrarDadosTabulacao();
       renderizarTabelaCompleta(dadosFiltrados);
     });
     document.getElementById('filterStatus').addEventListener('change', () => {
-      const dadosFiltrados = filtrarDados(allRows);
+      const dadosFiltrados = filtrarDadosTabulacao();
       renderizarTabelaCompleta(dadosFiltrados);
     });
     document.getElementById('filtroMatricula').addEventListener('input', () => {
-      const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
-      if (isSupervisor) atualizarUI(calcularMetricas(filtrarDados(allRows), true), true, allRows);
+      if ((currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode)) {
+        atualizarTudo();
+      }
     });
-    // Sidebar
     document.getElementById('openSidebarBtn').addEventListener('click', () => document.getElementById('sidebarPanel').classList.add('open'));
     document.getElementById('closeSidebarBtn').addEventListener('click', () => document.getElementById('sidebarPanel').classList.remove('open'));
-    setupSidebarSearch();
+    setupSearchModal();
   }
 
   function mostrarErro(msg) { const e = document.getElementById('loginError'); e.innerText = msg; e.style.display = 'block'; setTimeout(() => e.style.display='none', 3000); }
 
   initTheme();
-  initMetas();
   initEvents();
 </script>
 </body>
