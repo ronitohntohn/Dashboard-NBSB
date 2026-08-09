@@ -495,7 +495,7 @@
         </div>
       </div>
 
-      <!-- Métricas Cria vs Backlog -->
+      <!-- Métricas Cria vs Backlog (Serão 0 pois não há coluna na aba Dashboard) -->
       <div class="metric-grid">
         <div class="metric-card"><div class="metric-label">✅ FINALIZADAS Cria (hoje)</div><div class="metric-value" id="finalizadasCriaHoje">—</div></div>
         <div class="metric-card"><div class="metric-label">✅ FINALIZADAS Cria (mês)</div><div class="metric-value" id="finalizadasCriaMes">—</div></div>
@@ -524,13 +524,13 @@
         </div>
       </div>
 
-      <!-- Ranking -->
+      <!-- Ranking (Visível para Supervisores) -->
       <div id="rankingArea" class="card" style="display:none;">
-        <div><strong>🏆 Ranking de produção diária</strong></div>
+        <div><strong>🏆 Ranking de produção diária (com base na aba Dashboard)</strong></div>
         <div id="rankingList" style="margin-top:12px;"></div>
       </div>
 
-      <!-- Tabela individual -->
+      <!-- Tabela individual (Visível para Supervisores) -->
       <div id="individualProductionArea" class="card" style="display:none;">
         <div><strong>📊 Produtividade individual detalhada</strong></div>
         <div class="table-wrapper">
@@ -548,13 +548,13 @@
 
       <!-- Gráfico status -->
       <div class="card">
-        <div><strong>📊 Distribuição por status</strong></div>
+        <div><strong>📊 Distribuição por status (Dashboard)</strong></div>
         <canvas id="statusChart" height="140"></canvas>
       </div>
 
       <!-- Tabela completa -->
       <div class="card">
-        <div><strong>🔎 Tabulação completa</strong> <span id="tabScopeMsg" style="font-size:12px; color:var(--text-muted);"></span></div>
+        <div><strong>🔎 Registros da aba Dashboard</strong> <span id="tabScopeMsg" style="font-size:12px; color:var(--text-muted);"></span></div>
         <div class="filter-bar">
           <input type="text" id="searchTab" placeholder="Buscar (data, matrícula, nota...)">
           <input type="text" id="filtroMatriculaTabela" placeholder="Filtrar por matrícula específica">
@@ -633,8 +633,8 @@
   const SHEET_ID = '18fouQ0lBF5fKKB8kovxNNK-ww187kQVqZiETMfK-x3o';
   const LINKS_SHEET_ID = '1m_sD07RmMn4W-i7-aLtCOL8N1SntoZnp03aExbn6F6c';
   const ABA_CREDENCIAIS = 'credenciais';
-  // ABA PRINCIPAL ALTERADA PARA 'contagem' CONFORME SEU PEDIDO
-  const ABA_BRASILIA = 'contagem'; 
+  // ABA PRINCIPAL ALTERADA PARA A NOVA ABA 'Dashboard' CONFORME O PRINT
+  const ABA_DASHBOARD = 'Dashboard'; 
   const ABA_RONITON = 'Produtividade Mensal Roniton';
   const ABA_LINKS = 'Página1';
   const DIAS_UTEIS_MES = 26;
@@ -709,12 +709,13 @@
   }
 
   // ============================================================
-  // NORMALIZAÇÃO E CARGA DE DADOS
+  // NORMALIZAÇÃO ROBUSTA PARA FUNCIONAR COM A ABA 'Dashboard'
   // ============================================================
   function normalizarRegistro(row) {
-    let timestamp = row["Carimbo de data/hora"] || "";
-    let mat = row.Matricula || row.matricula || row["Matrícula"] || "";
-    let nota = row["Nº da nota"] || row["N.º da nota"] || "";
+    // Mapeia as colunas da aba 'Dashboard' e de outras abas antigas
+    let timestamp = row["Carimbo de data/hora"] || row["Data"] || "";
+    let mat = row["Matrícula"] || row["Matricula"] || row.matricula || "";
+    let nota = row["Nº da nota"] || row["N.º da nota"] || row["Nota"] || "";
     let statusRaw = (row.Status || "").toUpperCase();
     if (statusRaw === "FINALIZADO") statusRaw = "FINL";
     if (statusRaw === "REDIRECIONADO") statusRaw = "REDI";
@@ -731,14 +732,14 @@
   async function carregarDadosConsolidados() {
     let dados = [];
     
-    // Se o usuário for E738097, usar aba Roniton
+    // Se o usuário for E738097, usar a aba dele
     if (currentUser && currentUser.matricula === 'E738097') {
       const roniton = await carregarAba(SHEET_ID, ABA_RONITON);
       dados = roniton.map(row => normalizarRegistro(row));
     } else {
-      // Caso contrário, usa a aba 'contagem' (antiga Tabulação Brasília)
-      const brasilia = await carregarAba(SHEET_ID, ABA_BRASILIA);
-      dados = brasilia.map(row => normalizarRegistro(row));
+      // Carrega a aba 'Dashboard' que ele mostrou no print
+      const dashboardData = await carregarAba(SHEET_ID, ABA_DASHBOARD);
+      dados = dashboardData.map(row => normalizarRegistro(row));
     }
 
     // Filtrar apenas notas a partir de 09/08/2026
@@ -756,7 +757,7 @@
     const usuario = creds.find(r => String(r.Matrícula || r.matricula) === mat && String(r.Senha || r.senha) === sen);
     if (!usuario) { mostrarErro("Matrícula ou senha inválidos"); return; }
 
-    // Mapa de usuários
+    // Mapa de usuários (para puxar os nomes da aba credenciais)
     usuariosMap = {};
     for (const row of creds) {
       const matricula = String(row.Matrícula || row.matricula || '');
@@ -1067,7 +1068,7 @@
       `).join('') || '<div class="text-muted">Nenhuma nota encontrada.</div>';
     }
 
-    // Ranking
+    // Ranking e Tabela Individual (Apenas visíveis para Supervisores)
     if (isSupervisor) {
       const individuais = calcularMetricasIndividuais();
       individuais.sort((a, b) => b.feitasHoje - a.feitasHoje);
@@ -1386,7 +1387,6 @@
       const dadosFiltrados = filtrarDados();
       renderizarTabelaCompleta(dadosFiltrados);
     });
-    // NOVO EVENTO PARA O FILTRO DE MATRÍCULA NA TABELA
     document.getElementById('filtroMatriculaTabela').addEventListener('input', () => {
       const dadosFiltrados = filtrarDados();
       renderizarTabelaCompleta(dadosFiltrados);
