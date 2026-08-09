@@ -14,21 +14,21 @@
       --primary-dark: #003d73;
       --secondary: #00a651;
       --bg: #f0f4f9;
-      --card-bg: #ffffff;
+      --card-bg: rgba(255,255,255,0.75);
+      --glass-border: rgba(255,255,255,0.25);
       --text: #1a2c3e;
       --text-muted: #5a6874;
-      --border: #e2e8f0;
-      --shadow: 0 8px 24px rgba(0,0,0,0.06);
-      --radius: 28px;
+      --shadow: 0 12px 32px rgba(0,0,0,0.06);
+      --radius: 24px;
       --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
     }
     body.dark {
-      --bg: #0a0c12;
-      --card-bg: #10131c;
+      --bg: #0e121c;
+      --card-bg: rgba(20,26,40,0.85);
+      --glass-border: rgba(255,255,255,0.08);
       --text: #edf2f8;
       --text-muted: #9ea7bb;
-      --border: rgba(255,255,255,0.06);
-      --shadow: 0 8px 24px rgba(0,0,0,0.3);
+      --shadow: 0 12px 32px rgba(0,0,0,0.4);
     }
     body {
       font-family:'Inter',sans-serif;
@@ -36,6 +36,8 @@
       color:var(--text);
       transition:background 0.3s, color 0.2s;
       line-height:1.5;
+      min-height:100vh;
+      padding:16px;
     }
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:transparent; }
@@ -45,20 +47,25 @@
     .login-container {
       max-width:400px;
       width:92%;
-      margin:80px auto;
+      margin:60px auto;
       background:var(--card-bg);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
       border-radius:var(--radius);
       padding:40px 28px;
       box-shadow:var(--shadow);
       text-align:center;
-      border:1px solid var(--border);
+      border:1px solid var(--glass-border);
     }
     .login-container h2 {
       font-weight:700;
       margin-bottom:8px;
-      font-size:30px;
+      font-size:32px;
       letter-spacing:-0.5px;
-      color:var(--primary);
+      background:linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
     }
     .login-container .sub {
       color:var(--text-muted);
@@ -69,16 +76,21 @@
       width:100%;
       padding:14px 18px;
       border-radius:16px;
-      border:1px solid var(--border);
-      background:var(--bg);
+      border:1px solid var(--glass-border);
+      background:rgba(255,255,255,0.5);
+      backdrop-filter:blur(4px);
       font-size:14px;
       margin-top:8px;
-      transition:border 0.2s;
+      transition:border 0.2s, box-shadow 0.2s;
+      color:var(--text);
+    }
+    body.dark .login-container input {
+      background:rgba(255,255,255,0.08);
     }
     .login-container input:focus {
       outline:none;
       border-color:var(--primary-light);
-      box-shadow:0 0 0 3px rgba(0,87,160,0.15);
+      box-shadow:0 0 0 4px rgba(0,87,160,0.15);
     }
     .login-container .btn {
       width:100%;
@@ -100,68 +112,78 @@
     .error-msg { color:#d32f2f; margin-top:16px; font-size:14px; display:none; }
 
     /* Dashboard */
-    #dashboard { display:none; padding:20px; }
-    .app-wrapper { display:flex; gap:24px; max-width:1600px; margin:0 auto; position:relative; }
+    #dashboard { display:none; max-width:1400px; margin:0 auto; }
+    .app-wrapper { display:flex; gap:20px; }
+    .dashboard-container { flex:1; min-width:0; }
 
     /* Sidebar */
     .sidebar-panel {
-      width:0; overflow-x:hidden; transition:width 0.35s ease;
-      background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow);
-      position:sticky; top:20px; height:calc(100vh - 40px);
+      width:0; overflow:hidden; transition:width 0.35s ease;
+      background:var(--card-bg);
+      backdrop-filter:blur(12px);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      border:1px solid var(--glass-border);
+      position:sticky; top:20px;
+      height:calc(100vh - 40px);
       display:flex; flex-direction:column;
-      border:1px solid var(--border);
+      flex-shrink:0;
     }
-    .sidebar-panel.open { width:380px; }
+    .sidebar-panel.open { width:340px; }
     .sidebar-content { padding:20px; overflow-y:auto; flex:1; }
-    .sidebar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+    .sidebar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid var(--glass-border); }
     .close-sidebar { background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text-muted); }
     .sidebar-content h4 { font-weight:600; margin:16px 0 8px; font-size:14px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); }
 
     /* Cards */
     .card {
       background:var(--card-bg);
+      backdrop-filter:blur(12px);
       border-radius:var(--radius);
       padding:20px 24px;
-      margin-bottom:24px;
+      margin-bottom:20px;
       box-shadow:var(--shadow);
-      border:1px solid var(--border);
+      border:1px solid var(--glass-border);
       transition:transform 0.2s, box-shadow 0.2s;
     }
-    .card:hover { box-shadow:0 12px 32px rgba(0,0,0,0.08); }
+    .card:hover { box-shadow:0 16px 40px rgba(0,0,0,0.08); }
+
+    /* Métricas */
     .metric-grid {
       display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(160px,1fr));
+      grid-template-columns:repeat(auto-fit, minmax(150px,1fr));
       gap:16px;
-      margin-bottom:24px;
+      margin-bottom:20px;
     }
     .metric-card {
       background:var(--card-bg);
+      backdrop-filter:blur(8px);
       border-radius:20px;
-      padding:16px 18px;
-      border:1px solid var(--border);
-      transition:transform 0.2s, box-shadow 0.2s;
+      padding:16px 14px;
+      border:1px solid var(--glass-border);
       box-shadow:var(--shadow);
       text-align:center;
       position:relative;
       cursor:pointer;
+      transition:transform 0.2s, box-shadow 0.2s;
     }
-    .metric-card:hover { transform:translateY(-3px); box-shadow:0 12px 28px rgba(0,0,0,0.08); }
+    .metric-card:hover { transform:translateY(-4px); box-shadow:0 12px 28px rgba(0,0,0,0.08); }
     .metric-card .expand-icon {
       position:absolute;
-      top:8px;
-      right:12px;
+      top:6px;
+      right:10px;
       font-size:14px;
       color:var(--text-muted);
-      opacity:0.6;
-      transition:opacity 0.2s;
+      opacity:0.5;
     }
     .metric-card:hover .expand-icon { opacity:1; }
     .metric-label { font-size:12px; text-transform:uppercase; color:var(--text-muted); margin-bottom:4px; letter-spacing:0.3px; }
     .metric-value { font-size:28px; font-weight:800; font-family:'JetBrains Mono',monospace; color:var(--text); }
     .meta-fixa { font-size:12px; color:var(--text-muted); margin-top:4px; }
 
-    .progress-bar { background:var(--border); border-radius:20px; height:8px; margin-top:10px; overflow:hidden; }
-    .progress-fill { height:100%; background:linear-gradient(90deg, var(--primary-light), var(--secondary)); width:0%; transition:width 0.5s ease; }
+    /* Progresso */
+    .progress-bar { background:var(--glass-border); border-radius:20px; height:8px; margin-top:10px; overflow:hidden; }
+    .progress-fill { height:100%; background:linear-gradient(90deg, var(--primary-light), var(--secondary)); width:0%; transition:width 0.6s ease; }
 
     .badge {
       display:inline-flex;
@@ -181,26 +203,31 @@
     body.dark .badge-veri { background:#1a3e44; color:#4dd0e1; }
     body.dark .badge-vite { background:#4a1a1a; color:#f05a5a; }
 
-    /* Tabela */
+    /* Tabelas */
     .table-wrapper { overflow-x:auto; margin-top:8px; }
     table { width:100%; border-collapse:collapse; font-size:13px; }
-    th { text-align:left; padding:12px 8px; font-weight:600; color:var(--text-muted); border-bottom:2px solid var(--border); }
-    td { padding:10px 8px; border-bottom:1px solid var(--border); }
+    th { text-align:left; padding:10px 8px; font-weight:600; color:var(--text-muted); border-bottom:2px solid var(--glass-border); }
+    td { padding:10px 8px; border-bottom:1px solid var(--glass-border); }
 
     .filter-bar { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
     .filter-bar input, .filter-bar select {
       padding:10px 16px;
       border-radius:40px;
-      border:1px solid var(--border);
-      background:var(--bg);
+      border:1px solid var(--glass-border);
+      background:rgba(255,255,255,0.4);
+      backdrop-filter:blur(4px);
       color:var(--text);
       flex:1;
       min-width:140px;
       font-size:13px;
       transition:border 0.2s;
     }
+    body.dark .filter-bar input, body.dark .filter-bar select {
+      background:rgba(255,255,255,0.06);
+    }
     .filter-bar input:focus, .filter-bar select:focus { outline:none; border-color:var(--primary-light); }
 
+    /* Botões */
     .btn {
       background:var(--primary);
       border:none;
@@ -218,30 +245,31 @@
     }
     .btn:hover { background:var(--primary-dark); box-shadow:0 4px 12px rgba(0,87,160,0.3); }
     .btn:active { transform:scale(0.96); }
-    .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text); }
-    .btn-outline:hover { background:var(--border); }
-    .btn-sidebar { background:var(--border); border:none; padding:8px 18px; border-radius:40px; font-weight:600; cursor:pointer; color:var(--text); transition:0.2s; }
+    .btn-sidebar { background:var(--glass-border); border:none; padding:8px 18px; border-radius:40px; font-weight:600; cursor:pointer; color:var(--text); transition:0.2s; }
     .btn-sidebar:hover { background:var(--primary-light); color:white; }
-    .btn-logout { background:transparent; border:1px solid var(--border); padding:8px 18px; border-radius:40px; font-weight:600; cursor:pointer; color:var(--text-muted); transition:0.2s; }
+    .btn-logout { background:transparent; border:1px solid var(--glass-border); padding:8px 18px; border-radius:40px; font-weight:600; cursor:pointer; color:var(--text-muted); transition:0.2s; }
     .btn-logout:hover { background:#fee2e2; color:#b91c1c; border-color:#fecaca; }
 
+    /* Top bar */
     .top-bar {
       display:flex;
       justify-content:space-between;
       align-items:center;
       flex-wrap:wrap;
       gap:12px;
-      margin-bottom:24px;
-      padding:12px 20px;
+      margin-bottom:20px;
+      padding:10px 18px;
       background:var(--card-bg);
+      backdrop-filter:blur(12px);
       border-radius:60px;
-      border:1px solid var(--border);
+      border:1px solid var(--glass-border);
       box-shadow:var(--shadow);
     }
-    .user-info { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+    .user-info { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
     .user-info strong { font-weight:600; }
     .theme-toggle { cursor:pointer; font-size:26px; background:transparent; border:none; color:var(--text); transition:0.2s; }
 
+    /* Modal */
     .modal {
       display:none;
       position:fixed;
@@ -256,6 +284,7 @@
     }
     .modal-content {
       background:var(--card-bg);
+      backdrop-filter:blur(16px);
       border-radius:32px;
       width:100%;
       max-width:700px;
@@ -263,7 +292,7 @@
       overflow-y:auto;
       padding:28px 32px;
       animation:fadeInUp 0.25s ease;
-      border:1px solid var(--border);
+      border:1px solid var(--glass-border);
       box-shadow:0 20px 48px rgba(0,0,0,0.15);
       position:relative;
     }
@@ -272,6 +301,7 @@
     .modal-content .sub { color:var(--text-muted); font-size:14px; margin-bottom:20px; }
     .modal-close { background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text-muted); position:absolute; top:16px; right:20px; }
 
+    /* Fab */
     .fab {
       position:fixed;
       bottom:24px;
@@ -294,24 +324,19 @@
     .fab:hover { background:var(--primary-dark); transform:scale(1.05); }
     .fab:active { transform:scale(0.9); }
 
+    /* Itens de nota */
     .nota-item {
       display:flex;
       justify-content:space-between;
       padding:8px 0;
-      border-bottom:1px solid var(--border);
+      border-bottom:1px solid var(--glass-border);
       font-size:12px;
       align-items:center;
       gap:8px;
     }
     .nota-item:last-child { border-bottom:none; }
 
-    .flex { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
-    .slider { width:100%; margin:8px 0; accent-color:var(--primary); }
-    .text-muted { color:var(--text-muted); font-size:13px; }
-    .mt-8 { margin-top:8px; }
-    .gap-4 { gap:4px; }
-
-    /* Ranking com estrelas */
+    /* Ranking */
     .ranking-item {
       display:flex;
       align-items:center;
@@ -319,7 +344,7 @@
       margin:4px 0;
       border-radius:16px;
       background:var(--bg);
-      border:1px solid var(--border);
+      border:1px solid var(--glass-border);
       cursor:pointer;
       transition:background 0.2s;
     }
@@ -337,7 +362,7 @@
       margin:6px 0;
       border-radius:16px;
       background:var(--bg);
-      border:1px solid var(--border);
+      border:1px solid var(--glass-border);
       transition:background 0.2s, transform 0.2s;
       text-decoration:none;
       color:var(--text);
@@ -352,33 +377,54 @@
     .link-item .link-url { font-size:12px; color:var(--text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .link-item:hover .link-url { color:rgba(255,255,255,0.8); }
 
-    /* Modal de detalhamento de horas */
+    /* Detalhamento horas */
     .hour-detail-grid {
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:16px;
       margin-top:16px;
     }
-    .hour-detail-grid .list {
-      max-height:300px;
-      overflow-y:auto;
-    }
+    .hour-detail-grid .list { max-height:300px; overflow-y:auto; }
 
-    @media (max-width:800px) {
-      .sidebar-panel.open { width:300px; }
-      .metric-value { font-size:22px; }
-      .metric-grid { grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); }
+    /* Responsivo */
+    @media (max-width:860px) {
+      .app-wrapper { flex-direction:column; }
+      .sidebar-panel {
+        position:fixed;
+        top:0; left:0;
+        width:100% !important;
+        height:100vh;
+        border-radius:0;
+        z-index:999;
+        transform:translateX(-100%);
+        transition:transform 0.35s ease;
+        box-shadow:0 0 40px rgba(0,0,0,0.2);
+      }
+      .sidebar-panel.open {
+        transform:translateX(0);
+        width:100% !important;
+      }
       .top-bar { flex-direction:column; align-items:stretch; border-radius:24px; }
       .user-info { flex-wrap:wrap; }
-      .modal-content { padding:20px; }
-      .hour-detail-grid { grid-template-columns:1fr; }
-      .link-item .link-url { max-width:120px; }
+      .metric-grid { grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); }
+      .metric-value { font-size:24px; }
     }
     @media (max-width:480px) {
-      .sidebar-panel.open { width:100%; height:100vh; top:0; border-radius:0; }
-      .login-container { margin:40px auto; padding:24px 16px; }
-      .link-item { flex-wrap:wrap; }
+      body { padding:10px; }
+      .login-container { margin:30px auto; padding:24px 16px; }
+      .card { padding:16px; }
+      .modal-content { padding:20px; }
+      .hour-detail-grid { grid-template-columns:1fr; }
       .link-item .link-url { max-width:100%; }
+      .top-bar { padding:10px; }
+      .metric-grid { grid-template-columns:1fr 1fr; }
+    }
+    @media (orientation:landscape) and (max-height:500px) {
+      .login-container { margin:20px auto; padding:20px; }
+      .top-bar { padding:8px 14px; }
+      .metric-grid { grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); }
+      .metric-card { padding:10px; }
+      .metric-value { font-size:20px; }
     }
   </style>
 </head>
@@ -408,14 +454,14 @@
         <div><h4>⏱️ Notas da última hora</h4><div id="lastHourNotesList"></div></div>
         <div id="teamNotesSection" style="display:none; margin-top:16px;">
           <h4>📌 Últimas notas da equipe</h4>
-          <input type="text" id="filtroMatricula" placeholder="Filtrar por nome ou matrícula" style="width:100%; margin-bottom:8px; padding:8px 14px; border-radius:40px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+          <input type="text" id="filtroMatricula" placeholder="Filtrar por nome ou matrícula" style="width:100%; margin-bottom:8px; padding:8px 14px; border-radius:40px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.4); backdrop-filter:blur(4px); color:var(--text);">
           <div id="teamNotesList"></div>
         </div>
       </div>
     </div>
 
     <!-- CONTEÚDO PRINCIPAL -->
-    <div class="dashboard-container" style="flex:1; min-width:0;">
+    <div class="dashboard-container">
       <div class="top-bar">
         <div class="user-info">
           <button id="openSidebarBtn" class="btn-sidebar">☰ Análise Hora</button>
@@ -424,7 +470,7 @@
           <button id="toggleSupervisorBtn" class="btn" style="display:none;">🔄 Modo Supervisor</button>
           <button id="searchIconBtn" style="background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text);">🔍</button>
         </div>
-        <div class="flex">
+        <div class="flex" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
           <button id="linksUteisBtn" class="btn" style="background:#6c757d;">🔗 Links Úteis</button>
           <a href="https://wondrous-maamoul-c490d6.netlify.app/" target="_blank" class="btn" style="text-decoration:none;">✉️ Gerar resposta</a>
           <button id="logoutBtn" class="btn-logout">🚪 Sair</button>
@@ -466,25 +512,25 @@
 
       <!-- Progresso -->
       <div class="card">
-        <div class="flex" style="justify-content:space-between;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
           <span><strong>Progresso da meta diária</strong></span>
           <span id="pctDia" class="badge" style="background:var(--primary); color:white;">0%</span>
         </div>
         <div class="progress-bar"><div class="progress-fill" id="barDia"></div></div>
         <div id="metaIndividualArea"></div>
-        <div id="metaEquipeArea" style="display:none; margin-top:16px; border-top:1px solid var(--border); padding-top:16px;">
-          <label><strong>👥 Notas a tratar hoje (equipe):</strong> <input type="number" id="metaEquipeDia" style="width:120px; padding:8px 12px; border-radius:40px; border:1px solid var(--border); background:var(--bg); color:var(--text);"> notas</label>
+        <div id="metaEquipeArea" style="display:none; margin-top:16px; border-top:1px solid var(--glass-border); padding-top:16px;">
+          <label><strong>👥 Notas a tratar hoje (equipe):</strong> <input type="number" id="metaEquipeDia" style="width:120px; padding:8px 12px; border-radius:40px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.4); backdrop-filter:blur(4px); color:var(--text);"> notas</label>
           <div style="margin-top:8px;"><span id="integrantesEquipe"></span> integrantes ativos no mês</div>
         </div>
       </div>
 
-      <!-- Ranking de produtividade (supervisor) -->
+      <!-- Ranking -->
       <div id="rankingArea" class="card" style="display:none;">
         <div><strong>🏆 Ranking de produção diária</strong></div>
         <div id="rankingList" style="margin-top:12px;"></div>
       </div>
 
-      <!-- Tabela individual (supervisor) -->
+      <!-- Tabela individual -->
       <div id="individualProductionArea" class="card" style="display:none;">
         <div><strong>📊 Produtividade individual detalhada</strong></div>
         <div class="table-wrapper">
@@ -532,7 +578,7 @@
   <button class="fab" id="refreshFab">↻</button>
 </div>
 
-<!-- MODAL PESQUISA NOTA -->
+<!-- MODAIS -->
 <div id="searchModal" class="modal">
   <div class="modal-content">
     <button class="modal-close" id="closeModalBtn">✕</button>
@@ -543,7 +589,6 @@
   </div>
 </div>
 
-<!-- MODAL LINKS ÚTEIS -->
 <div id="linksModal" class="modal">
   <div class="modal-content">
     <button class="modal-close" id="closeLinksBtn">✕</button>
@@ -553,7 +598,6 @@
   </div>
 </div>
 
-<!-- MODAL ESTATÍSTICAS INDIVIDUAIS -->
 <div id="statsModal" class="modal">
   <div class="modal-content">
     <button class="modal-close" id="closeStatsBtn">✕</button>
@@ -562,7 +606,6 @@
   </div>
 </div>
 
-<!-- MODAL DETALHAMENTO NOTAS ÚLTIMA HORA -->
 <div id="hourDetailModal" class="modal">
   <div class="modal-content" style="max-width:800px;">
     <button class="modal-close" id="closeHourDetailBtn">✕</button>
@@ -589,12 +632,13 @@
   const SHEET_ID = '18fouQ0lBF5fKKB8kovxNNK-ww187kQVqZiETMfK-x3o';
   const LINKS_SHEET_ID = '1m_sD07RmMn4W-i7-aLtCOL8N1SntoZnp03aExbn6F6c';
   const ABA_CREDENCIAIS = 'credenciais';
-  const ABA_PRINCIPAL = 'Tabulação Cosern';
-  const ABA_RONITON = "Produtividade Mensal Roniton";
+  const ABA_BRASILIA = 'Tabulação Brasília';
+  const ABA_RONITON = 'Produtividade Mensal Roniton';
   const ABA_LINKS = 'Página1';
   const DIAS_UTEIS_MES = 26;
   const META_MENSAL_FIXA_ATENDENTE = 800;
   const META_DIARIA_FIXA_ATENDENTE = Math.ceil(META_MENSAL_FIXA_ATENDENTE / DIAS_UTEIS_MES);
+  const DATA_INICIO = new Date(2026, 7, 9); // 09/08/2026
 
   // ============================================================
   // ESTADO GLOBAL
@@ -603,7 +647,7 @@
   let supervisorMode = false;
   let allRows = [];
   let linksData = [];
-  let usuariosMap = {}; // matricula -> nome
+  let usuariosMap = {};
   let metaIndividualDia = META_DIARIA_FIXA_ATENDENTE;
   let metaIndividualMes = META_MENSAL_FIXA_ATENDENTE;
   let metaEquipeDia = 200;
@@ -663,7 +707,7 @@
   }
 
   // ============================================================
-  // NORMALIZAÇÃO
+  // NORMALIZAÇÃO E CARGA DE DADOS
   // ============================================================
   function normalizarRegistro(row) {
     let timestamp = row["Carimbo de data/hora"] || "";
@@ -683,11 +727,22 @@
   }
 
   async function carregarDadosConsolidados() {
-    const principal = await carregarAba(SHEET_ID, ABA_PRINCIPAL);
-    let roniton = [];
-    try { roniton = await carregarAba(SHEET_ID, ABA_RONITON); } catch(e) {}
-    let todos = [...principal, ...roniton];
-    allRows = todos.map(row => normalizarRegistro(row));
+    let dados = [];
+    
+    // Se o usuário for E738097, usar aba Roniton
+    if (currentUser && currentUser.matricula === 'E738097') {
+      const roniton = await carregarAba(SHEET_ID, ABA_RONITON);
+      dados = roniton.map(row => normalizarRegistro(row));
+    } else {
+      const brasilia = await carregarAba(SHEET_ID, ABA_BRASILIA);
+      dados = brasilia.map(row => normalizarRegistro(row));
+    }
+
+    // Filtrar apenas notas a partir de 09/08/2026
+    allRows = dados.filter(row => {
+      const ts = parseTimestampFull(row["Carimbo de data/hora"]);
+      return ts && ts >= DATA_INICIO;
+    });
   }
 
   // ============================================================
@@ -698,7 +753,7 @@
     const usuario = creds.find(r => String(r.Matrícula || r.matricula) === mat && String(r.Senha || r.senha) === sen);
     if (!usuario) { mostrarErro("Matrícula ou senha inválidos"); return; }
 
-    // Construir mapa de usuários (matrícula -> nome)
+    // Mapa de usuários
     usuariosMap = {};
     for (const row of creds) {
       const matricula = String(row.Matrícula || row.matricula || '');
@@ -735,8 +790,8 @@
       const savedEquipe = localStorage.getItem('metaEquipeDia_Neoenergia');
       if (savedEquipe) metaEquipeDia = parseInt(savedEquipe);
       document.getElementById('metaIndividualArea').innerHTML = `
-        <div><label>Minha meta por dia: <span id="metaDiaValue">${metaIndividualDia}</span></label><input type="range" id="metaDiaSlider" min="1" max="200" value="${metaIndividualDia}" class="slider"></div>
-        <div><label>Minha meta do mês: <span id="metaMesValue">${metaIndividualMes}</span></label><input type="range" id="metaMesSlider" min="1" max="2000" value="${metaIndividualMes}" step="10" class="slider"></div>
+        <div><label>Minha meta por dia: <span id="metaDiaValue">${metaIndividualDia}</span></label><input type="range" id="metaDiaSlider" min="1" max="200" value="${metaIndividualDia}" class="slider" style="width:100%; accent-color:var(--primary);"></div>
+        <div><label>Minha meta do mês: <span id="metaMesValue">${metaIndividualMes}</span></label><input type="range" id="metaMesSlider" min="1" max="2000" value="${metaIndividualMes}" step="10" class="slider" style="width:100%; accent-color:var(--primary);"></div>
       `;
       document.getElementById('metaDiaSlider').addEventListener('input', (e) => {
         metaIndividualDia = parseInt(e.target.value);
@@ -760,9 +815,7 @@
       }
     });
 
-    // Carregar links úteis
     await carregarLinksUteis();
-
     atualizarEscopoMsg();
     await carregarDadosConsolidados();
     await carregarDadosEAtualizar();
@@ -1107,7 +1160,7 @@
   }
 
   // ============================================================
-  // MODAL DETALHAMENTO NOTAS ÚLTIMA HORA
+  // MODAIS
   // ============================================================
   function openHourDetail() {
     const modal = document.getElementById('hourDetailModal');
@@ -1167,13 +1220,9 @@
     const closeBtn = document.getElementById('closeHourDetailBtn');
     closeBtn.addEventListener('click', () => modal.style.display = 'none');
     window.addEventListener('click', (e) => { if(e.target === modal) modal.style.display = 'none'; });
-
     document.getElementById('ultimaHoraCard').addEventListener('click', openHourDetail);
   }
 
-  // ============================================================
-  // MODAL LINKS ÚTEIS
-  // ============================================================
   function openLinksModal() {
     const modal = document.getElementById('linksModal');
     const list = document.getElementById('linksList');
@@ -1187,7 +1236,6 @@
     }
 
     sub.innerText = `${linksData.length} link${linksData.length > 1 ? 's' : ''} disponívei${linksData.length > 1 ? 's' : ''}`;
-
     list.innerHTML = linksData.map(item => `
       <a href="${item.link}" target="_blank" class="link-item">
         <span class="link-icon">🔗</span>
@@ -1195,7 +1243,6 @@
         <span class="link-url">${item.link}</span>
       </a>
     `).join('');
-
     modal.style.display = 'flex';
   }
 
@@ -1204,13 +1251,9 @@
     const closeBtn = document.getElementById('closeLinksBtn');
     closeBtn.addEventListener('click', () => modal.style.display = 'none');
     window.addEventListener('click', (e) => { if(e.target === modal) modal.style.display = 'none'; });
-
     document.getElementById('linksUteisBtn').addEventListener('click', openLinksModal);
   }
 
-  // ============================================================
-  // MODAL ESTATÍSTICAS INDIVIDUAIS
-  // ============================================================
   function showIndividualStats(matricula) {
     const modal = document.getElementById('statsModal');
     const title = document.getElementById('statsTitle');
@@ -1255,9 +1298,6 @@
     window.addEventListener('click', (e) => { if(e.target === modal) modal.style.display = 'none'; });
   }
 
-  // ============================================================
-  // MODAL PESQUISA NOTA
-  // ============================================================
   function setupSearchModal() {
     const modal = document.getElementById('searchModal');
     const openBtn = document.getElementById('searchIconBtn');
@@ -1278,7 +1318,7 @@
       if (!isSupervisor) dados = dados.filter(r => String(r.Matricula) === currentUser.matricula);
       const encontrado = dados.find(r => String(r["Nº da nota"] || '') === numero);
       if (encontrado) {
-        resultDiv.innerHTML = `<div style="background:var(--bg); padding:16px; border-radius:16px; border:1px solid var(--border);">
+        resultDiv.innerHTML = `<div style="background:var(--bg); padding:16px; border-radius:16px; border:1px solid var(--glass-border);">
           <strong>✅ Nota encontrada</strong><br>
           📅 ${encontrado["Carimbo de data/hora"]}<br>
           🆔 ${obterNomeMatricula(encontrado.Matricula)}<br>
