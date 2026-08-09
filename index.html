@@ -214,6 +214,7 @@
       display:inline-flex;
       align-items:center;
       gap:6px;
+      text-decoration:none;
     }
     .btn:hover { background:var(--primary-dark); box-shadow:0 4px 12px rgba(0,87,160,0.3); }
     .btn:active { transform:scale(0.96); }
@@ -269,33 +270,7 @@
     @keyframes fadeInUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
     .modal-content h2 { font-weight:700; margin-bottom:6px; color:var(--primary); }
     .modal-content .sub { color:var(--text-muted); font-size:14px; margin-bottom:20px; }
-    .modal-content label { display:block; font-weight:600; font-size:14px; margin-top:16px; }
-    .modal-content input, .modal-content select, .modal-content textarea {
-      width:100%;
-      padding:12px 16px;
-      border-radius:16px;
-      border:1px solid var(--border);
-      background:var(--bg);
-      color:var(--text);
-      font-size:14px;
-      margin-top:4px;
-      transition:border 0.2s;
-    }
-    .modal-content input:focus, .modal-content select:focus, .modal-content textarea:focus {
-      outline:none;
-      border-color:var(--primary-light);
-    }
-    .modal-content textarea { resize:vertical; min-height:80px; }
-    .modal-actions { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; }
-    .modal-actions .btn { flex:1; justify-content:center; }
     .modal-close { background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text-muted); position:absolute; top:16px; right:20px; }
-    .result-box { background:var(--bg); border-radius:16px; padding:16px; margin-top:12px; border:1px solid var(--border); }
-    .result-box h4 { font-size:14px; font-weight:600; margin-bottom:6px; color:var(--text-muted); }
-    .result-box textarea { background:var(--card-bg); border:1px solid var(--border); width:100%; border-radius:12px; padding:10px; font-size:13px; resize:vertical; min-height:60px; color:var(--text); }
-    .result-box textarea:focus { outline:none; border-color:var(--primary-light); }
-    .loading-spinner { display:flex; align-items:center; gap:10px; color:var(--text-muted); font-weight:500; }
-    .loading-spinner .spinner { width:24px; height:24px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite; }
-    @keyframes spin { to { transform:rotate(360deg); } }
 
     .fab {
       position:fixed;
@@ -354,6 +329,29 @@
     .ranking-item .name { flex:1; font-weight:500; }
     .ranking-item .count { font-weight:600; font-family:'JetBrains Mono',monospace; }
 
+    /* Links úteis */
+    .link-item {
+      display:flex;
+      align-items:center;
+      padding:12px 16px;
+      margin:6px 0;
+      border-radius:16px;
+      background:var(--bg);
+      border:1px solid var(--border);
+      transition:background 0.2s, transform 0.2s;
+      text-decoration:none;
+      color:var(--text);
+    }
+    .link-item:hover {
+      background:var(--primary-light);
+      color:white;
+      transform:translateX(4px);
+    }
+    .link-item .link-icon { font-size:20px; margin-right:14px; }
+    .link-item .link-name { flex:1; font-weight:500; }
+    .link-item .link-url { font-size:12px; color:var(--text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .link-item:hover .link-url { color:rgba(255,255,255,0.8); }
+
     /* Modal de detalhamento de horas */
     .hour-detail-grid {
       display:grid;
@@ -374,10 +372,13 @@
       .user-info { flex-wrap:wrap; }
       .modal-content { padding:20px; }
       .hour-detail-grid { grid-template-columns:1fr; }
+      .link-item .link-url { max-width:120px; }
     }
     @media (max-width:480px) {
       .sidebar-panel.open { width:100%; height:100vh; top:0; border-radius:0; }
       .login-container { margin:40px auto; padding:24px 16px; }
+      .link-item { flex-wrap:wrap; }
+      .link-item .link-url { max-width:100%; }
     }
   </style>
 </head>
@@ -407,7 +408,7 @@
         <div><h4>⏱️ Notas da última hora</h4><div id="lastHourNotesList"></div></div>
         <div id="teamNotesSection" style="display:none; margin-top:16px;">
           <h4>📌 Últimas notas da equipe</h4>
-          <input type="text" id="filtroMatricula" placeholder="Filtrar matrícula" style="width:100%; margin-bottom:8px; padding:8px 14px; border-radius:40px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+          <input type="text" id="filtroMatricula" placeholder="Filtrar por nome ou matrícula" style="width:100%; margin-bottom:8px; padding:8px 14px; border-radius:40px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
           <div id="teamNotesList"></div>
         </div>
       </div>
@@ -424,7 +425,8 @@
           <button id="searchIconBtn" style="background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text);">🔍</button>
         </div>
         <div class="flex">
-          <button id="gerarRespostaBtn" class="btn">✉️ Gerar resposta</button>
+          <button id="linksUteisBtn" class="btn" style="background:#6c757d;">🔗 Links Úteis</button>
+          <a href="https://wondrous-maamoul-c490d6.netlify.app/" target="_blank" class="btn" style="text-decoration:none;">✉️ Gerar resposta</a>
           <button id="logoutBtn" class="btn-logout">🚪 Sair</button>
         </div>
       </div>
@@ -488,7 +490,7 @@
         <div class="table-wrapper">
           <table class="prod-table">
             <thead>
-              <th>Matrícula</th><th>Feitas hoje</th><th>Feitas mês</th>
+              <th>Matrícula</th><th>Nome</th><th>Feitas hoje</th><th>Feitas mês</th>
               <th>Finaliz. Cria (hoje)</th><th>Finaliz. Cria (mês)</th>
               <th>Finaliz. Backlog (hoje)</th><th>Finaliz. Backlog (mês)</th>
               <th>VERI+REDI Cria</th><th>VERI+REDI Backlog</th><th>VITE</th>
@@ -541,59 +543,13 @@
   </div>
 </div>
 
-<!-- MODAL GERADOR DE RESPOSTAS -->
-<div id="geradorModal" class="modal">
+<!-- MODAL LINKS ÚTEIS -->
+<div id="linksModal" class="modal">
   <div class="modal-content">
-    <button class="modal-close" id="closeGeradorBtn">✕</button>
-    <h2>✉️ Gerador de Respostas</h2>
-    <p class="sub">Selecione a distribuidora e preencha os dados</p>
-
-    <label>Distribuidora</label>
-    <select id="distribuidoraSelect">
-      <option value="brasilia">Neoenergia Brasília</option>
-      <option value="cosern" selected>Neoenergia Cosern</option>
-      <option value="celpe">Neoenergia Celpe</option>
-    </select>
-
-    <label>Número do Protocolo</label>
-    <input type="text" id="protocolo" placeholder="Ex: 700000012345">
-
-    <label>Motivo da Reclamação (Base da Planilha)</label>
-    <select id="motivoBase">
-      <option value="leitura_maior">Leitura informada maior que o sistema (Improcedente)</option>
-      <option value="cip">Cobrança de CIP (Improcedente)</option>
-      <option value="atraso_faturamento">Atraso no faturamento - Art 323 (Procedente)</option>
-      <option value="religacao">Religação indevida (Procedente)</option>
-    </select>
-
-    <label>Reclamação do Cliente (copiar do sistema)</label>
-    <textarea id="reclamacao" rows="3" placeholder="Cole aqui o texto da reclamação..."></textarea>
-
-    <label>Parecer prévio (opcional – edite se quiser personalizar)</label>
-    <textarea id="parecerPrevio" rows="4" placeholder="Digite ou cole um parecer base para ser adaptado..."></textarea>
-
-    <div class="modal-actions">
-      <button id="gerarRespostaGeminiBtn" class="btn">🚀 Gerar com Gemini</button>
-    </div>
-
-    <div id="geradorLoading" style="display:none; margin-top:16px;" class="loading-spinner">
-      <div class="spinner"></div> Gerando resposta...
-    </div>
-
-    <div id="geradorResultados" style="margin-top:16px; display:none;">
-      <div class="result-box">
-        <h4>📄 Parecer Técnico</h4>
-        <textarea id="resultadoParecer" rows="4" readonly></textarea>
-      </div>
-      <div class="result-box">
-        <h4>✉️ E-mail</h4>
-        <textarea id="resultadoEmail" rows="6" readonly></textarea>
-      </div>
-      <div class="result-box">
-        <h4>📱 SMS (máx. 160 caracteres)</h4>
-        <textarea id="resultadoSms" rows="3" readonly></textarea>
-      </div>
-    </div>
+    <button class="modal-close" id="closeLinksBtn">✕</button>
+    <h2>🔗 Links Úteis</h2>
+    <p class="sub" id="linksSub">Carregando...</p>
+    <div id="linksList" style="margin-top:16px;"></div>
   </div>
 </div>
 
@@ -631,84 +587,14 @@
   // CONFIGURAÇÕES GERAIS
   // ============================================================
   const SHEET_ID = '18fouQ0lBF5fKKB8kovxNNK-ww187kQVqZiETMfK-x3o';
+  const LINKS_SHEET_ID = '1m_sD07RmMn4W-i7-aLtCOL8N1SntoZnp03aExbn6F6c';
   const ABA_CREDENCIAIS = 'credenciais';
   const ABA_PRINCIPAL = 'Tabulação Cosern';
   const ABA_RONITON = "Produtividade Mensal Roniton";
+  const ABA_LINKS = 'Página1';
   const DIAS_UTEIS_MES = 26;
   const META_MENSAL_FIXA_ATENDENTE = 800;
   const META_DIARIA_FIXA_ATENDENTE = Math.ceil(META_MENSAL_FIXA_ATENDENTE / DIAS_UTEIS_MES);
-
-  const GEMINI_API_KEY = "AQ.Ab8RN6LHUyXIiTpGNhBRemGywagi5YwMSrm7OpQk7dCAXQus7A";
-
-  // Modelos de resposta por distribuidora e motivo
-  const modelosPorDistribuidora = {
-    brasilia: {
-      leitura_maior: {
-        status: "Improcedente",
-        parecerBase: "Cliente contesta faturamento. A leitura informada confirma evolução do medidor, portanto não há erro de faturamento. Sugerimos orientação sobre o consumo.",
-        emailBase: "Prezado(a) Cliente, verificamos que sua fatura está correta. A leitura informada confirmou o consumo registrado. Caso necessite, estamos à disposição para esclarecimentos."
-      },
-      cip: {
-        status: "Improcedente",
-        parecerBase: "Cliente contesta CIP. Esclarecido que a distribuidora é mera arrecadadora, o valor é repassado integralmente ao município de Brasília.",
-        emailBase: "Prezado(a) Cliente, a CIP é um tributo municipal obrigatório. A Neoenergia Brasília apenas arrecada e repassa o valor. Não há como isentar essa cobrança."
-      },
-      atraso_faturamento: {
-        status: "Procedente",
-        parecerBase: "Cliente relata atraso no faturamento. Conforme Art. 323 da Resolução 1000/2021, o faturamento deve ser realizado dentro do prazo. Protocolamos a regularização.",
-        emailBase: "Prezado(a) Cliente, identificamos o atraso no faturamento e já solicitamos a correção. O novo boleto será enviado em até 48h. Pedimos desculpas pelo transtorno."
-      },
-      religacao: {
-        status: "Procedente",
-        parecerBase: "Cliente solicita religação indevida. Verificamos que a religação foi realizada fora do prazo regulamentar, conforme Art. 313 da Resolução 1000/2021.",
-        emailBase: "Prezado(a) Cliente, a religação foi efetuada com atraso. Estamos regularizando a situação e providenciando o desconto na próxima fatura. Agradecemos a compreensão."
-      }
-    },
-    cosern: {
-      leitura_maior: {
-        status: "Improcedente",
-        parecerBase: "Cliente contesta faturamento. A leitura informada confirma evolução do medidor, portanto não há erro de faturamento. Sugerimos orientação sobre o consumo.",
-        emailBase: "Prezado(a) Cliente, verificamos que sua fatura está correta. A leitura informada confirmou o consumo registrado. Caso necessite, estamos à disposição para esclarecimentos."
-      },
-      cip: {
-        status: "Improcedente",
-        parecerBase: "Cliente contesta CIP. Esclarecido que a distribuidora é mera arrecadadora, o valor é repassado integralmente ao município.",
-        emailBase: "Prezado(a) Cliente, a CIP é um tributo municipal obrigatório. A Neoenergia Cosern apenas arrecada e repassa o valor. Não há como isentar essa cobrança."
-      },
-      atraso_faturamento: {
-        status: "Procedente",
-        parecerBase: "Cliente relata atraso no faturamento. Conforme Art. 323 da Resolução 1000/2021, o faturamento deve ser realizado dentro do prazo. Protocolamos a regularização.",
-        emailBase: "Prezado(a) Cliente, identificamos o atraso no faturamento e já solicitamos a correção. O novo boleto será enviado em até 48h. Pedimos desculpas pelo transtorno."
-      },
-      religacao: {
-        status: "Procedente",
-        parecerBase: "Cliente solicita religação indevida. Verificamos que a religação foi realizada fora do prazo regulamentar, conforme Art. 313 da Resolução 1000/2021.",
-        emailBase: "Prezado(a) Cliente, a religação foi efetuada com atraso. Estamos regularizando a situação e providenciando o desconto na próxima fatura. Agradecemos a compreensão."
-      }
-    },
-    celpe: {
-      leitura_maior: {
-        status: "Improcedente",
-        parecerBase: "Cliente contesta faturamento. A leitura informada confirma evolução do medidor, portanto não há erro de faturamento. Sugerimos orientação sobre o consumo.",
-        emailBase: "Prezado(a) Cliente, verificamos que sua fatura está correta. A leitura informada confirmou o consumo registrado. Caso necessite, estamos à disposição para esclarecimentos."
-      },
-      cip: {
-        status: "Improcedente",
-        parecerBase: "Cliente contesta CIP. Esclarecido que a distribuidora é mera arrecadadora, o valor é repassado integralmente ao município de Recife.",
-        emailBase: "Prezado(a) Cliente, a CIP é um tributo municipal obrigatório. A Neoenergia Celpe apenas arrecada e repassa o valor. Não há como isentar essa cobrança."
-      },
-      atraso_faturamento: {
-        status: "Procedente",
-        parecerBase: "Cliente relata atraso no faturamento. Conforme Art. 323 da Resolução 1000/2021, o faturamento deve ser realizado dentro do prazo. Protocolamos a regularização.",
-        emailBase: "Prezado(a) Cliente, identificamos o atraso no faturamento e já solicitamos a correção. O novo boleto será enviado em até 48h. Pedimos desculpas pelo transtorno."
-      },
-      religacao: {
-        status: "Procedente",
-        parecerBase: "Cliente solicita religação indevida. Verificamos que a religação foi realizada fora do prazo regulamentar, conforme Art. 313 da Resolução 1000/2021.",
-        emailBase: "Prezado(a) Cliente, a religação foi efetuada com atraso. Estamos regularizando a situação e providenciando o desconto na próxima fatura. Agradecemos a compreensão."
-      }
-    }
-  };
 
   // ============================================================
   // ESTADO GLOBAL
@@ -716,6 +602,8 @@
   let currentUser = null;
   let supervisorMode = false;
   let allRows = [];
+  let linksData = [];
+  let usuariosMap = {}; // matricula -> nome
   let metaIndividualDia = META_DIARIA_FIXA_ATENDENTE;
   let metaIndividualMes = META_MENSAL_FIXA_ATENDENTE;
   let metaEquipeDia = 200;
@@ -725,8 +613,8 @@
   // ============================================================
   // FUNÇÕES GOOGLE SHEETS
   // ============================================================
-  async function gviz(sheetName) {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&t=${Date.now()}`;
+  async function gviz(sheetId, sheetName) {
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&t=${Date.now()}`;
     const resp = await fetch(url, { cache: 'no-store' });
     const txt = await resp.text();
     const match = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);?\s*$/);
@@ -748,13 +636,29 @@
     });
   }
 
-  async function carregarAba(nome) {
+  async function carregarAba(sheetId, nome) {
     try {
-      const tbl = await gviz(nome);
+      const tbl = await gviz(sheetId, nome);
       return parseTable(tbl);
     } catch(e) {
       console.warn(`Aba "${nome}" não encontrada:`, e);
       return [];
+    }
+  }
+
+  // ============================================================
+  // CARREGAR LINKS ÚTEIS
+  // ============================================================
+  async function carregarLinksUteis() {
+    try {
+      const dados = await carregarAba(LINKS_SHEET_ID, ABA_LINKS);
+      linksData = dados.filter(row => row.Nome && row.Link).map(row => ({
+        nome: row.Nome,
+        link: row.Link
+      }));
+    } catch(e) {
+      console.warn('Erro ao carregar links úteis:', e);
+      linksData = [];
     }
   }
 
@@ -779,9 +683,9 @@
   }
 
   async function carregarDadosConsolidados() {
-    const principal = await carregarAba(ABA_PRINCIPAL);
+    const principal = await carregarAba(SHEET_ID, ABA_PRINCIPAL);
     let roniton = [];
-    try { roniton = await carregarAba(ABA_RONITON); } catch(e) {}
+    try { roniton = await carregarAba(SHEET_ID, ABA_RONITON); } catch(e) {}
     let todos = [...principal, ...roniton];
     allRows = todos.map(row => normalizarRegistro(row));
   }
@@ -790,9 +694,18 @@
   // LOGIN
   // ============================================================
   async function fazerLogin(mat, sen) {
-    const creds = await carregarAba(ABA_CREDENCIAIS);
+    const creds = await carregarAba(SHEET_ID, ABA_CREDENCIAIS);
     const usuario = creds.find(r => String(r.Matrícula || r.matricula) === mat && String(r.Senha || r.senha) === sen);
     if (!usuario) { mostrarErro("Matrícula ou senha inválidos"); return; }
+
+    // Construir mapa de usuários (matrícula -> nome)
+    usuariosMap = {};
+    for (const row of creds) {
+      const matricula = String(row.Matrícula || row.matricula || '');
+      const nome = row.Nome || row.nome || matricula;
+      if (matricula) usuariosMap[matricula] = nome;
+    }
+
     const cargo = (usuario.Cargo || usuario.cargo || "").toLowerCase();
     const nome = usuario.Nome || usuario.nome || mat;
     let papel = "user";
@@ -847,11 +760,23 @@
       }
     });
 
+    // Carregar links úteis
+    await carregarLinksUteis();
+
     atualizarEscopoMsg();
     await carregarDadosConsolidados();
     await carregarDadosEAtualizar();
     if (refreshInterval) clearInterval(refreshInterval);
     refreshInterval = setInterval(refresh, 30000);
+  }
+
+  function obterNomeMatricula(mat) {
+    const nome = usuariosMap[mat] || mat;
+    return nome !== mat ? `${nome} (${mat})` : mat;
+  }
+
+  function obterNome(mat) {
+    return usuariosMap[mat] || mat;
   }
 
   function atualizarEscopoMsg() {
@@ -1068,15 +993,21 @@
       return ts && ts >= umaHoraAtras && ts <= agora;
     }).slice(-20).reverse();
     document.getElementById('lastHourNotesList').innerHTML = notasUltimaHoraList.map(row => `
-      <div class="nota-item"><span>${row["Nº da nota"] || '-'}</span><span>${row.Matricula}</span><span class="badge ${row.Status.toLowerCase()}">${row.Status || '-'}</span></div>
+      <div class="nota-item"><span>${row["Nº da nota"] || '-'}</span><span>${obterNomeMatricula(row.Matricula)}</span><span class="badge ${row.Status.toLowerCase()}">${row.Status || '-'}</span></div>
     `).join('') || '<div class="text-muted">Nenhuma nota na última hora.</div>';
 
     // Equipe (sidebar)
     if (isSupervisor) {
-      const filtroMat = document.getElementById('filtroMatricula')?.value || '';
-      const notasEquipe = dadosFiltrados.filter(row => !filtroMat || String(row.Matricula).includes(filtroMat)).slice(-50).reverse();
+      const filtro = document.getElementById('filtroMatricula')?.value.toLowerCase() || '';
+      const notasEquipe = dadosFiltrados
+        .filter(row => {
+          const nome = obterNome(row.Matricula).toLowerCase();
+          const mat = String(row.Matricula).toLowerCase();
+          return !filtro || nome.includes(filtro) || mat.includes(filtro);
+        })
+        .slice(-50).reverse();
       document.getElementById('teamNotesList').innerHTML = notasEquipe.map(row => `
-        <div class="nota-item"><span>${row["Carimbo de data/hora"]?.split(' ')[0] || '-'}</span><span>${row["Nº da nota"] || '-'}</span><span>${row.Matricula}</span><span class="badge ${row.Status.toLowerCase()}">${row.Status || '-'}</span></div>
+        <div class="nota-item"><span>${row["Carimbo de data/hora"]?.split(' ')[0] || '-'}</span><span>${row["Nº da nota"] || '-'}</span><span>${obterNomeMatricula(row.Matricula)}</span><span class="badge ${row.Status.toLowerCase()}">${row.Status || '-'}</span></div>
       `).join('') || '<div class="text-muted">Nenhuma nota encontrada.</div>';
     }
 
@@ -1097,7 +1028,7 @@
         rankingHtml += `
           <div class="ranking-item" data-mat="${p.mat}">
             <span class="pos">#${pos}</span>
-            <span class="name">${p.mat}</span>
+            <span class="name">${obterNomeMatricula(p.mat)}</span>
             <span class="stars">${stars}</span>
             <span class="count">${p.feitasHoje}</span>
           </div>
@@ -1114,7 +1045,9 @@
 
       document.getElementById('individualTableBody').innerHTML = individuais.map(p => `
         <tr class="clickable-row" data-mat="${p.mat}" style="cursor:pointer;">
-          <td><strong>${p.mat}</strong></td><td>${p.feitasHoje}</td><td>${p.feitasMes}</td>
+          <td><strong>${p.mat}</strong></td>
+          <td>${obterNome(p.mat)}</td>
+          <td>${p.feitasHoje}</td><td>${p.feitasMes}</td>
           <td>${p.finalizadasCriaHoje}</td><td>${p.finalizadasCriaMes}</td>
           <td>${p.finalizadasBacklogHoje}</td><td>${p.finalizadasBacklogMes}</td>
           <td>${p.veriRediCria}</td><td>${p.veriRediBacklog}</td><td>${p.viteTotal}</td>
@@ -1181,10 +1114,8 @@
     const dadosFiltrados = filtrarDados();
     const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
 
-    // Atualizar subtítulo com escopo
     document.getElementById('hourDetailSub').innerText = isSupervisor ? 'Últimas 12 horas - Todos os atendentes' : `Últimas 12 horas - ${currentUser.matricula}`;
 
-    // Gráfico de barras
     const { labels, contagem } = calcularNotasPorHora(dadosFiltrados, 12);
     const ctx = document.getElementById('hourDetailChart').getContext('2d');
     if (hourDetailChart) hourDetailChart.destroy();
@@ -1210,7 +1141,6 @@
       }
     });
 
-    // Lista das notas da última hora (hora atual)
     const agora = new Date();
     const umaHoraAtras = new Date(agora.getTime() - 3600000);
     const notasUltimaHora = dadosFiltrados.filter(row => {
@@ -1219,10 +1149,9 @@
     }).slice(-20).reverse();
 
     document.getElementById('hourDetailLastHourList').innerHTML = notasUltimaHora.map(row => `
-      <div class="nota-item"><span>${row["Nº da nota"] || '-'}</span><span>${row.Matricula}</span><span class="badge ${row.Status.toLowerCase()}">${row.Status || '-'}</span></div>
+      <div class="nota-item"><span>${row["Nº da nota"] || '-'}</span><span>${obterNomeMatricula(row.Matricula)}</span><span class="badge ${row.Status.toLowerCase()}">${row.Status || '-'}</span></div>
     `).join('') || '<div class="text-muted">Nenhuma nota na última hora.</div>';
 
-    // Distribuição por hora (lista com contagens)
     const { labels: labelsList, contagem: contagemList } = calcularNotasPorHora(dadosFiltrados, 12);
     let listHtml = '';
     for (let i = 0; i < labelsList.length; i++) {
@@ -1239,8 +1168,44 @@
     closeBtn.addEventListener('click', () => modal.style.display = 'none');
     window.addEventListener('click', (e) => { if(e.target === modal) modal.style.display = 'none'; });
 
-    // Clicar no card "Notas última hora"
     document.getElementById('ultimaHoraCard').addEventListener('click', openHourDetail);
+  }
+
+  // ============================================================
+  // MODAL LINKS ÚTEIS
+  // ============================================================
+  function openLinksModal() {
+    const modal = document.getElementById('linksModal');
+    const list = document.getElementById('linksList');
+    const sub = document.getElementById('linksSub');
+
+    if (linksData.length === 0) {
+      sub.innerText = 'Nenhum link cadastrado.';
+      list.innerHTML = '';
+      modal.style.display = 'flex';
+      return;
+    }
+
+    sub.innerText = `${linksData.length} link${linksData.length > 1 ? 's' : ''} disponívei${linksData.length > 1 ? 's' : ''}`;
+
+    list.innerHTML = linksData.map(item => `
+      <a href="${item.link}" target="_blank" class="link-item">
+        <span class="link-icon">🔗</span>
+        <span class="link-name">${item.nome}</span>
+        <span class="link-url">${item.link}</span>
+      </a>
+    `).join('');
+
+    modal.style.display = 'flex';
+  }
+
+  function setupLinksModal() {
+    const modal = document.getElementById('linksModal');
+    const closeBtn = document.getElementById('closeLinksBtn');
+    closeBtn.addEventListener('click', () => modal.style.display = 'none');
+    window.addEventListener('click', (e) => { if(e.target === modal) modal.style.display = 'none'; });
+
+    document.getElementById('linksUteisBtn').addEventListener('click', openLinksModal);
   }
 
   // ============================================================
@@ -1260,8 +1225,9 @@
 
     const metrics = calcularMetricas(dados);
     const adicionais = calcularMetricasAdicionais(metrics.feitasHoje, metrics.feitasMes, false);
+    const nome = obterNome(matricula);
 
-    title.innerText = `📊 Estatísticas - ${matricula}`;
+    title.innerText = `📊 Estatísticas - ${nome} (${matricula})`;
     content.innerHTML = `
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
         <div><strong>Feitas hoje:</strong> ${metrics.feitasHoje}</div>
@@ -1315,100 +1281,12 @@
         resultDiv.innerHTML = `<div style="background:var(--bg); padding:16px; border-radius:16px; border:1px solid var(--border);">
           <strong>✅ Nota encontrada</strong><br>
           📅 ${encontrado["Carimbo de data/hora"]}<br>
-          🆔 ${encontrado.Matricula}<br>
+          🆔 ${obterNomeMatricula(encontrado.Matricula)}<br>
           📌 ${encontrado.Status}<br>
           📂 ${encontrado["Back ou Cria?"] === 'cria' ? 'Cria' : (encontrado["Back ou Cria?"] === 'backlog' ? 'Backlog' : '-')}
         </div>`;
       } else {
         resultDiv.innerHTML = '<div style="color:#d32f2f;">❌ Nota não encontrada.</div>';
-      }
-    });
-  }
-
-  // ============================================================
-  // GERADOR DE RESPOSTAS (GEMINI)
-  // ============================================================
-  function setupGerador() {
-    const modal = document.getElementById('geradorModal');
-    const openBtn = document.getElementById('gerarRespostaBtn');
-    const closeBtn = document.getElementById('closeGeradorBtn');
-    const gerarBtn = document.getElementById('gerarRespostaGeminiBtn');
-    const loading = document.getElementById('geradorLoading');
-    const resultados = document.getElementById('geradorResultados');
-
-    openBtn.addEventListener('click', () => {
-      modal.style.display = 'flex';
-      resultados.style.display = 'none';
-      loading.style.display = 'none';
-    });
-
-    closeBtn.addEventListener('click', () => modal.style.display = 'none');
-    window.addEventListener('click', (e) => { if(e.target === modal) modal.style.display = 'none'; });
-
-    gerarBtn.addEventListener('click', async () => {
-      const distribuidora = document.getElementById('distribuidoraSelect').value;
-      const protocolo = document.getElementById('protocolo').value.trim();
-      const reclamacao = document.getElementById('reclamacao').value.trim();
-      const motivo = document.getElementById('motivoBase').value;
-      let parecerPrevio = document.getElementById('parecerPrevio').value.trim();
-
-      if (!protocolo || !reclamacao) {
-        alert('Preencha o protocolo e a reclamação.');
-        return;
-      }
-
-      const modelos = modelosPorDistribuidora[distribuidora];
-      if (!modelos || !modelos[motivo]) {
-        alert('Modelo não encontrado para esta distribuidora e motivo.');
-        return;
-      }
-
-      const modelo = modelos[motivo];
-      const parecerBase = parecerPrevio || modelo.parecerBase;
-      const emailBase = modelo.emailBase;
-
-      const prompt = `
-        Você é um assistente de atendimento da Neoenergia ${distribuidora.charAt(0).toUpperCase() + distribuidora.slice(1)}.
-        Baseado na reclamação do cliente a seguir: "${reclamacao}"
-        E com base neste modelo padrão de Parecer Técnico: "${parecerBase}"
-        E neste modelo padrão de E-mail: "${emailBase}"
-
-        Sua tarefa é adaptar esses modelos inserindo o número do protocolo (${protocolo}), corrigindo o contexto se necessário, e me devolver EXATAMENTE neste formato de texto:
-
-        PARECER: [texto do parecer adaptado]
-        |||
-        EMAIL: [texto do e-mail adaptado mantendo o padrão da distribuidora]
-        |||
-        SMS: [resumo do e-mail para SMS sem acentos, máximo 160 caracteres, incluindo o protocolo]
-      `;
-
-      loading.style.display = 'flex';
-      resultados.style.display = 'none';
-
-      try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-        const resp = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }]
-          })
-        });
-        const data = await resp.json();
-        if (!data.candidates || !data.candidates[0]) throw new Error('Resposta inválida da API');
-        let textoGerado = data.candidates[0].content.parts[0].text;
-
-        const partes = textoGerado.split('|||');
-        document.getElementById('resultadoParecer').value = (partes[0] || '').replace('PARECER:', '').trim();
-        document.getElementById('resultadoEmail').value = (partes[1] || '').replace('EMAIL:', '').trim();
-        document.getElementById('resultadoSms').value = (partes[2] || '').replace('SMS:', '').trim();
-
-        resultados.style.display = 'block';
-      } catch (err) {
-        alert('Erro ao gerar resposta: ' + err.message);
-        console.error(err);
-      } finally {
-        loading.style.display = 'none';
       }
     });
   }
@@ -1429,7 +1307,6 @@
   }
 
   function initEvents() {
-    // Login com Enter
     const matInput = document.getElementById('matricula');
     const senInput = document.getElementById('senha');
     const btnLogin = document.getElementById('btnLogin');
@@ -1471,9 +1348,9 @@
     document.getElementById('closeSidebarBtn').addEventListener('click', () => document.getElementById('sidebarPanel').classList.remove('open'));
 
     setupSearchModal();
-    setupGerador();
     setupStatsModal();
     setupHourDetailModal();
+    setupLinksModal();
   }
 
   function mostrarErro(msg) { const e = document.getElementById('loginError'); e.innerText = msg; e.style.display = 'block'; setTimeout(() => e.style.display='none', 3000); }
