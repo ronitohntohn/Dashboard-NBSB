@@ -8,163 +8,375 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-    body {
-      font-family:'Inter',sans-serif;
-      background:#f0f2f5;
-      color:#1a2c3e;
-      transition: background 0.3s, color 0.2s;
+    :root {
+      --primary: #0057a0;
+      --primary-light: #1a7bc4;
+      --primary-dark: #003d73;
+      --secondary: #00a651;
+      --bg: #f0f4f9;
+      --card-bg: #ffffff;
+      --text: #1a2c3e;
+      --text-muted: #5a6874;
+      --border: #e2e8f0;
+      --shadow: 0 8px 24px rgba(0,0,0,0.06);
+      --radius: 28px;
+      --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
     }
     body.dark {
-      background:#0a0c12;
-      color:#edf2f8;
+      --bg: #0a0c12;
+      --card-bg: #10131c;
+      --text: #edf2f8;
+      --text-muted: #9ea7bb;
+      --border: rgba(255,255,255,0.06);
+      --shadow: 0 8px 24px rgba(0,0,0,0.3);
     }
-    /* --- LOGIN ESTILO INSTAGRAM --- */
+    body {
+      font-family:'Inter',sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      transition:background 0.3s, color 0.2s;
+      line-height:1.5;
+    }
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:var(--primary-light); border-radius:10px; }
+
+    /* Login */
     .login-container {
-      max-width:380px;
-      width:90%;
-      margin:60px auto;
-      background:white;
-      border-radius:24px;
-      padding:32px 24px;
-      box-shadow:0 12px 28px rgba(0,0,0,0.08);
+      max-width:400px;
+      width:92%;
+      margin:80px auto;
+      background:var(--card-bg);
+      border-radius:var(--radius);
+      padding:40px 28px;
+      box-shadow:var(--shadow);
       text-align:center;
-    }
-    body.dark .login-container {
-      background:#10131c;
-      border:1px solid rgba(255,255,255,0.05);
+      border:1px solid var(--border);
     }
     .login-container h2 {
-      font-weight:600;
+      font-weight:700;
+      margin-bottom:8px;
+      font-size:30px;
+      letter-spacing:-0.5px;
+      color:var(--primary);
+    }
+    .login-container .sub {
+      color:var(--text-muted);
+      font-size:14px;
       margin-bottom:28px;
-      font-size:28px;
     }
     .login-container input {
       width:100%;
-      padding:14px 16px;
+      padding:14px 18px;
       border-radius:16px;
-      border:1px solid #dbdbdb;
-      background:#fafafa;
+      border:1px solid var(--border);
+      background:var(--bg);
       font-size:14px;
       margin-top:8px;
+      transition:border 0.2s;
     }
-    body.dark .login-container input {
-      background:#1e2436;
-      border-color:rgba(255,255,255,0.1);
-      color:white;
+    .login-container input:focus {
+      outline:none;
+      border-color:var(--primary-light);
+      box-shadow:0 0 0 3px rgba(0,87,160,0.15);
     }
     .login-container .btn {
       width:100%;
       margin-top:24px;
-      background:#2c7da0;
+      background:var(--primary);
       border:none;
-      padding:12px;
+      padding:14px;
+      border-radius:40px;
+      color:white;
+      font-weight:600;
+      font-size:16px;
+      cursor:pointer;
+      transition:background 0.2s, transform 0.1s;
+    }
+    .login-container .btn:hover { background:var(--primary-dark); }
+    .login-container .btn:active { transform:scale(0.97); }
+    .error-msg { color:#d32f2f; margin-top:16px; font-size:14px; display:none; }
+
+    /* Dashboard */
+    #dashboard { display:none; padding:20px; }
+    .app-wrapper { display:flex; gap:24px; max-width:1600px; margin:0 auto; position:relative; }
+
+    /* Sidebar */
+    .sidebar-panel {
+      width:0; overflow-x:hidden; transition:width 0.35s ease;
+      background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow);
+      position:sticky; top:20px; height:calc(100vh - 40px);
+      display:flex; flex-direction:column;
+      border:1px solid var(--border);
+    }
+    .sidebar-panel.open { width:380px; }
+    .sidebar-content { padding:20px; overflow-y:auto; flex:1; }
+    .sidebar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+    .close-sidebar { background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text-muted); }
+    .sidebar-content h4 { font-weight:600; margin:16px 0 8px; font-size:14px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); }
+
+    /* Cards */
+    .card {
+      background:var(--card-bg);
+      border-radius:var(--radius);
+      padding:20px 24px;
+      margin-bottom:24px;
+      box-shadow:var(--shadow);
+      border:1px solid var(--border);
+      transition:transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover { box-shadow:0 12px 32px rgba(0,0,0,0.08); }
+    .metric-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(160px,1fr));
+      gap:16px;
+      margin-bottom:24px;
+    }
+    .metric-card {
+      background:var(--card-bg);
+      border-radius:20px;
+      padding:16px 18px;
+      border:1px solid var(--border);
+      transition:transform 0.2s, box-shadow 0.2s;
+      box-shadow:var(--shadow);
+      position:relative;
+    }
+    .metric-card:hover { transform:translateY(-3px); box-shadow:0 12px 28px rgba(0,0,0,0.08); }
+    .metric-label { font-size:12px; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px; letter-spacing:0.3px; }
+    .metric-value { font-size:28px; font-weight:800; font-family:'JetBrains Mono',monospace; color:var(--text); }
+    .meta-fixa { font-size:12px; color:var(--text-muted); margin-top:4px; }
+
+    .progress-bar { background:var(--border); border-radius:20px; height:8px; margin-top:10px; overflow:hidden; }
+    .progress-fill { height:100%; background:linear-gradient(90deg, var(--primary-light), var(--secondary)); width:0%; transition:width 0.5s ease; }
+
+    .badge {
+      display:inline-flex;
+      padding:4px 14px;
+      border-radius:40px;
+      font-size:11px;
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:0.3px;
+    }
+    .badge-finl { background:#d4edda; color:#0f5c3f; }
+    .badge-redi { background:#fff3cd; color:#856404; }
+    .badge-veri { background:#cce5ff; color:#004085; }
+    .badge-vite { background:#f8d7da; color:#721c24; }
+    body.dark .badge-finl { background:#1a3c2c; color:#2bc48a; }
+    body.dark .badge-redi { background:#3e2e1a; color:#f4b342; }
+    body.dark .badge-veri { background:#1a3e44; color:#4dd0e1; }
+    body.dark .badge-vite { background:#4a1a1a; color:#f05a5a; }
+
+    /* Tabela */
+    .table-wrapper { overflow-x:auto; margin-top:8px; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th { text-align:left; padding:12px 8px; font-weight:600; color:var(--text-muted); border-bottom:2px solid var(--border); }
+    td { padding:10px 8px; border-bottom:1px solid var(--border); }
+
+    .filter-bar { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+    .filter-bar input, .filter-bar select {
+      padding:10px 16px;
+      border-radius:40px;
+      border:1px solid var(--border);
+      background:var(--bg);
+      color:var(--text);
+      flex:1;
+      min-width:140px;
+      font-size:13px;
+      transition:border 0.2s;
+    }
+    .filter-bar input:focus, .filter-bar select:focus { outline:none; border-color:var(--primary-light); }
+
+    .btn {
+      background:var(--primary);
+      border:none;
+      padding:10px 22px;
       border-radius:40px;
       color:white;
       font-weight:600;
       cursor:pointer;
-    }
-    .error-msg {
-      color:#ed4956;
-      margin-top:16px;
+      transition:background 0.2s, transform 0.1s;
       font-size:14px;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+    .btn:hover { background:var(--primary-dark); }
+    .btn:active { transform:scale(0.96); }
+    .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text); }
+    .btn-outline:hover { background:var(--border); }
+    .btn-sidebar { background:var(--border); border:none; padding:8px 18px; border-radius:40px; font-weight:600; cursor:pointer; color:var(--text); transition:0.2s; }
+    .btn-sidebar:hover { background:var(--primary-light); color:white; }
+    .btn-logout { background:transparent; border:1px solid var(--border); padding:8px 18px; border-radius:40px; font-weight:600; cursor:pointer; color:var(--text-muted); transition:0.2s; }
+    .btn-logout:hover { background:#fee2e2; color:#b91c1c; border-color:#fecaca; }
+
+    .top-bar {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-bottom:24px;
+    }
+    .user-info { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+    .user-info strong { font-weight:600; }
+    .theme-toggle { cursor:pointer; font-size:26px; background:transparent; border:none; color:var(--text); transition:0.2s; }
+
+    .modal {
       display:none;
+      position:fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      background:rgba(0,0,0,0.5);
+      backdrop-filter:blur(6px);
+      align-items:center;
+      justify-content:center;
+      z-index:1000;
+      padding:20px;
     }
-    /* --- DASHBOARD --- */
-    #dashboard { display:none; padding:20px; }
-    .app-wrapper { display:flex; gap:24px; max-width:1600px; margin:0 auto; position:relative; }
-    /* Sidebar */
-    .sidebar-panel {
-      width:0; overflow-x:hidden; transition:width 0.3s ease;
-      background:white; border-radius:28px; box-shadow:0 8px 24px rgba(0,0,0,0.08);
-      position:sticky; top:20px; height:calc(100vh - 40px); display:flex; flex-direction:column;
+    .modal-content {
+      background:var(--card-bg);
+      border-radius:32px;
+      width:100%;
+      max-width:580px;
+      max-height:90vh;
+      overflow-y:auto;
+      padding:28px 32px;
+      animation:fadeInUp 0.25s ease;
+      border:1px solid var(--border);
+      box-shadow:0 20px 48px rgba(0,0,0,0.15);
+      position:relative;
     }
-    body.dark .sidebar-panel { background:#10131c; border:1px solid rgba(255,255,255,0.05); }
-    .sidebar-panel.open { width:380px; }
-    .sidebar-content { padding:20px; overflow-y:auto; flex:1; }
-    .sidebar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid #e2e8f0; }
-    .close-sidebar { background:transparent; border:none; font-size:24px; cursor:pointer; }
-    /* Cards */
-    .card { background:white; border-radius:28px; padding:20px; margin-bottom:24px; box-shadow:0 4px 12px rgba(0,0,0,0.04); }
-    body.dark .card { background:#10131c; border:1px solid rgba(255,255,255,0.05); }
-    .metric-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px,1fr)); gap:16px; margin-bottom:24px; }
-    .metric-card { background:white; border-radius:24px; padding:18px 16px; border:1px solid #eef2f6; transition:transform 0.2s; }
-    body.dark .metric-card { background:#10131c; border-color:rgba(255,255,255,0.05); }
-    .metric-card:hover { transform:translateY(-2px); }
-    .metric-label { font-size:12px; text-transform:uppercase; color:#5a6874; margin-bottom:8px; }
-    .metric-value { font-size:26px; font-weight:800; font-family:'JetBrains Mono',monospace; }
-    .progress-bar { background:#e2e8f0; border-radius:20px; height:8px; margin-top:8px; }
-    .progress-fill { height:100%; background:#2c7da0; width:0%; }
-    .badge { display:inline-flex; padding:4px 12px; border-radius:40px; font-size:11px; font-weight:600; }
-    .badge-finl { background:#e0f2e9; color:#0f5c3f; }
-    .badge-redi { background:#fff0db; color:#b45f06; }
-    .badge-veri { background:#e0f2fe; color:#0c6b7e; }
-    .badge-vite { background:#fee2e2; color:#b91c1c; }
-    body.dark .badge-finl { background:#1a3c2c; color:#2bc48a; }
-    body.dark .badge-redi { background:#3e2e1a; color:#f4b342; }
-    body.dark .badge-veri { background:#1a3e44; color:#2ad4cf; }
-    body.dark .badge-vite { background:#4a1a1a; color:#f05a5a; }
-    .table-wrapper { overflow-x:auto; }
-    table { width:100%; border-collapse:collapse; font-size:13px; }
-    th, td { text-align:left; padding:12px 8px; border-bottom:1px solid #e2e8f0; }
-    body.dark th, body.dark td { border-bottom-color:rgba(255,255,255,0.05); }
-    .filter-bar { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; }
-    .filter-bar input, .filter-bar select { padding:10px 16px; border-radius:40px; border:1px solid #cbd5e1; background:white; flex:1; }
-    body.dark .filter-bar input, body.dark .filter-bar select { background:#171c2a; border-color:rgba(255,255,255,0.1); color:white; }
-    .btn { background:#2c7da0; border:none; padding:10px 20px; border-radius:40px; color:white; font-weight:600; cursor:pointer; }
-    .btn-sidebar, .btn-logout { background:#e2e8f0; border:none; padding:8px 20px; border-radius:40px; font-weight:600; cursor:pointer; }
-    body.dark .btn-sidebar, body.dark .btn-logout { background:#1f2538; color:#9ea7bb; }
-    .top-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:24px; }
-    .user-info { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
-    .theme-toggle { cursor:pointer; font-size:28px; background:transparent; border:none; }
-    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter:blur(5px); align-items:center; justify-content:center; z-index:1000; }
-    .modal-content { background:white; border-radius:32px; width:90%; max-width:500px; padding:24px; animation:fadeInUp 0.2s ease; }
-    body.dark .modal-content { background:#10131c; }
-    @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-    .fab { position:fixed; bottom:20px; right:20px; width:52px; height:52px; border-radius:50%; background:#2c7da0; border:none; color:white; font-size:22px; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.2); z-index:99; }
-    .slider { width:100%; margin:12px 0; }
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+    .modal-content h2 { font-weight:700; margin-bottom:6px; color:var(--primary); }
+    .modal-content .sub { color:var(--text-muted); font-size:14px; margin-bottom:20px; }
+    .modal-content label { display:block; font-weight:600; font-size:14px; margin-top:16px; }
+    .modal-content input, .modal-content select, .modal-content textarea {
+      width:100%;
+      padding:12px 16px;
+      border-radius:16px;
+      border:1px solid var(--border);
+      background:var(--bg);
+      color:var(--text);
+      font-size:14px;
+      margin-top:4px;
+      transition:border 0.2s;
+    }
+    .modal-content input:focus, .modal-content select:focus, .modal-content textarea:focus {
+      outline:none;
+      border-color:var(--primary-light);
+    }
+    .modal-content textarea { resize:vertical; min-height:80px; }
+    .modal-actions { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; }
+    .modal-actions .btn { flex:1; justify-content:center; }
+    .modal-close { background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text-muted); position:absolute; top:16px; right:20px; }
+    .result-box { background:var(--bg); border-radius:16px; padding:16px; margin-top:12px; border:1px solid var(--border); }
+    .result-box h4 { font-size:14px; font-weight:600; margin-bottom:6px; color:var(--text-muted); }
+    .result-box textarea { background:var(--card-bg); border:1px solid var(--border); width:100%; border-radius:12px; padding:10px; font-size:13px; resize:vertical; min-height:60px; color:var(--text); }
+    .result-box textarea:focus { outline:none; border-color:var(--primary-light); }
+    .loading-spinner { display:flex; align-items:center; gap:10px; color:var(--text-muted); font-weight:500; }
+    .loading-spinner .spinner { width:24px; height:24px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    .fab {
+      position:fixed;
+      bottom:24px;
+      right:24px;
+      width:56px;
+      height:56px;
+      border-radius:50%;
+      background:var(--primary);
+      border:none;
+      color:white;
+      font-size:24px;
+      cursor:pointer;
+      box-shadow:0 6px 20px rgba(0,87,160,0.3);
+      transition:transform 0.3s, background 0.2s;
+      z-index:99;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .fab:hover { background:var(--primary-dark); transform:scale(1.05); }
+    .fab:active { transform:scale(0.9); }
+
+    .nota-item {
+      display:flex;
+      justify-content:space-between;
+      padding:8px 0;
+      border-bottom:1px solid var(--border);
+      font-size:12px;
+      align-items:center;
+      gap:8px;
+    }
+    .nota-item:last-child { border-bottom:none; }
+
     .flex { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
-    .nota-item { padding:8px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; font-size:12px; }
-    .meta-fixa { font-size:12px; color:#5a6874; margin-top:4px; }
-    .prod-table { font-size:12px; }
-    .prod-table th, .prod-table td { padding:8px 4px; }
-    @media (max-width:800px) { .sidebar-panel.open { width:300px; } .metric-value { font-size:22px; } }
+    .slider { width:100%; margin:8px 0; accent-color:var(--primary); }
+    .text-muted { color:var(--text-muted); font-size:13px; }
+    .mt-8 { margin-top:8px; }
+    .gap-4 { gap:4px; }
+
+    @media (max-width:800px) {
+      .sidebar-panel.open { width:300px; }
+      .metric-value { font-size:22px; }
+      .metric-grid { grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); }
+      .top-bar { flex-direction:column; align-items:stretch; }
+      .user-info { flex-wrap:wrap; }
+      .modal-content { padding:20px; }
+    }
+    @media (max-width:480px) {
+      .sidebar-panel.open { width:100%; height:100vh; top:0; border-radius:0; }
+      .login-container { margin:40px auto; padding:24px 16px; }
+    }
   </style>
 </head>
 <body>
 
-<!-- TELA DE LOGIN -->
+<!-- LOGIN (agora com identidade Brasília) -->
 <div id="loginContainer" class="login-container">
-  <h2>🔐 Cosern</h2>
+  <h2>⚡ Neoenergia Brasília</h2>
+  <p class="sub">Gestão de Produtividade</p>
   <div><input type="text" id="matricula" placeholder="Matrícula" autocomplete="off"></div>
   <div style="margin-top:12px;"><input type="password" id="senha" placeholder="Senha"></div>
   <button id="btnLogin" class="btn">Entrar</button>
   <div id="loginError" class="error-msg"></div>
 </div>
 
-<!-- DASHBOARD -->
+<!-- DASHBOARD (Cosern) -->
 <div id="dashboard">
   <div class="app-wrapper">
     <!-- SIDEBAR -->
     <div class="sidebar-panel" id="sidebarPanel">
       <div class="sidebar-content">
-        <div class="sidebar-header"><h3>📊 Análise por Hora</h3><button class="close-sidebar" id="closeSidebarBtn">✕</button></div>
-        <div style="margin-bottom:20px;"><canvas id="hourlyEvolutionChart" height="180"></canvas></div>
-        <div style="margin-bottom:20px;"><h4>⏱️ Notas da última hora</h4><div id="lastHourNotesList"></div></div>
-        <div id="teamNotesSection" style="display:none;"><h4>📌 Últimas notas da equipe</h4><input type="text" id="filtroMatricula" placeholder="Filtrar matrícula" style="width:100%; margin-bottom:8px; padding:8px; border-radius:20px; border:1px solid #ccc;"><div id="teamNotesList"></div></div>
+        <div class="sidebar-header">
+          <h3>📊 Análise por Hora</h3>
+          <button class="close-sidebar" id="closeSidebarBtn">✕</button>
+        </div>
+        <div style="margin-bottom:20px;"><canvas id="hourlyEvolutionChart" height="160"></canvas></div>
+        <div><h4>⏱️ Notas da última hora</h4><div id="lastHourNotesList"></div></div>
+        <div id="teamNotesSection" style="display:none; margin-top:16px;">
+          <h4>📌 Últimas notas da equipe</h4>
+          <input type="text" id="filtroMatricula" placeholder="Filtrar matrícula" style="width:100%; margin-bottom:8px; padding:8px 14px; border-radius:40px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+          <div id="teamNotesList"></div>
+        </div>
       </div>
     </div>
 
     <!-- CONTEÚDO PRINCIPAL -->
-    <div class="dashboard-container">
+    <div class="dashboard-container" style="flex:1; min-width:0;">
       <div class="top-bar">
         <div class="user-info">
           <button id="openSidebarBtn" class="btn-sidebar">☰ Análise Hora</button>
           <button id="themeToggle" class="theme-toggle">☀️</button>
           <div><strong id="userName"></strong> <span id="userRoleBadge"></span></div>
           <button id="toggleSupervisorBtn" class="btn" style="display:none;">🔄 Modo Supervisor</button>
-          <button id="searchIconBtn" style="background:transparent; border:none; font-size:24px; cursor:pointer;">🔍</button>
+          <button id="searchIconBtn" style="background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text);">🔍</button>
         </div>
-        <div class="flex"><button id="gerarRespostaBtn" class="btn">✉️ Gerar resposta</button><button id="logoutBtn" class="btn-logout">🚪 Sair</button></div>
+        <div class="flex">
+          <button id="gerarRespostaBtn" class="btn">✉️ Gerar resposta</button>
+          <button id="logoutBtn" class="btn-logout">🚪 Sair</button>
+        </div>
       </div>
 
       <!-- Métricas principais -->
@@ -178,10 +390,13 @@
         <div class="metric-card"><div class="metric-label">🏁 Faltam hoje</div><div class="metric-value" id="faltamHoje">—</div></div>
         <div class="metric-card"><div class="metric-label">📈 Média diária</div><div class="metric-value" id="mediaDiaria">—</div></div>
         <div class="metric-card"><div class="metric-label">🎯 Dias para meta</div><div class="metric-value" id="diasParaMeta">—</div></div>
-        <div class="metric-card"><div class="metric-label">🕒 Notas última hora</div><div class="metric-value" id="notasUltimaHoraMetrica">—</div></div>
+        <div class="metric-card" style="border-left: 4px solid var(--primary);">
+          <div class="metric-label">🕒 Notas última hora</div>
+          <div class="metric-value" id="notasUltimaHoraMetrica">—</div>
+        </div>
       </div>
 
-      <!-- Métricas detalhadas (Cria vs Backlog) -->
+      <!-- Métricas Cria vs Backlog -->
       <div class="metric-grid">
         <div class="metric-card"><div class="metric-label">✅ FINALIZADAS Cria (hoje)</div><div class="metric-value" id="finalizadasCriaHoje">—</div></div>
         <div class="metric-card"><div class="metric-label">✅ FINALIZADAS Cria (mês)</div><div class="metric-value" id="finalizadasCriaMes">—</div></div>
@@ -196,18 +411,21 @@
         <div class="metric-card"><div class="metric-label">⚠️ VITE (Visita Técnica)</div><div class="metric-value" id="viteTotal">—</div></div>
       </div>
 
-      <!-- Progresso e metas -->
+      <!-- Progresso -->
       <div class="card">
-        <div class="flex" style="justify-content:space-between;"><span><strong>Progresso da meta diária</strong></span><span id="pctDia" class="badge">0%</span></div>
+        <div class="flex" style="justify-content:space-between;">
+          <span><strong>Progresso da meta diária</strong></span>
+          <span id="pctDia" class="badge" style="background:var(--primary); color:white;">0%</span>
+        </div>
         <div class="progress-bar"><div class="progress-fill" id="barDia"></div></div>
         <div id="metaIndividualArea"></div>
-        <div id="metaEquipeArea" style="display:none; margin-top:16px; border-top:1px solid #e2e8f0; padding-top:16px;">
-          <label><strong>👥 Notas a tratar hoje (equipe):</strong> <input type="number" id="metaEquipeDia" style="width:120px;"> notas</label>
+        <div id="metaEquipeArea" style="display:none; margin-top:16px; border-top:1px solid var(--border); padding-top:16px;">
+          <label><strong>👥 Notas a tratar hoje (equipe):</strong> <input type="number" id="metaEquipeDia" style="width:120px; padding:8px 12px; border-radius:40px; border:1px solid var(--border); background:var(--bg); color:var(--text);"> notas</label>
           <div style="margin-top:8px;"><span id="integrantesEquipe"></span> integrantes ativos no mês</div>
         </div>
       </div>
 
-      <!-- Tabela de produção individual (supervisor) - agora com mais colunas -->
+      <!-- Tabela individual (supervisor) -->
       <div id="individualProductionArea" class="card" style="display:none;">
         <div><strong>📊 Produtividade individual detalhada</strong></div>
         <div class="table-wrapper">
@@ -223,46 +441,202 @@
         </div>
       </div>
 
-      <!-- Gráfico de status -->
-      <div class="card"><div><strong>📊 Distribuição por status</strong></div><canvas id="statusChart" height="150"></canvas></div>
-
-      <!-- Tabela completa (Tabulação Cosern) -->
+      <!-- Gráfico status -->
       <div class="card">
-        <div><strong>🔎 Tabulação completa</strong> <span id="tabScopeMsg" style="font-size:12px;"></span></div>
-        <div class="filter-bar"><input type="text" id="searchTab" placeholder="Buscar (data, matrícula, nota...)"><select id="filterStatus"><option value="">Todos status</option><option value="FINL">Finalizado</option><option value="REDI">Redirecionado</option><option value="VERI">Verificação</option><option value="VITE">Visita Técnica</option></select></div>
-        <div class="table-wrapper"><table><thead><th>Data/Hora</th><th>Matrícula</th><th>Nº nota</th><th>Status</th><th>Tipo</th></thead><tbody id="tabBody"></tbody></table></div>
-        <div id="tabCount" style="font-size:12px; margin-top:12px; text-align:right;"></div>
+        <div><strong>📊 Distribuição por status</strong></div>
+        <canvas id="statusChart" height="140"></canvas>
+      </div>
+
+      <!-- Tabela completa -->
+      <div class="card">
+        <div><strong>🔎 Tabulação completa</strong> <span id="tabScopeMsg" style="font-size:12px; color:var(--text-muted);"></span></div>
+        <div class="filter-bar">
+          <input type="text" id="searchTab" placeholder="Buscar (data, matrícula, nota...)">
+          <select id="filterStatus">
+            <option value="">Todos status</option>
+            <option value="FINL">Finalizado</option>
+            <option value="REDI">Redirecionado</option>
+            <option value="VERI">Verificação</option>
+            <option value="VITE">Visita Técnica</option>
+          </select>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead><th>Data/Hora</th><th>Matrícula</th><th>Nº nota</th><th>Status</th><th>Tipo</th></thead>
+            <tbody id="tabBody"></tbody>
+          </table>
+        </div>
+        <div id="tabCount" style="font-size:12px; text-align:right; margin-top:12px; color:var(--text-muted);"></div>
       </div>
     </div>
   </div>
   <button class="fab" id="refreshFab">↻</button>
 </div>
 
-<!-- MODAL DE PESQUISA -->
+<!-- MODAL PESQUISA NOTA -->
 <div id="searchModal" class="modal">
-  <div class="modal-content"><h3>🔎 Pesquisar nota</h3><input type="text" id="modalNotaBusca" placeholder="Número da nota"><button id="modalBuscarBtn" class="btn" style="width:100%; margin-top:12px;">Buscar</button><div id="modalResultado" style="margin-top:16px;"></div><button id="closeModalBtn" style="margin-top:16px; background:transparent; border:none; float:right; cursor:pointer;">Fechar</button></div>
+  <div class="modal-content">
+    <button class="modal-close" id="closeModalBtn">✕</button>
+    <h2>🔎 Pesquisar nota</h2>
+    <input type="text" id="modalNotaBusca" placeholder="Número da nota">
+    <button id="modalBuscarBtn" class="btn" style="width:100%; margin-top:12px;">Buscar</button>
+    <div id="modalResultado" style="margin-top:16px;"></div>
+  </div>
+</div>
+
+<!-- MODAL GERADOR DE RESPOSTAS -->
+<div id="geradorModal" class="modal">
+  <div class="modal-content">
+    <button class="modal-close" id="closeGeradorBtn">✕</button>
+    <h2>✉️ Gerador de Respostas</h2>
+    <p class="sub">Selecione a distribuidora e preencha os dados</p>
+
+    <label>Distribuidora</label>
+    <select id="distribuidoraSelect">
+      <option value="brasilia">Neoenergia Brasília</option>
+      <option value="cosern" selected>Neoenergia Cosern</option>
+      <option value="celpe">Neoenergia Celpe</option>
+    </select>
+
+    <label>Número do Protocolo</label>
+    <input type="text" id="protocolo" placeholder="Ex: 700000012345">
+
+    <label>Motivo da Reclamação (Base da Planilha)</label>
+    <select id="motivoBase">
+      <option value="leitura_maior">Leitura informada maior que o sistema (Improcedente)</option>
+      <option value="cip">Cobrança de CIP (Improcedente)</option>
+      <option value="atraso_faturamento">Atraso no faturamento - Art 323 (Procedente)</option>
+      <option value="religacao">Religação indevida (Procedente)</option>
+    </select>
+
+    <label>Reclamação do Cliente (copiar do sistema)</label>
+    <textarea id="reclamacao" rows="3" placeholder="Cole aqui o texto da reclamação..."></textarea>
+
+    <div class="modal-actions">
+      <button id="gerarRespostaGeminiBtn" class="btn">🚀 Gerar com Gemini</button>
+    </div>
+
+    <div id="geradorLoading" style="display:none; margin-top:16px;" class="loading-spinner">
+      <div class="spinner"></div> Gerando resposta...
+    </div>
+
+    <div id="geradorResultados" style="margin-top:16px; display:none;">
+      <div class="result-box">
+        <h4>📄 Parecer Técnico</h4>
+        <textarea id="resultadoParecer" rows="4" readonly></textarea>
+      </div>
+      <div class="result-box">
+        <h4>✉️ E-mail</h4>
+        <textarea id="resultadoEmail" rows="6" readonly></textarea>
+      </div>
+      <div class="result-box">
+        <h4>📱 SMS (máx. 160 caracteres)</h4>
+        <textarea id="resultadoSms" rows="3" readonly></textarea>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-  // ================= CONFIGURAÇÕES =================
+  // ============================================================
+  // CONFIGURAÇÕES GERAIS
+  // ============================================================
   const SHEET_ID = '18fouQ0lBF5fKKB8kovxNNK-ww187kQVqZiETMfK-x3o';
   const ABA_CREDENCIAIS = 'credenciais';
   const ABA_PRINCIPAL = 'Tabulação Cosern';
   const ABA_RONITON = "Produtividade Mensal Roniton";
   const DIAS_UTEIS_MES = 26;
   const META_MENSAL_FIXA_ATENDENTE = 800;
-  const META_DIARIA_FIXA_ATENDENTE = Math.ceil(META_MENSAL_FIXA_ATENDENTE / DIAS_UTEIS_MES); // 31
+  const META_DIARIA_FIXA_ATENDENTE = Math.ceil(META_MENSAL_FIXA_ATENDENTE / DIAS_UTEIS_MES);
 
+  // Chave da API Gemini (integrada)
+  const GEMINI_API_KEY = "AQ.Ab8RN6LHUyXIiTpGNhBRemGywagi5YwMSrm7OpQk7dCAXQus7A";
+
+  // Modelos de resposta por distribuidora e motivo
+  const modelosPorDistribuidora = {
+    brasilia: {
+      leitura_maior: {
+        status: "Improcedente",
+        parecerBase: "Cliente contesta faturamento. A leitura informada confirma evolução do medidor, portanto não há erro de faturamento. Sugerimos orientação sobre o consumo.",
+        emailBase: "Prezado(a) Cliente, verificamos que sua fatura está correta. A leitura informada confirmou o consumo registrado. Caso necessite, estamos à disposição para esclarecimentos."
+      },
+      cip: {
+        status: "Improcedente",
+        parecerBase: "Cliente contesta CIP. Esclarecido que a distribuidora é mera arrecadadora, o valor é repassado integralmente ao município de Brasília.",
+        emailBase: "Prezado(a) Cliente, a CIP é um tributo municipal obrigatório. A Neoenergia Brasília apenas arrecada e repassa o valor. Não há como isentar essa cobrança."
+      },
+      atraso_faturamento: {
+        status: "Procedente",
+        parecerBase: "Cliente relata atraso no faturamento. Conforme Art. 323 da Resolução 1000/2021, o faturamento deve ser realizado dentro do prazo. Protocolamos a regularização.",
+        emailBase: "Prezado(a) Cliente, identificamos o atraso no faturamento e já solicitamos a correção. O novo boleto será enviado em até 48h. Pedimos desculpas pelo transtorno."
+      },
+      religacao: {
+        status: "Procedente",
+        parecerBase: "Cliente solicita religação indevida. Verificamos que a religação foi realizada fora do prazo regulamentar, conforme Art. 313 da Resolução 1000/2021.",
+        emailBase: "Prezado(a) Cliente, a religação foi efetuada com atraso. Estamos regularizando a situação e providenciando o desconto na próxima fatura. Agradecemos a compreensão."
+      }
+    },
+    cosern: {
+      leitura_maior: {
+        status: "Improcedente",
+        parecerBase: "Cliente contesta faturamento. A leitura informada confirma evolução do medidor, portanto não há erro de faturamento. Sugerimos orientação sobre o consumo.",
+        emailBase: "Prezado(a) Cliente, verificamos que sua fatura está correta. A leitura informada confirmou o consumo registrado. Caso necessite, estamos à disposição para esclarecimentos."
+      },
+      cip: {
+        status: "Improcedente",
+        parecerBase: "Cliente contesta CIP. Esclarecido que a distribuidora é mera arrecadadora, o valor é repassado integralmente ao município.",
+        emailBase: "Prezado(a) Cliente, a CIP é um tributo municipal obrigatório. A Neoenergia Cosern apenas arrecada e repassa o valor. Não há como isentar essa cobrança."
+      },
+      atraso_faturamento: {
+        status: "Procedente",
+        parecerBase: "Cliente relata atraso no faturamento. Conforme Art. 323 da Resolução 1000/2021, o faturamento deve ser realizado dentro do prazo. Protocolamos a regularização.",
+        emailBase: "Prezado(a) Cliente, identificamos o atraso no faturamento e já solicitamos a correção. O novo boleto será enviado em até 48h. Pedimos desculpas pelo transtorno."
+      },
+      religacao: {
+        status: "Procedente",
+        parecerBase: "Cliente solicita religação indevida. Verificamos que a religação foi realizada fora do prazo regulamentar, conforme Art. 313 da Resolução 1000/2021.",
+        emailBase: "Prezado(a) Cliente, a religação foi efetuada com atraso. Estamos regularizando a situação e providenciando o desconto na próxima fatura. Agradecemos a compreensão."
+      }
+    },
+    celpe: {
+      leitura_maior: {
+        status: "Improcedente",
+        parecerBase: "Cliente contesta faturamento. A leitura informada confirma evolução do medidor, portanto não há erro de faturamento. Sugerimos orientação sobre o consumo.",
+        emailBase: "Prezado(a) Cliente, verificamos que sua fatura está correta. A leitura informada confirmou o consumo registrado. Caso necessite, estamos à disposição para esclarecimentos."
+      },
+      cip: {
+        status: "Improcedente",
+        parecerBase: "Cliente contesta CIP. Esclarecido que a distribuidora é mera arrecadadora, o valor é repassado integralmente ao município de Recife.",
+        emailBase: "Prezado(a) Cliente, a CIP é um tributo municipal obrigatório. A Neoenergia Celpe apenas arrecada e repassa o valor. Não há como isentar essa cobrança."
+      },
+      atraso_faturamento: {
+        status: "Procedente",
+        parecerBase: "Cliente relata atraso no faturamento. Conforme Art. 323 da Resolução 1000/2021, o faturamento deve ser realizado dentro do prazo. Protocolamos a regularização.",
+        emailBase: "Prezado(a) Cliente, identificamos o atraso no faturamento e já solicitamos a correção. O novo boleto será enviado em até 48h. Pedimos desculpas pelo transtorno."
+      },
+      religacao: {
+        status: "Procedente",
+        parecerBase: "Cliente solicita religação indevida. Verificamos que a religação foi realizada fora do prazo regulamentar, conforme Art. 313 da Resolução 1000/2021.",
+        emailBase: "Prezado(a) Cliente, a religação foi efetuada com atraso. Estamos regularizando a situação e providenciando o desconto na próxima fatura. Agradecemos a compreensão."
+      }
+    }
+  };
+
+  // ============================================================
+  // ESTADO GLOBAL
+  // ============================================================
   let currentUser = null;
   let supervisorMode = false;
-  let allRows = [];            // todos os registros normalizados (Tabulação + Roniton)
+  let allRows = [];
   let metaIndividualDia = META_DIARIA_FIXA_ATENDENTE;
   let metaIndividualMes = META_MENSAL_FIXA_ATENDENTE;
   let metaEquipeDia = 200;
   let statusChart = null, hourlyChart = null;
   let refreshInterval = null;
 
-  // ================= FUNÇÕES GOOGLE SHEETS =================
+  // ============================================================
+  // FUNÇÕES GOOGLE SHEETS
+  // ============================================================
   async function gviz(sheetName) {
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&t=${Date.now()}`;
     const resp = await fetch(url, { cache: 'no-store' });
@@ -296,17 +670,18 @@
     }
   }
 
-  // ================= NORMALIZAÇÃO DOS DADOS =================
+  // ============================================================
+  // NORMALIZAÇÃO
+  // ============================================================
   function normalizarRegistro(row) {
     let timestamp = row["Carimbo de data/hora"] || "";
     let mat = row.Matricula || row.matricula || row["Matrícula"] || "";
     let nota = row["Nº da nota"] || row["N.º da nota"] || "";
     let statusRaw = (row.Status || "").toUpperCase();
-    // Mapeia variações
     if (statusRaw === "FINALIZADO") statusRaw = "FINL";
     if (statusRaw === "REDIRECIONADO") statusRaw = "REDI";
     if (statusRaw === "VERIFICAÇÃO") statusRaw = "VERI";
-    if (statusRaw === "URGENTE") statusRaw = "VITE";  // VITE = Visita Técnica
+    if (statusRaw === "URGENTE") statusRaw = "VITE";
     let tipoRaw = row["Back ou Cria?"] || row["Tipo de resposta"] || row["Tipo"] || "";
     tipoRaw = tipoRaw.toLowerCase().trim();
     let tipo = "";
@@ -318,14 +693,14 @@
   async function carregarDadosConsolidados() {
     const principal = await carregarAba(ABA_PRINCIPAL);
     let roniton = [];
-    try {
-      roniton = await carregarAba(ABA_RONITON);
-    } catch(e) { console.warn("Aba Roniton não encontrada"); }
+    try { roniton = await carregarAba(ABA_RONITON); } catch(e) {}
     let todos = [...principal, ...roniton];
     allRows = todos.map(row => normalizarRegistro(row));
   }
 
-  // ================= LOGIN =================
+  // ============================================================
+  // LOGIN
+  // ============================================================
   async function fazerLogin(mat, sen) {
     const creds = await carregarAba(ABA_CREDENCIAIS);
     const usuario = creds.find(r => String(r.Matrícula || r.matricula) === mat && String(r.Senha || r.senha) === sen);
@@ -338,14 +713,13 @@
     currentUser = { matricula: mat, nome, cargo, papel };
     supervisorMode = (papel === "supervisor");
     document.getElementById('userName').innerText = nome;
-    document.getElementById('userRoleBadge').innerHTML = (papel === "supervisor" || papel === "gm") ? '<span class="badge" style="background:#2c7da0; color:white;">👁️ Supervisor</span>' : '';
+    document.getElementById('userRoleBadge').innerHTML = (papel === "supervisor" || papel === "gm") ? '<span class="badge" style="background:var(--primary); color:white;">👁️ Supervisor</span>' : '';
     document.getElementById('toggleSupervisorBtn').style.display = (papel === "gm") ? 'inline-flex' : 'none';
     document.getElementById('loginContainer').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
-    
+
     const isSupervisorFull = (papel === "supervisor") || (papel === "gm");
     if (!isSupervisorFull) {
-      // Usuário comum: metas fixas
       metaIndividualDia = META_DIARIA_FIXA_ATENDENTE;
       metaIndividualMes = META_MENSAL_FIXA_ATENDENTE;
       document.getElementById('metaIndividualArea').innerHTML = `
@@ -353,11 +727,11 @@
         <div class="meta-fixa">📆 Meta mensal: ${META_MENSAL_FIXA_ATENDENTE} notas</div>
       `;
     } else {
-      const savedDia = localStorage.getItem('metaIndDia_Cosern');
-      const savedMes = localStorage.getItem('metaIndMes_Cosern');
+      const savedDia = localStorage.getItem('metaIndDia_Neoenergia');
+      const savedMes = localStorage.getItem('metaIndMes_Neoenergia');
       if (savedDia) metaIndividualDia = parseInt(savedDia);
       if (savedMes) metaIndividualMes = parseInt(savedMes);
-      const savedEquipe = localStorage.getItem('metaEquipeDia_Cosern');
+      const savedEquipe = localStorage.getItem('metaEquipeDia_Neoenergia');
       if (savedEquipe) metaEquipeDia = parseInt(savedEquipe);
       document.getElementById('metaIndividualArea').innerHTML = `
         <div><label>Minha meta por dia: <span id="metaDiaValue">${metaIndividualDia}</span></label><input type="range" id="metaDiaSlider" min="1" max="200" value="${metaIndividualDia}" class="slider"></div>
@@ -366,13 +740,13 @@
       document.getElementById('metaDiaSlider').addEventListener('input', (e) => {
         metaIndividualDia = parseInt(e.target.value);
         document.getElementById('metaDiaValue').innerText = metaIndividualDia;
-        localStorage.setItem('metaIndDia_Cosern', metaIndividualDia);
+        localStorage.setItem('metaIndDia_Neoenergia', metaIndividualDia);
         carregarDadosEAtualizar();
       });
       document.getElementById('metaMesSlider').addEventListener('input', (e) => {
         metaIndividualMes = parseInt(e.target.value);
         document.getElementById('metaMesValue').innerText = metaIndividualMes;
-        localStorage.setItem('metaIndMes_Cosern', metaIndividualMes);
+        localStorage.setItem('metaIndMes_Neoenergia', metaIndividualMes);
         carregarDadosEAtualizar();
       });
     }
@@ -380,11 +754,11 @@
     document.getElementById('metaEquipeDia').addEventListener('change', (e) => {
       if (isSupervisorFull) {
         metaEquipeDia = parseInt(e.target.value);
-        localStorage.setItem('metaEquipeDia_Cosern', metaEquipeDia);
+        localStorage.setItem('metaEquipeDia_Neoenergia', metaEquipeDia);
         carregarDadosEAtualizar();
       }
     });
-    
+
     atualizarEscopoMsg();
     await carregarDadosConsolidados();
     await carregarDadosEAtualizar();
@@ -406,7 +780,9 @@
     return allRows.filter(row => String(row.Matricula) === currentUser.matricula);
   }
 
-  // ================= UTILITÁRIOS DE DATA =================
+  // ============================================================
+  // UTILITÁRIOS DE DATA
+  // ============================================================
   function parseDataHora(str) {
     if (!str) return null;
     const [dataPart] = str.split(' ');
@@ -426,12 +802,14 @@
     return new Date(parseInt(ano), parseInt(mes)-1, parseInt(dia), parseInt(hora), parseInt(minuto), parseInt(segundo||0));
   }
 
-  // ================= CÁLCULO DE MÉTRICAS =================
+  // ============================================================
+  // CÁLCULO DE MÉTRICAS
+  // ============================================================
   function calcularMetricas(rows) {
     const hoje = new Date();
     const agora = new Date();
     const umaHoraAtras = new Date(agora.getTime() - 3600000);
-    
+
     let feitasHoje = 0, feitasMes = 0;
     let finalizadasCriaHoje = 0, finalizadasCriaMes = 0;
     let finalizadasBacklogHoje = 0, finalizadasBacklogMes = 0;
@@ -439,22 +817,20 @@
     let viteTotal = 0;
     let notasUltimaHora = 0;
     const statusCount = { FINL:0, REDI:0, VERI:0, VITE:0 };
-    
+
     for (const row of rows) {
       const timestamp = row["Carimbo de data/hora"] || '';
       const dataObj = parseDataHora(timestamp);
       const tsFull = parseTimestampFull(timestamp);
       const status = row.Status || '';
       const tipo = row["Back ou Cria?"] || '';
-      
-      // Totais por período
+
       if (dataObj) {
         const isHoje = dataObj.toDateString() === hoje.toDateString();
         const isMesAtual = (dataObj.getMonth() === hoje.getMonth() && dataObj.getFullYear() === hoje.getFullYear());
         if (isHoje) feitasHoje++;
         if (isMesAtual) feitasMes++;
-        
-        // FINALIZADAS
+
         if (status === 'FINL') {
           if (tipo === 'cria') {
             if (isHoje) finalizadasCriaHoje++;
@@ -465,34 +841,28 @@
           }
         }
       }
-      
-      // VERI+REDI (totais, independente de período)
+
       if (status === 'VERI' || status === 'REDI') {
         if (tipo === 'cria') veriRediCria++;
         else if (tipo === 'backlog') veriRediBacklog++;
       }
-      
-      // VITE
       if (status === 'VITE') viteTotal++;
-      
-      // Contagem para gráfico
+
       if (statusCount[status] !== undefined) statusCount[status]++;
-      
-      // Última hora
+
       if (tsFull && tsFull >= umaHoraAtras && tsFull <= agora) notasUltimaHora++;
     }
-    
+
     return { feitasHoje, feitasMes, finalizadasCriaHoje, finalizadasCriaMes,
              finalizadasBacklogHoje, finalizadasBacklogMes,
              veriRediCria, veriRediBacklog, viteTotal, notasUltimaHora, statusCount };
   }
-  
+
   function calcularMetricasIndividuais() {
     const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
     let dados = allRows;
     if (!isSupervisor) dados = dados.filter(r => String(r.Matricula) === currentUser.matricula);
-    
-    // Agrupar por matrícula
+
     const mapa = new Map();
     for (const row of dados) {
       const mat = row.Matricula;
@@ -500,7 +870,7 @@
       if (!mapa.has(mat)) mapa.set(mat, []);
       mapa.get(mat).push(row);
     }
-    
+
     const resultado = [];
     for (let [mat, rows] of mapa.entries()) {
       const metrics = calcularMetricas(rows);
@@ -508,7 +878,7 @@
     }
     return resultado;
   }
-  
+
   function calcularMetricasAdicionais(feitasHoje, feitasMes, usarMetaEquipe) {
     const hoje = new Date();
     let metaDiaUsar = usarMetaEquipe ? metaEquipeDia : metaIndividualDia;
@@ -522,8 +892,10 @@
     const diasParaMeta = projFinal >= metaMesUsar ? 0 : Math.ceil((metaMesUsar - feitasMes) / Math.max(0.1, ritmoAtual));
     return { faltamHoje, pctDia, mediaDiaria, diasParaMeta };
   }
-  
-  // ================= GRÁFICOS E LISTAS =================
+
+  // ============================================================
+  // GRÁFICOS E LISTAS
+  // ============================================================
   function calcularNotasPorHora(dados) {
     const agora = new Date();
     const horas = [];
@@ -546,18 +918,18 @@
     const labels = horas.map(h => `${h.getHours().toString().padStart(2,'0')}:00`);
     return { labels, contagem };
   }
-  
-  // ================= ATUALIZAÇÃO DA INTERFACE =================
+
+  // ============================================================
+  // ATUALIZAÇÃO DA INTERFACE
+  // ============================================================
   async function atualizarTudo() {
     await carregarDadosConsolidados();
     const dadosFiltrados = filtrarDados();
     const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
-    
-    // Métricas do usuário atual (ou todos, se supervisor)
+
     const metrics = calcularMetricas(dadosFiltrados);
     const adicionais = calcularMetricasAdicionais(metrics.feitasHoje, metrics.feitasMes, isSupervisor);
-    
-    // Atualizar cards principais
+
     document.getElementById('feitasHoje').innerText = metrics.feitasHoje;
     if (!isSupervisor) {
       document.getElementById('metaDiaHint').innerText = `meta: ${metaIndividualDia} notas/dia`;
@@ -578,27 +950,27 @@
     document.getElementById('veriRediBacklog').innerText = metrics.veriRediBacklog;
     document.getElementById('viteTotal').innerText = metrics.viteTotal;
     document.getElementById('notasUltimaHoraMetrica').innerText = metrics.notasUltimaHora;
-    
-    // Gráfico de status
+
+    // Gráfico status
     if (statusChart) statusChart.destroy();
     const ctx = document.getElementById('statusChart').getContext('2d');
     statusChart = new Chart(ctx, {
       type: 'bar',
-      data: { labels: Object.keys(metrics.statusCount), datasets: [{ data: Object.values(metrics.statusCount), backgroundColor: '#2c7da0' }] },
+      data: { labels: Object.keys(metrics.statusCount), datasets: [{ data: Object.values(metrics.statusCount), backgroundColor: '#0057a0' }] },
       options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } } }
     });
-    
-    // Gráfico de evolução por hora (sidebar)
+
+    // Gráfico hora
     const { labels, contagem } = calcularNotasPorHora(dadosFiltrados);
     const hourlyCtx = document.getElementById('hourlyEvolutionChart').getContext('2d');
     if (hourlyChart) hourlyChart.destroy();
     hourlyChart = new Chart(hourlyCtx, {
       type: 'line',
-      data: { labels, datasets: [{ label: 'Notas por hora', data: contagem, borderColor: '#2c7da0', tension: 0.3, fill: false }] },
-      options: { responsive: true, maintainAspectRatio: true }
+      data: { labels, datasets: [{ label: 'Notas por hora', data: contagem, borderColor: '#0057a0', backgroundColor: 'rgba(0,87,160,0.05)', tension: 0.3, fill: true }] },
+      options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } } }
     });
-    
-    // Lista de notas da última hora (sidebar)
+
+    // Última hora
     const agora = new Date();
     const umaHoraAtras = new Date(agora.getTime() - 3600000);
     const notasUltimaHoraList = dadosFiltrados.filter(row => {
@@ -606,19 +978,19 @@
       return ts && ts >= umaHoraAtras && ts <= agora;
     }).slice(-20).reverse();
     document.getElementById('lastHourNotesList').innerHTML = notasUltimaHoraList.map(row => `
-      <div class="nota-item"><span>${row["Nº da nota"] || '-'}</span><span>${row.Matricula}</span><span class="badge">${row.Status || '-'}</span></div>
-    `).join('') || '<div>Nenhuma nota na última hora.</div>';
-    
-    // Lista de notas da equipe (supervisor)
+      <div class="nota-item"><span>${row["Nº da nota"] || '-'}</span><span>${row.Matricula}</span><span class="badge ${row.Status.toLowerCase()}">${row.Status || '-'}</span></div>
+    `).join('') || '<div class="text-muted">Nenhuma nota na última hora.</div>';
+
+    // Equipe
     if (isSupervisor) {
       const filtroMat = document.getElementById('filtroMatricula')?.value || '';
       const notasEquipe = dadosFiltrados.filter(row => !filtroMat || String(row.Matricula).includes(filtroMat)).slice(-50).reverse();
       document.getElementById('teamNotesList').innerHTML = notasEquipe.map(row => `
-        <div class="nota-item"><span>${row["Carimbo de data/hora"]?.split(' ')[0] || '-'}</span><span>${row["Nº da nota"] || '-'}</span><span>${row.Matricula}</span><span class="badge">${row.Status || '-'}</span></div>
-      `).join('') || '<div>Nenhuma nota encontrada.</div>';
+        <div class="nota-item"><span>${row["Carimbo de data/hora"]?.split(' ')[0] || '-'}</span><span>${row["Nº da nota"] || '-'}</span><span>${row.Matricula}</span><span class="badge ${row.Status.toLowerCase()}">${row.Status || '-'}</span></div>
+      `).join('') || '<div class="text-muted">Nenhuma nota encontrada.</div>';
     }
-    
-    // Tabela de produção individual (supervisor)
+
+    // Tabela individual
     if (isSupervisor) {
       const individuais = calcularMetricasIndividuais();
       document.getElementById('integrantesEquipe').innerText = individuais.length;
@@ -631,16 +1003,16 @@
         </tr>
       `).join('');
     }
-    
-    // Tabela de tabulação completa
+
+    // Tabela completa
     renderizarTabelaCompleta(dadosFiltrados);
   }
-  
+
   function renderizarTabelaCompleta(dados) {
     const search = document.getElementById('searchTab')?.value.toLowerCase() || '';
     const statusFilter = document.getElementById('filterStatus')?.value.toUpperCase() || '';
     let filtered = dados.filter(r => {
-      const matchSearch = !search || 
+      const matchSearch = !search ||
         (r["Carimbo de data/hora"] || '').toLowerCase().includes(search) ||
         (r.Matricula || '').toLowerCase().includes(search) ||
         (r["Nº da nota"] || '').toLowerCase().includes(search);
@@ -666,19 +1038,21 @@
     `).join('');
     document.getElementById('tabCount').innerText = `Exibindo ${filtered.length} de ${dados.length} registros`;
   }
-  
+
   async function carregarDadosEAtualizar() {
     await atualizarTudo();
   }
-  
+
   async function refresh() {
     const fab = document.getElementById('refreshFab');
     fab.style.transform = 'rotate(360deg)';
     await carregarDadosEAtualizar();
     setTimeout(() => fab.style.transform = '', 300);
   }
-  
-  // ================= MODAL DE PESQUISA =================
+
+  // ============================================================
+  // MODAL PESQUISA NOTA
+  // ============================================================
   function setupSearchModal() {
     const modal = document.getElementById('searchModal');
     const openBtn = document.getElementById('searchIconBtn');
@@ -686,39 +1060,131 @@
     const buscarBtn = document.getElementById('modalBuscarBtn');
     const inputBusca = document.getElementById('modalNotaBusca');
     const resultDiv = document.getElementById('modalResultado');
-    
+
     openBtn.addEventListener('click', () => modal.style.display = 'flex');
     closeBtn.addEventListener('click', () => modal.style.display = 'none');
     window.addEventListener('click', (e) => { if(e.target === modal) modal.style.display = 'none'; });
-    
+
     buscarBtn.addEventListener('click', () => {
       const numero = inputBusca.value.trim();
-      if (!numero) { resultDiv.innerHTML = '<span style="color:gray;">Digite um número</span>'; return; }
+      if (!numero) { resultDiv.innerHTML = '<span class="text-muted">Digite um número</span>'; return; }
       const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
       let dados = allRows;
       if (!isSupervisor) dados = dados.filter(r => String(r.Matricula) === currentUser.matricula);
       const encontrado = dados.find(r => String(r["Nº da nota"] || '') === numero);
       if (encontrado) {
-        resultDiv.innerHTML = `<div style="background:#e6f4fa; padding:12px; border-radius:16px;"><strong>✅ Nota encontrada</strong><br>📅 ${encontrado["Carimbo de data/hora"]}<br>🆔 ${encontrado.Matricula}<br>📌 ${encontrado.Status}<br>📂 ${encontrado["Back ou Cria?"] === 'cria' ? 'Cria' : (encontrado["Back ou Cria?"] === 'backlog' ? 'Backlog' : '-')}</div>`;
+        resultDiv.innerHTML = `<div style="background:var(--bg); padding:16px; border-radius:16px; border:1px solid var(--border);">
+          <strong>✅ Nota encontrada</strong><br>
+          📅 ${encontrado["Carimbo de data/hora"]}<br>
+          🆔 ${encontrado.Matricula}<br>
+          📌 ${encontrado.Status}<br>
+          📂 ${encontrado["Back ou Cria?"] === 'cria' ? 'Cria' : (encontrado["Back ou Cria?"] === 'backlog' ? 'Backlog' : '-')}
+        </div>`;
       } else {
         resultDiv.innerHTML = '<div style="color:#d32f2f;">❌ Nota não encontrada.</div>';
       }
     });
   }
-  
-  // ================= INICIALIZAÇÕES =================
+
+  // ============================================================
+  // GERADOR DE RESPOSTAS (GEMINI) COM SELEÇÃO DE DISTRIBUIDORA
+  // ============================================================
+  function setupGerador() {
+    const modal = document.getElementById('geradorModal');
+    const openBtn = document.getElementById('gerarRespostaBtn');
+    const closeBtn = document.getElementById('closeGeradorBtn');
+    const gerarBtn = document.getElementById('gerarRespostaGeminiBtn');
+    const loading = document.getElementById('geradorLoading');
+    const resultados = document.getElementById('geradorResultados');
+
+    openBtn.addEventListener('click', () => {
+      modal.style.display = 'flex';
+      resultados.style.display = 'none';
+      loading.style.display = 'none';
+    });
+
+    closeBtn.addEventListener('click', () => modal.style.display = 'none');
+    window.addEventListener('click', (e) => { if(e.target === modal) modal.style.display = 'none'; });
+
+    gerarBtn.addEventListener('click', async () => {
+      const distribuidora = document.getElementById('distribuidoraSelect').value;
+      const protocolo = document.getElementById('protocolo').value.trim();
+      const reclamacao = document.getElementById('reclamacao').value.trim();
+      const motivo = document.getElementById('motivoBase').value;
+
+      if (!protocolo || !reclamacao) {
+        alert('Preencha o protocolo e a reclamação.');
+        return;
+      }
+
+      const modelos = modelosPorDistribuidora[distribuidora];
+      if (!modelos || !modelos[motivo]) {
+        alert('Modelo não encontrado para esta distribuidora e motivo.');
+        return;
+      }
+
+      const modelo = modelos[motivo];
+      const prompt = `
+        Você é um assistente de atendimento da Neoenergia ${distribuidora.charAt(0).toUpperCase() + distribuidora.slice(1)}.
+        Baseado na reclamação do cliente a seguir: "${reclamacao}"
+        E com base neste modelo padrão de Parecer Técnico: "${modelo.parecerBase}"
+        E neste modelo padrão de E-mail: "${modelo.emailBase}"
+
+        Sua tarefa é adaptar esses modelos inserindo o número do protocolo (${protocolo}), corrigindo o contexto se necessário, e me devolver EXATAMENTE neste formato de texto:
+
+        PARECER: [texto do parecer adaptado]
+        |||
+        EMAIL: [texto do e-mail adaptado mantendo o padrão da distribuidora]
+        |||
+        SMS: [resumo do e-mail para SMS sem acentos, máximo 160 caracteres, incluindo o protocolo]
+      `;
+
+      loading.style.display = 'flex';
+      resultados.style.display = 'none';
+
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        });
+        const data = await resp.json();
+        if (!data.candidates || !data.candidates[0]) throw new Error('Resposta inválida da API');
+        let textoGerado = data.candidates[0].content.parts[0].text;
+
+        const partes = textoGerado.split('|||');
+        document.getElementById('resultadoParecer').value = (partes[0] || '').replace('PARECER:', '').trim();
+        document.getElementById('resultadoEmail').value = (partes[1] || '').replace('EMAIL:', '').trim();
+        document.getElementById('resultadoSms').value = (partes[2] || '').replace('SMS:', '').trim();
+
+        resultados.style.display = 'block';
+      } catch (err) {
+        alert('Erro ao gerar resposta: ' + err.message);
+        console.error(err);
+      } finally {
+        loading.style.display = 'none';
+      }
+    });
+  }
+
+  // ============================================================
+  // INICIALIZAÇÃO
+  // ============================================================
   function initTheme() {
     const btn = document.getElementById('themeToggle');
-    const isDark = localStorage.getItem('theme') === 'dark';
+    const isDark = localStorage.getItem('theme_neoenergia') === 'dark';
     if (isDark) { document.body.classList.add('dark'); btn.innerHTML = '🌙'; } else { btn.innerHTML = '☀️'; }
     btn.addEventListener('click', () => {
       document.body.classList.toggle('dark');
       const dark = document.body.classList.contains('dark');
       btn.innerHTML = dark ? '🌙' : '☀️';
-      localStorage.setItem('theme', dark ? 'dark' : 'light');
+      localStorage.setItem('theme_neoenergia', dark ? 'dark' : 'light');
     });
   }
-  
+
   function initEvents() {
     document.getElementById('btnLogin').addEventListener('click', () => {
       const mat = document.getElementById('matricula').value.trim();
@@ -735,7 +1201,6 @@
         carregarDadosEAtualizar();
       }
     });
-    document.getElementById('gerarRespostaBtn').addEventListener('click', () => window.open('https://wondrous-maamoul-c490d6.netlify.app/', '_blank'));
     document.getElementById('searchTab').addEventListener('input', () => {
       const dadosFiltrados = filtrarDados();
       renderizarTabelaCompleta(dadosFiltrados);
@@ -751,11 +1216,13 @@
     });
     document.getElementById('openSidebarBtn').addEventListener('click', () => document.getElementById('sidebarPanel').classList.add('open'));
     document.getElementById('closeSidebarBtn').addEventListener('click', () => document.getElementById('sidebarPanel').classList.remove('open'));
+
     setupSearchModal();
+    setupGerador();
   }
-  
+
   function mostrarErro(msg) { const e = document.getElementById('loginError'); e.innerText = msg; e.style.display = 'block'; setTimeout(() => e.style.display='none', 3000); }
-  
+
   initTheme();
   initEvents();
 </script>
