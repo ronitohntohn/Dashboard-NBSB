@@ -10,25 +10,25 @@
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     :root {
       --primary: #0057a0;
-      --primary-light: #1a7bc4;
+      --primary-light: #3b8bc4;
       --primary-dark: #003d73;
       --secondary: #00a651;
-      --bg: #f0f4f9;
-      --card-bg: #ffffff;
+      --bg: #f4f7fc;
+      --card-bg: rgba(255,255,255,0.75);
+      --glass-border: rgba(255,255,255,0.25);
       --text: #1a2c3e;
-      --text-muted: #5a6874;
-      --border: #e2e8f0;
-      --shadow: 0 8px 24px rgba(0,0,0,0.06);
-      --radius: 28px;
+      --text-muted: #5a6b7a;
+      --shadow: 0 12px 32px rgba(0,0,0,0.06);
+      --radius: 24px;
       --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
     }
     body.dark {
-      --bg: #0a0c12;
-      --card-bg: #10131c;
+      --bg: #0e121c;
+      --card-bg: rgba(20, 26, 40, 0.85);
+      --glass-border: rgba(255,255,255,0.08);
       --text: #edf2f8;
       --text-muted: #9ea7bb;
-      --border: rgba(255,255,255,0.06);
-      --shadow: 0 8px 24px rgba(0,0,0,0.3);
+      --shadow: 0 12px 32px rgba(0,0,0,0.4);
     }
     body {
       font-family:'Inter',sans-serif;
@@ -36,6 +36,8 @@
       color:var(--text);
       transition:background 0.3s, color 0.2s;
       line-height:1.5;
+      min-height:100vh;
+      padding:20px;
     }
     ::-webkit-scrollbar { width:6px; height:6px; }
     ::-webkit-scrollbar-track { background:transparent; }
@@ -43,22 +45,27 @@
 
     /* Login */
     .login-container {
-      max-width:400px;
+      max-width:420px;
       width:92%;
       margin:80px auto;
       background:var(--card-bg);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
       border-radius:var(--radius);
-      padding:40px 28px;
+      padding:40px 32px;
       box-shadow:var(--shadow);
       text-align:center;
-      border:1px solid var(--border);
+      border:1px solid var(--glass-border);
     }
     .login-container h2 {
       font-weight:700;
       margin-bottom:8px;
-      font-size:30px;
+      font-size:32px;
       letter-spacing:-0.5px;
-      color:var(--primary);
+      background:linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
     }
     .login-container .sub {
       color:var(--text-muted);
@@ -69,16 +76,21 @@
       width:100%;
       padding:14px 18px;
       border-radius:16px;
-      border:1px solid var(--border);
-      background:var(--bg);
+      border:1px solid var(--glass-border);
+      background:rgba(255,255,255,0.5);
+      backdrop-filter:blur(4px);
       font-size:14px;
       margin-top:8px;
-      transition:border 0.2s;
+      transition:border 0.2s, box-shadow 0.2s;
+      color:var(--text);
+    }
+    body.dark .login-container input {
+      background:rgba(255,255,255,0.08);
     }
     .login-container input:focus {
       outline:none;
       border-color:var(--primary-light);
-      box-shadow:0 0 0 3px rgba(0,87,160,0.15);
+      box-shadow:0 0 0 4px rgba(0,87,160,0.15);
     }
     .login-container .btn {
       width:100%;
@@ -92,40 +104,69 @@
       font-size:16px;
       cursor:pointer;
       transition:background 0.2s, transform 0.1s;
+      text-align:center; /* centraliza o texto */
+      display:block;
     }
     .login-container .btn:hover { background:var(--primary-dark); }
     .login-container .btn:active { transform:scale(0.97); }
     .error-msg { color:#d32f2f; margin-top:16px; font-size:14px; display:none; }
 
     /* Dashboard */
-    #dashboard { display:none; padding:20px; }
-    .app-wrapper { display:flex; gap:24px; max-width:1600px; margin:0 auto; position:relative; }
+    #dashboard { display:none; max-width:1400px; margin:0 auto; }
 
-    /* Sidebar */
-    .sidebar-panel {
-      width:0; overflow-x:hidden; transition:width 0.35s ease;
-      background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow);
-      position:sticky; top:20px; height:calc(100vh - 40px);
-      display:flex; flex-direction:column;
-      border:1px solid var(--border);
+    /* Top bar */
+    .top-bar {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:16px;
+      margin-bottom:28px;
+      padding:12px 20px;
+      background:var(--card-bg);
+      backdrop-filter:blur(12px);
+      border-radius:60px;
+      border:1px solid var(--glass-border);
+      box-shadow:var(--shadow);
     }
-    .sidebar-panel.open { width:380px; }
-    .sidebar-content { padding:20px; overflow-y:auto; flex:1; }
-    .sidebar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid var(--border); }
-    .close-sidebar { background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text-muted); }
-    .sidebar-content h4 { font-weight:600; margin:16px 0 8px; font-size:14px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); }
+    .user-info { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+    .user-info strong { font-weight:600; }
+    .theme-toggle { cursor:pointer; font-size:26px; background:transparent; border:none; color:var(--text); transition:0.2s; }
+    .btn {
+      background:var(--primary);
+      border:none;
+      padding:10px 22px;
+      border-radius:40px;
+      color:white;
+      font-weight:600;
+      cursor:pointer;
+      transition:background 0.2s, transform 0.1s, box-shadow 0.2s;
+      font-size:14px;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+    .btn:hover { background:var(--primary-dark); box-shadow:0 4px 12px rgba(0,87,160,0.3); }
+    .btn:active { transform:scale(0.96); }
+    .btn-outline { background:transparent; border:1px solid var(--glass-border); color:var(--text); }
+    .btn-outline:hover { background:var(--card-bg); }
+    .btn-logout { background:transparent; border:1px solid var(--glass-border); padding:8px 18px; border-radius:40px; font-weight:600; cursor:pointer; color:var(--text-muted); transition:0.2s; }
+    .btn-logout:hover { background:#fee2e2; color:#b91c1c; border-color:#fecaca; }
 
     /* Cards */
     .card {
       background:var(--card-bg);
+      backdrop-filter:blur(12px);
       border-radius:var(--radius);
       padding:20px 24px;
       margin-bottom:24px;
       box-shadow:var(--shadow);
-      border:1px solid var(--border);
+      border:1px solid var(--glass-border);
       transition:transform 0.2s, box-shadow 0.2s;
     }
-    .card:hover { box-shadow:0 12px 32px rgba(0,0,0,0.08); }
+    .card:hover { box-shadow:0 16px 40px rgba(0,0,0,0.08); }
+
+    /* Métricas principais - grid com destaque para última hora */
     .metric-grid {
       display:grid;
       grid-template-columns:repeat(auto-fit, minmax(160px,1fr));
@@ -134,21 +175,25 @@
     }
     .metric-card {
       background:var(--card-bg);
+      backdrop-filter:blur(8px);
       border-radius:20px;
-      padding:16px 18px;
-      border:1px solid var(--border);
+      padding:18px 16px;
+      border:1px solid var(--glass-border);
       transition:transform 0.2s, box-shadow 0.2s;
       box-shadow:var(--shadow);
-      position:relative;
+      text-align:center;
     }
-    .metric-card:hover { transform:translateY(-3px); box-shadow:0 12px 28px rgba(0,0,0,0.08); }
-    .metric-label { font-size:12px; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px; letter-spacing:0.3px; }
-    .metric-value { font-size:28px; font-weight:800; font-family:'JetBrains Mono',monospace; color:var(--text); }
-    .meta-fixa { font-size:12px; color:var(--text-muted); margin-top:4px; }
+    .metric-card:hover { transform:translateY(-4px); box-shadow:0 12px 28px rgba(0,0,0,0.08); }
+    .metric-card.highlight {
+      border-left: 4px solid var(--primary);
+      background:linear-gradient(135deg, var(--card-bg), rgba(0,87,160,0.06));
+    }
+    .metric-label { font-size:12px; text-transform:uppercase; color:var(--text-muted); margin-bottom:4px; letter-spacing:0.5px; }
+    .metric-value { font-size:32px; font-weight:800; font-family:'JetBrains Mono',monospace; color:var(--text); line-height:1.2; }
 
-    .progress-bar { background:var(--border); border-radius:20px; height:8px; margin-top:10px; overflow:hidden; }
-    .progress-fill { height:100%; background:linear-gradient(90deg, var(--primary-light), var(--secondary)); width:0%; transition:width 0.5s ease; }
-
+    /* Progresso */
+    .progress-bar { background:var(--glass-border); border-radius:20px; height:8px; margin-top:10px; overflow:hidden; }
+    .progress-fill { height:100%; background:linear-gradient(90deg, var(--primary-light), var(--secondary)); width:0%; transition:width 0.6s ease; }
     .badge {
       display:inline-flex;
       padding:4px 14px;
@@ -168,114 +213,104 @@
     body.dark .badge-vite { background:#4a1a1a; color:#f05a5a; }
 
     /* Tabela */
-    .table-wrapper { overflow-x:auto; margin-top:8px; }
+    .table-wrapper { overflow-x:auto; margin-top:12px; }
     table { width:100%; border-collapse:collapse; font-size:13px; }
-    th { text-align:left; padding:12px 8px; font-weight:600; color:var(--text-muted); border-bottom:2px solid var(--border); }
-    td { padding:10px 8px; border-bottom:1px solid var(--border); }
+    th { text-align:left; padding:12px 8px; font-weight:600; color:var(--text-muted); border-bottom:2px solid var(--glass-border); }
+    td { padding:10px 8px; border-bottom:1px solid var(--glass-border); }
 
     .filter-bar { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
     .filter-bar input, .filter-bar select {
       padding:10px 16px;
       border-radius:40px;
-      border:1px solid var(--border);
-      background:var(--bg);
+      border:1px solid var(--glass-border);
+      background:rgba(255,255,255,0.4);
+      backdrop-filter:blur(4px);
       color:var(--text);
       flex:1;
       min-width:140px;
       font-size:13px;
       transition:border 0.2s;
     }
+    body.dark .filter-bar input, body.dark .filter-bar select {
+      background:rgba(255,255,255,0.06);
+    }
     .filter-bar input:focus, .filter-bar select:focus { outline:none; border-color:var(--primary-light); }
 
-    .btn {
-      background:var(--primary);
-      border:none;
-      padding:10px 22px;
-      border-radius:40px;
-      color:white;
-      font-weight:600;
-      cursor:pointer;
-      transition:background 0.2s, transform 0.1s;
-      font-size:14px;
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-    }
-    .btn:hover { background:var(--primary-dark); }
-    .btn:active { transform:scale(0.96); }
-    .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text); }
-    .btn-outline:hover { background:var(--border); }
-    .btn-sidebar { background:var(--border); border:none; padding:8px 18px; border-radius:40px; font-weight:600; cursor:pointer; color:var(--text); transition:0.2s; }
-    .btn-sidebar:hover { background:var(--primary-light); color:white; }
-    .btn-logout { background:transparent; border:1px solid var(--border); padding:8px 18px; border-radius:40px; font-weight:600; cursor:pointer; color:var(--text-muted); transition:0.2s; }
-    .btn-logout:hover { background:#fee2e2; color:#b91c1c; border-color:#fecaca; }
-
-    .top-bar {
+    /* Gerador - estilo chat */
+    .chat-container {
       display:flex;
-      justify-content:space-between;
-      align-items:center;
-      flex-wrap:wrap;
-      gap:12px;
-      margin-bottom:24px;
+      flex-direction:column;
+      gap:16px;
     }
-    .user-info { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-    .user-info strong { font-weight:600; }
-    .theme-toggle { cursor:pointer; font-size:26px; background:transparent; border:none; color:var(--text); transition:0.2s; }
-
-    .modal {
-      display:none;
-      position:fixed;
-      top:0; left:0;
-      width:100%; height:100%;
-      background:rgba(0,0,0,0.5);
-      backdrop-filter:blur(6px);
-      align-items:center;
-      justify-content:center;
-      z-index:1000;
-      padding:20px;
-    }
-    .modal-content {
+    .chat-message {
       background:var(--card-bg);
-      border-radius:32px;
-      width:100%;
-      max-width:580px;
-      max-height:90vh;
-      overflow-y:auto;
-      padding:28px 32px;
-      animation:fadeInUp 0.25s ease;
-      border:1px solid var(--border);
-      box-shadow:0 20px 48px rgba(0,0,0,0.15);
-      position:relative;
+      backdrop-filter:blur(8px);
+      border-radius:18px;
+      padding:16px 20px;
+      border:1px solid var(--glass-border);
+      box-shadow:var(--shadow);
+      max-width:85%;
+      align-self:flex-start;
     }
-    @keyframes fadeInUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
-    .modal-content h2 { font-weight:700; margin-bottom:6px; color:var(--primary); }
-    .modal-content .sub { color:var(--text-muted); font-size:14px; margin-bottom:20px; }
-    .modal-content label { display:block; font-weight:600; font-size:14px; margin-top:16px; }
-    .modal-content input, .modal-content select, .modal-content textarea {
+    .chat-message.user {
+      align-self:flex-end;
+      background:var(--primary);
+      color:white;
+      border-color:var(--primary);
+    }
+    .chat-message .msg-label { font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:4px; }
+    .chat-message.user .msg-label { color:rgba(255,255,255,0.7); }
+    .chat-message textarea, .chat-message input {
       width:100%;
-      padding:12px 16px;
-      border-radius:16px;
-      border:1px solid var(--border);
-      background:var(--bg);
-      color:var(--text);
+      padding:10px 14px;
+      border-radius:12px;
+      border:1px solid var(--glass-border);
+      background:rgba(255,255,255,0.5);
+      backdrop-filter:blur(4px);
       font-size:14px;
+      color:var(--text);
       margin-top:4px;
-      transition:border 0.2s;
+      resize:vertical;
     }
-    .modal-content input:focus, .modal-content select:focus, .modal-content textarea:focus {
-      outline:none;
-      border-color:var(--primary-light);
+    body.dark .chat-message textarea, body.dark .chat-message input {
+      background:rgba(255,255,255,0.08);
     }
-    .modal-content textarea { resize:vertical; min-height:80px; }
-    .modal-actions { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; }
-    .modal-actions .btn { flex:1; justify-content:center; }
-    .modal-close { background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text-muted); position:absolute; top:16px; right:20px; }
-    .result-box { background:var(--bg); border-radius:16px; padding:16px; margin-top:12px; border:1px solid var(--border); }
-    .result-box h4 { font-size:14px; font-weight:600; margin-bottom:6px; color:var(--text-muted); }
-    .result-box textarea { background:var(--card-bg); border:1px solid var(--border); width:100%; border-radius:12px; padding:10px; font-size:13px; resize:vertical; min-height:60px; color:var(--text); }
-    .result-box textarea:focus { outline:none; border-color:var(--primary-light); }
+    .chat-message textarea:focus, .chat-message input:focus { outline:none; border-color:var(--primary-light); }
+    .chat-actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
+    .chat-actions .btn { flex:1; justify-content:center; }
+
+    .result-area {
+      margin-top:16px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+    }
+    .result-area .result-box {
+      background:var(--card-bg);
+      backdrop-filter:blur(8px);
+      border-radius:16px;
+      padding:16px;
+      border:1px solid var(--glass-border);
+    }
+    .result-area .result-box h4 { font-size:14px; font-weight:600; color:var(--text-muted); margin-bottom:6px; }
+    .result-area .result-box textarea {
+      width:100%;
+      padding:10px;
+      border-radius:12px;
+      border:1px solid var(--glass-border);
+      background:rgba(255,255,255,0.3);
+      backdrop-filter:blur(4px);
+      font-size:13px;
+      resize:vertical;
+      min-height:80px;
+      color:var(--text);
+    }
+    body.dark .result-area .result-box textarea {
+      background:rgba(255,255,255,0.06);
+    }
+    .result-area .result-box textarea:focus { outline:none; border-color:var(--primary-light); }
     .loading-spinner { display:flex; align-items:center; gap:10px; color:var(--text-muted); font-weight:500; }
-    .loading-spinner .spinner { width:24px; height:24px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite; }
+    .loading-spinner .spinner { width:24px; height:24px; border:3px solid var(--glass-border); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
 
     .fab {
@@ -300,40 +335,23 @@
     .fab:hover { background:var(--primary-dark); transform:scale(1.05); }
     .fab:active { transform:scale(0.9); }
 
-    .nota-item {
-      display:flex;
-      justify-content:space-between;
-      padding:8px 0;
-      border-bottom:1px solid var(--border);
-      font-size:12px;
-      align-items:center;
-      gap:8px;
-    }
-    .nota-item:last-child { border-bottom:none; }
-
-    .flex { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
-    .slider { width:100%; margin:8px 0; accent-color:var(--primary); }
-    .text-muted { color:var(--text-muted); font-size:13px; }
-    .mt-8 { margin-top:8px; }
-    .gap-4 { gap:4px; }
-
+    /* Responsivo */
     @media (max-width:800px) {
-      .sidebar-panel.open { width:300px; }
-      .metric-value { font-size:22px; }
+      .result-area { grid-template-columns:1fr; }
       .metric-grid { grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); }
-      .top-bar { flex-direction:column; align-items:stretch; }
+      .top-bar { flex-direction:column; align-items:stretch; border-radius:24px; }
       .user-info { flex-wrap:wrap; }
-      .modal-content { padding:20px; }
+      .chat-message { max-width:100%; }
     }
     @media (max-width:480px) {
-      .sidebar-panel.open { width:100%; height:100vh; top:0; border-radius:0; }
       .login-container { margin:40px auto; padding:24px 16px; }
+      .metric-value { font-size:26px; }
     }
   </style>
 </head>
 <body>
 
-<!-- LOGIN (agora com identidade Brasília) -->
+<!-- LOGIN -->
 <div id="loginContainer" class="login-container">
   <h2>⚡ Neoenergia Brasília</h2>
   <p class="sub">Gestão de Produtividade</p>
@@ -343,197 +361,163 @@
   <div id="loginError" class="error-msg"></div>
 </div>
 
-<!-- DASHBOARD (Cosern) -->
+<!-- DASHBOARD -->
 <div id="dashboard">
-  <div class="app-wrapper">
-    <!-- SIDEBAR -->
-    <div class="sidebar-panel" id="sidebarPanel">
-      <div class="sidebar-content">
-        <div class="sidebar-header">
-          <h3>📊 Análise por Hora</h3>
-          <button class="close-sidebar" id="closeSidebarBtn">✕</button>
-        </div>
-        <div style="margin-bottom:20px;"><canvas id="hourlyEvolutionChart" height="160"></canvas></div>
-        <div><h4>⏱️ Notas da última hora</h4><div id="lastHourNotesList"></div></div>
-        <div id="teamNotesSection" style="display:none; margin-top:16px;">
-          <h4>📌 Últimas notas da equipe</h4>
-          <input type="text" id="filtroMatricula" placeholder="Filtrar matrícula" style="width:100%; margin-bottom:8px; padding:8px 14px; border-radius:40px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
-          <div id="teamNotesList"></div>
-        </div>
-      </div>
+  <!-- Top bar -->
+  <div class="top-bar">
+    <div class="user-info">
+      <button id="themeToggle" class="theme-toggle">☀️</button>
+      <div><strong id="userName"></strong> <span id="userRoleBadge"></span></div>
+      <button id="toggleSupervisorBtn" class="btn" style="display:none;">🔄 Modo Supervisor</button>
+      <button id="searchIconBtn" style="background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text);">🔍</button>
     </div>
+    <div class="flex" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+      <button id="gerarRespostaBtn" class="btn">✉️ Gerar Resposta</button>
+      <button id="logoutBtn" class="btn-logout">🚪 Sair</button>
+    </div>
+  </div>
 
-    <!-- CONTEÚDO PRINCIPAL -->
-    <div class="dashboard-container" style="flex:1; min-width:0;">
-      <div class="top-bar">
-        <div class="user-info">
-          <button id="openSidebarBtn" class="btn-sidebar">☰ Análise Hora</button>
-          <button id="themeToggle" class="theme-toggle">☀️</button>
-          <div><strong id="userName"></strong> <span id="userRoleBadge"></span></div>
-          <button id="toggleSupervisorBtn" class="btn" style="display:none;">🔄 Modo Supervisor</button>
-          <button id="searchIconBtn" style="background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text);">🔍</button>
-        </div>
-        <div class="flex">
-          <button id="gerarRespostaBtn" class="btn">✉️ Gerar resposta</button>
-          <button id="logoutBtn" class="btn-logout">🚪 Sair</button>
-        </div>
-      </div>
+  <!-- Métricas principais (última hora, hoje, mês, total) -->
+  <div class="metric-grid">
+    <div class="metric-card highlight">
+      <div class="metric-label">🕒 Notas última hora</div>
+      <div class="metric-value" id="notasUltimaHoraMetrica">—</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">📆 Feitas hoje</div>
+      <div class="metric-value" id="feitasHoje">—</div>
+      <div id="metaDiaHint" class="meta-fixa" style="font-size:12px; color:var(--text-muted);"></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">📅 Feitas no mês</div>
+      <div class="metric-value" id="feitasMes">—</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">📊 Total de notas</div>
+      <div class="metric-value" id="totalNotas">—</div>
+    </div>
+  </div>
 
-      <!-- Métricas principais -->
-      <div class="metric-grid">
-        <div class="metric-card">
-          <div class="metric-label">📆 Feitas hoje</div>
-          <div class="metric-value" id="feitasHoje">—</div>
-          <div id="metaDiaHint" class="meta-fixa"></div>
-        </div>
-        <div class="metric-card"><div class="metric-label">📅 Feitas no mês</div><div class="metric-value" id="feitasMes">—</div></div>
-        <div class="metric-card"><div class="metric-label">🏁 Faltam hoje</div><div class="metric-value" id="faltamHoje">—</div></div>
-        <div class="metric-card"><div class="metric-label">📈 Média diária</div><div class="metric-value" id="mediaDiaria">—</div></div>
-        <div class="metric-card"><div class="metric-label">🎯 Dias para meta</div><div class="metric-value" id="diasParaMeta">—</div></div>
-        <div class="metric-card" style="border-left: 4px solid var(--primary);">
-          <div class="metric-label">🕒 Notas última hora</div>
-          <div class="metric-value" id="notasUltimaHoraMetrica">—</div>
-        </div>
-      </div>
+  <!-- Segunda linha de métricas -->
+  <div class="metric-grid">
+    <div class="metric-card"><div class="metric-label">🏁 Faltam hoje</div><div class="metric-value" id="faltamHoje">—</div></div>
+    <div class="metric-card"><div class="metric-label">📈 Média diária</div><div class="metric-value" id="mediaDiaria">—</div></div>
+    <div class="metric-card"><div class="metric-label">🎯 Dias para meta</div><div class="metric-value" id="diasParaMeta">—</div></div>
+  </div>
 
-      <!-- Métricas Cria vs Backlog -->
-      <div class="metric-grid">
-        <div class="metric-card"><div class="metric-label">✅ FINALIZADAS Cria (hoje)</div><div class="metric-value" id="finalizadasCriaHoje">—</div></div>
-        <div class="metric-card"><div class="metric-label">✅ FINALIZADAS Cria (mês)</div><div class="metric-value" id="finalizadasCriaMes">—</div></div>
-        <div class="metric-card"><div class="metric-label">✅ FINALIZADAS Backlog (hoje)</div><div class="metric-value" id="finalizadasBacklogHoje">—</div></div>
-        <div class="metric-card"><div class="metric-label">✅ FINALIZADAS Backlog (mês)</div><div class="metric-value" id="finalizadasBacklogMes">—</div></div>
-      </div>
+  <!-- Progresso e metas -->
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span><strong>Progresso da meta diária</strong></span>
+      <span id="pctDia" class="badge" style="background:var(--primary); color:white;">0%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="barDia"></div></div>
+    <div id="metaIndividualArea" style="margin-top:8px;"></div>
+    <div id="metaEquipeArea" style="display:none; margin-top:16px; border-top:1px solid var(--glass-border); padding-top:16px;">
+      <label><strong>👥 Notas a tratar hoje (equipe):</strong> <input type="number" id="metaEquipeDia" style="width:120px; padding:8px 12px; border-radius:40px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.4); backdrop-filter:blur(4px); color:var(--text);"> notas</label>
+      <div style="margin-top:8px;"><span id="integrantesEquipe"></span> integrantes ativos no mês</div>
+    </div>
+  </div>
 
-      <!-- VERI+REDI e VITE -->
-      <div class="metric-grid">
-        <div class="metric-card"><div class="metric-label">🔄 VERI+REDI Cria</div><div class="metric-value" id="veriRediCria">—</div></div>
-        <div class="metric-card"><div class="metric-label">🔄 VERI+REDI Backlog</div><div class="metric-value" id="veriRediBacklog">—</div></div>
-        <div class="metric-card"><div class="metric-label">⚠️ VITE (Visita Técnica)</div><div class="metric-value" id="viteTotal">—</div></div>
-      </div>
+  <!-- Gráfico status -->
+  <div class="card">
+    <div><strong>📊 Distribuição por status</strong></div>
+    <canvas id="statusChart" height="140"></canvas>
+  </div>
 
-      <!-- Progresso -->
-      <div class="card">
-        <div class="flex" style="justify-content:space-between;">
-          <span><strong>Progresso da meta diária</strong></span>
-          <span id="pctDia" class="badge" style="background:var(--primary); color:white;">0%</span>
-        </div>
-        <div class="progress-bar"><div class="progress-fill" id="barDia"></div></div>
-        <div id="metaIndividualArea"></div>
-        <div id="metaEquipeArea" style="display:none; margin-top:16px; border-top:1px solid var(--border); padding-top:16px;">
-          <label><strong>👥 Notas a tratar hoje (equipe):</strong> <input type="number" id="metaEquipeDia" style="width:120px; padding:8px 12px; border-radius:40px; border:1px solid var(--border); background:var(--bg); color:var(--text);"> notas</label>
-          <div style="margin-top:8px;"><span id="integrantesEquipe"></span> integrantes ativos no mês</div>
-        </div>
-      </div>
+  <!-- Tabela completa -->
+  <div class="card">
+    <div><strong>🔎 Tabulação completa</strong> <span id="tabScopeMsg" style="font-size:12px; color:var(--text-muted);"></span></div>
+    <div class="filter-bar">
+      <input type="text" id="searchTab" placeholder="Buscar (data, matrícula, nota...)">
+      <select id="filterStatus">
+        <option value="">Todos status</option>
+        <option value="FINL">Finalizado</option>
+        <option value="REDI">Redirecionado</option>
+        <option value="VERI">Verificação</option>
+        <option value="VITE">Visita Técnica</option>
+      </select>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead><th>Data/Hora</th><th>Matrícula</th><th>Nº nota</th><th>Status</th><th>Tipo</th></thead>
+        <tbody id="tabBody"></tbody>
+      </table>
+    </div>
+    <div id="tabCount" style="font-size:12px; text-align:right; margin-top:12px; color:var(--text-muted);"></div>
+  </div>
 
-      <!-- Tabela individual (supervisor) -->
-      <div id="individualProductionArea" class="card" style="display:none;">
-        <div><strong>📊 Produtividade individual detalhada</strong></div>
-        <div class="table-wrapper">
-          <table class="prod-table">
-            <thead>
-              <th>Matrícula</th><th>Feitas hoje</th><th>Feitas mês</th>
-              <th>Finaliz. Cria (hoje)</th><th>Finaliz. Cria (mês)</th>
-              <th>Finaliz. Backlog (hoje)</th><th>Finaliz. Backlog (mês)</th>
-              <th>VERI+REDI Cria</th><th>VERI+REDI Backlog</th><th>VITE</th>
-            </thead>
-            <tbody id="individualTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Gráfico status -->
-      <div class="card">
-        <div><strong>📊 Distribuição por status</strong></div>
-        <canvas id="statusChart" height="140"></canvas>
-      </div>
-
-      <!-- Tabela completa -->
-      <div class="card">
-        <div><strong>🔎 Tabulação completa</strong> <span id="tabScopeMsg" style="font-size:12px; color:var(--text-muted);"></span></div>
-        <div class="filter-bar">
-          <input type="text" id="searchTab" placeholder="Buscar (data, matrícula, nota...)">
-          <select id="filterStatus">
-            <option value="">Todos status</option>
-            <option value="FINL">Finalizado</option>
-            <option value="REDI">Redirecionado</option>
-            <option value="VERI">Verificação</option>
-            <option value="VITE">Visita Técnica</option>
+  <!-- Gerador de Respostas (estilo chat) -->
+  <div class="card" id="geradorSection">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h3 style="font-weight:600;">✉️ Gerador de Respostas</h3>
+      <span style="font-size:13px; color:var(--text-muted);">Preencha os campos e clique em gerar</span>
+    </div>
+    <div class="chat-container">
+      <div class="chat-message">
+        <div class="msg-label">📌 Distribuidora e motivo</div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:4px;">
+          <select id="distribuidoraSelect" style="flex:1; padding:10px 14px; border-radius:12px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.4); backdrop-filter:blur(4px); color:var(--text);">
+            <option value="brasilia">Neoenergia Brasília</option>
+            <option value="cosern" selected>Neoenergia Cosern</option>
+            <option value="celpe">Neoenergia Celpe</option>
+          </select>
+          <select id="motivoBase" style="flex:1; padding:10px 14px; border-radius:12px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.4); backdrop-filter:blur(4px); color:var(--text);">
+            <option value="leitura_maior">Leitura informada maior (Improcedente)</option>
+            <option value="cip">Cobrança de CIP (Improcedente)</option>
+            <option value="atraso_faturamento">Atraso faturamento (Procedente)</option>
+            <option value="religacao">Religação indevida (Procedente)</option>
           </select>
         </div>
-        <div class="table-wrapper">
-          <table>
-            <thead><th>Data/Hora</th><th>Matrícula</th><th>Nº nota</th><th>Status</th><th>Tipo</th></thead>
-            <tbody id="tabBody"></tbody>
-          </table>
+      </div>
+
+      <div class="chat-message">
+        <div class="msg-label">📝 Protocolo e reclamação</div>
+        <input type="text" id="protocolo" placeholder="Número do protocolo" style="margin-top:4px;">
+        <textarea id="reclamacao" rows="3" placeholder="Cole aqui a reclamação do cliente..." style="margin-top:8px;"></textarea>
+      </div>
+
+      <div class="chat-message user">
+        <div class="msg-label">✏️ Parecer prévio (opcional – edite se quiser personalizar)</div>
+        <textarea id="parecerPrevio" rows="4" placeholder="Digite ou cole um parecer base para ser adaptado..."></textarea>
+      </div>
+
+      <div class="chat-actions">
+        <button id="gerarRespostaGeminiBtn" class="btn">🚀 Gerar com Gemini</button>
+      </div>
+
+      <div id="geradorLoading" style="display:none;" class="loading-spinner">
+        <div class="spinner"></div> Gerando resposta...
+      </div>
+
+      <div id="geradorResultados" style="display:none; margin-top:16px;">
+        <div class="result-area">
+          <div class="result-box">
+            <h4>📄 Parecer Técnico</h4>
+            <textarea id="resultadoParecer" rows="5" readonly></textarea>
+          </div>
+          <div class="result-box">
+            <h4>✉️ E-mail</h4>
+            <textarea id="resultadoEmail" rows="5" readonly></textarea>
+          </div>
+          <div class="result-box" style="grid-column: 1 / -1;">
+            <h4>📱 SMS (máx. 160 caracteres)</h4>
+            <textarea id="resultadoSms" rows="2" readonly></textarea>
+          </div>
         </div>
-        <div id="tabCount" style="font-size:12px; text-align:right; margin-top:12px; color:var(--text-muted);"></div>
       </div>
     </div>
   </div>
-  <button class="fab" id="refreshFab">↻</button>
 </div>
 
 <!-- MODAL PESQUISA NOTA -->
-<div id="searchModal" class="modal">
-  <div class="modal-content">
-    <button class="modal-close" id="closeModalBtn">✕</button>
-    <h2>🔎 Pesquisar nota</h2>
-    <input type="text" id="modalNotaBusca" placeholder="Número da nota">
+<div id="searchModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter:blur(6px); align-items:center; justify-content:center; z-index:1000; padding:20px;">
+  <div style="background:var(--card-bg); backdrop-filter:blur(16px); border-radius:32px; max-width:500px; width:100%; padding:28px 24px; border:1px solid var(--glass-border); box-shadow:var(--shadow); position:relative;">
+    <button id="closeModalBtn" style="position:absolute; top:16px; right:20px; background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text-muted);">✕</button>
+    <h2 style="font-weight:700; margin-bottom:6px; color:var(--primary);">🔎 Pesquisar nota</h2>
+    <input type="text" id="modalNotaBusca" placeholder="Número da nota" style="width:100%; padding:12px 16px; border-radius:16px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.4); backdrop-filter:blur(4px); font-size:14px; color:var(--text); margin-top:8px;">
     <button id="modalBuscarBtn" class="btn" style="width:100%; margin-top:12px;">Buscar</button>
     <div id="modalResultado" style="margin-top:16px;"></div>
-  </div>
-</div>
-
-<!-- MODAL GERADOR DE RESPOSTAS -->
-<div id="geradorModal" class="modal">
-  <div class="modal-content">
-    <button class="modal-close" id="closeGeradorBtn">✕</button>
-    <h2>✉️ Gerador de Respostas</h2>
-    <p class="sub">Selecione a distribuidora e preencha os dados</p>
-
-    <label>Distribuidora</label>
-    <select id="distribuidoraSelect">
-      <option value="brasilia">Neoenergia Brasília</option>
-      <option value="cosern" selected>Neoenergia Cosern</option>
-      <option value="celpe">Neoenergia Celpe</option>
-    </select>
-
-    <label>Número do Protocolo</label>
-    <input type="text" id="protocolo" placeholder="Ex: 700000012345">
-
-    <label>Motivo da Reclamação (Base da Planilha)</label>
-    <select id="motivoBase">
-      <option value="leitura_maior">Leitura informada maior que o sistema (Improcedente)</option>
-      <option value="cip">Cobrança de CIP (Improcedente)</option>
-      <option value="atraso_faturamento">Atraso no faturamento - Art 323 (Procedente)</option>
-      <option value="religacao">Religação indevida (Procedente)</option>
-    </select>
-
-    <label>Reclamação do Cliente (copiar do sistema)</label>
-    <textarea id="reclamacao" rows="3" placeholder="Cole aqui o texto da reclamação..."></textarea>
-
-    <div class="modal-actions">
-      <button id="gerarRespostaGeminiBtn" class="btn">🚀 Gerar com Gemini</button>
-    </div>
-
-    <div id="geradorLoading" style="display:none; margin-top:16px;" class="loading-spinner">
-      <div class="spinner"></div> Gerando resposta...
-    </div>
-
-    <div id="geradorResultados" style="margin-top:16px; display:none;">
-      <div class="result-box">
-        <h4>📄 Parecer Técnico</h4>
-        <textarea id="resultadoParecer" rows="4" readonly></textarea>
-      </div>
-      <div class="result-box">
-        <h4>✉️ E-mail</h4>
-        <textarea id="resultadoEmail" rows="6" readonly></textarea>
-      </div>
-      <div class="result-box">
-        <h4>📱 SMS (máx. 160 caracteres)</h4>
-        <textarea id="resultadoSms" rows="3" readonly></textarea>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -549,7 +533,6 @@
   const META_MENSAL_FIXA_ATENDENTE = 800;
   const META_DIARIA_FIXA_ATENDENTE = Math.ceil(META_MENSAL_FIXA_ATENDENTE / DIAS_UTEIS_MES);
 
-  // Chave da API Gemini (integrada)
   const GEMINI_API_KEY = "AQ.Ab8RN6LHUyXIiTpGNhBRemGywagi5YwMSrm7OpQk7dCAXQus7A";
 
   // Modelos de resposta por distribuidora e motivo
@@ -631,7 +614,7 @@
   let metaIndividualDia = META_DIARIA_FIXA_ATENDENTE;
   let metaIndividualMes = META_MENSAL_FIXA_ATENDENTE;
   let metaEquipeDia = 200;
-  let statusChart = null, hourlyChart = null;
+  let statusChart = null;
   let refreshInterval = null;
 
   // ============================================================
@@ -734,8 +717,8 @@
       const savedEquipe = localStorage.getItem('metaEquipeDia_Neoenergia');
       if (savedEquipe) metaEquipeDia = parseInt(savedEquipe);
       document.getElementById('metaIndividualArea').innerHTML = `
-        <div><label>Minha meta por dia: <span id="metaDiaValue">${metaIndividualDia}</span></label><input type="range" id="metaDiaSlider" min="1" max="200" value="${metaIndividualDia}" class="slider"></div>
-        <div><label>Minha meta do mês: <span id="metaMesValue">${metaIndividualMes}</span></label><input type="range" id="metaMesSlider" min="1" max="2000" value="${metaIndividualMes}" step="10" class="slider"></div>
+        <div><label>Minha meta por dia: <span id="metaDiaValue">${metaIndividualDia}</span></label><input type="range" id="metaDiaSlider" min="1" max="200" value="${metaIndividualDia}" class="slider" style="width:100%; accent-color:var(--primary);"></div>
+        <div><label>Minha meta do mês: <span id="metaMesValue">${metaIndividualMes}</span></label><input type="range" id="metaMesSlider" min="1" max="2000" value="${metaIndividualMes}" step="10" class="slider" style="width:100%; accent-color:var(--primary);"></div>
       `;
       document.getElementById('metaDiaSlider').addEventListener('input', (e) => {
         metaIndividualDia = parseInt(e.target.value);
@@ -770,8 +753,6 @@
     const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
     document.getElementById('tabScopeMsg').innerText = isSupervisor ? " (todos)" : ` (${currentUser.matricula})`;
     document.getElementById('metaEquipeArea').style.display = isSupervisor ? 'block' : 'none';
-    document.getElementById('individualProductionArea').style.display = isSupervisor ? 'block' : 'none';
-    document.getElementById('teamNotesSection').style.display = isSupervisor ? 'block' : 'none';
   }
 
   function filtrarDados() {
@@ -811,12 +792,11 @@
     const umaHoraAtras = new Date(agora.getTime() - 3600000);
 
     let feitasHoje = 0, feitasMes = 0;
-    let finalizadasCriaHoje = 0, finalizadasCriaMes = 0;
-    let finalizadasBacklogHoje = 0, finalizadasBacklogMes = 0;
     let veriRediCria = 0, veriRediBacklog = 0;
     let viteTotal = 0;
     let notasUltimaHora = 0;
     const statusCount = { FINL:0, REDI:0, VERI:0, VITE:0 };
+    let totalNotas = rows.length;
 
     for (const row of rows) {
       const timestamp = row["Carimbo de data/hora"] || '';
@@ -830,16 +810,6 @@
         const isMesAtual = (dataObj.getMonth() === hoje.getMonth() && dataObj.getFullYear() === hoje.getFullYear());
         if (isHoje) feitasHoje++;
         if (isMesAtual) feitasMes++;
-
-        if (status === 'FINL') {
-          if (tipo === 'cria') {
-            if (isHoje) finalizadasCriaHoje++;
-            if (isMesAtual) finalizadasCriaMes++;
-          } else if (tipo === 'backlog') {
-            if (isHoje) finalizadasBacklogHoje++;
-            if (isMesAtual) finalizadasBacklogMes++;
-          }
-        }
       }
 
       if (status === 'VERI' || status === 'REDI') {
@@ -853,9 +823,7 @@
       if (tsFull && tsFull >= umaHoraAtras && tsFull <= agora) notasUltimaHora++;
     }
 
-    return { feitasHoje, feitasMes, finalizadasCriaHoje, finalizadasCriaMes,
-             finalizadasBacklogHoje, finalizadasBacklogMes,
-             veriRediCria, veriRediBacklog, viteTotal, notasUltimaHora, statusCount };
+    return { feitasHoje, feitasMes, veriRediCria, veriRediBacklog, viteTotal, notasUltimaHora, statusCount, totalNotas };
   }
 
   function calcularMetricasIndividuais() {
@@ -894,32 +862,6 @@
   }
 
   // ============================================================
-  // GRÁFICOS E LISTAS
-  // ============================================================
-  function calcularNotasPorHora(dados) {
-    const agora = new Date();
-    const horas = [];
-    for (let i = 11; i >= 0; i--) {
-      const h = new Date(agora.getTime() - i * 60 * 60 * 1000);
-      h.setMinutes(0,0,0);
-      horas.push(h);
-    }
-    const contagem = new Array(12).fill(0);
-    for (const row of dados) {
-      const ts = parseTimestampFull(row["Carimbo de data/hora"]);
-      if (!ts) continue;
-      for (let i=0; i<horas.length; i++) {
-        if (ts >= horas[i] && ts < new Date(horas[i].getTime() + 3600000)) {
-          contagem[i]++;
-          break;
-        }
-      }
-    }
-    const labels = horas.map(h => `${h.getHours().toString().padStart(2,'0')}:00`);
-    return { labels, contagem };
-  }
-
-  // ============================================================
   // ATUALIZAÇÃO DA INTERFACE
   // ============================================================
   async function atualizarTudo() {
@@ -930,6 +872,7 @@
     const metrics = calcularMetricas(dadosFiltrados);
     const adicionais = calcularMetricasAdicionais(metrics.feitasHoje, metrics.feitasMes, isSupervisor);
 
+    document.getElementById('notasUltimaHoraMetrica').innerText = metrics.notasUltimaHora;
     document.getElementById('feitasHoje').innerText = metrics.feitasHoje;
     if (!isSupervisor) {
       document.getElementById('metaDiaHint').innerText = `meta: ${metaIndividualDia} notas/dia`;
@@ -937,19 +880,12 @@
       document.getElementById('metaDiaHint').innerText = '';
     }
     document.getElementById('feitasMes').innerText = metrics.feitasMes;
+    document.getElementById('totalNotas').innerText = metrics.totalNotas;
     document.getElementById('faltamHoje').innerText = adicionais.faltamHoje;
     document.getElementById('mediaDiaria').innerText = adicionais.mediaDiaria;
     document.getElementById('diasParaMeta').innerText = adicionais.diasParaMeta > 0 ? adicionais.diasParaMeta : '✅';
     document.getElementById('pctDia').innerText = `${adicionais.pctDia}%`;
     document.getElementById('barDia').style.width = `${adicionais.pctDia}%`;
-    document.getElementById('finalizadasCriaHoje').innerText = metrics.finalizadasCriaHoje;
-    document.getElementById('finalizadasCriaMes').innerText = metrics.finalizadasCriaMes;
-    document.getElementById('finalizadasBacklogHoje').innerText = metrics.finalizadasBacklogHoje;
-    document.getElementById('finalizadasBacklogMes').innerText = metrics.finalizadasBacklogMes;
-    document.getElementById('veriRediCria').innerText = metrics.veriRediCria;
-    document.getElementById('veriRediBacklog').innerText = metrics.veriRediBacklog;
-    document.getElementById('viteTotal').innerText = metrics.viteTotal;
-    document.getElementById('notasUltimaHoraMetrica').innerText = metrics.notasUltimaHora;
 
     // Gráfico status
     if (statusChart) statusChart.destroy();
@@ -959,50 +895,6 @@
       data: { labels: Object.keys(metrics.statusCount), datasets: [{ data: Object.values(metrics.statusCount), backgroundColor: '#0057a0' }] },
       options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } } }
     });
-
-    // Gráfico hora
-    const { labels, contagem } = calcularNotasPorHora(dadosFiltrados);
-    const hourlyCtx = document.getElementById('hourlyEvolutionChart').getContext('2d');
-    if (hourlyChart) hourlyChart.destroy();
-    hourlyChart = new Chart(hourlyCtx, {
-      type: 'line',
-      data: { labels, datasets: [{ label: 'Notas por hora', data: contagem, borderColor: '#0057a0', backgroundColor: 'rgba(0,87,160,0.05)', tension: 0.3, fill: true }] },
-      options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } } }
-    });
-
-    // Última hora
-    const agora = new Date();
-    const umaHoraAtras = new Date(agora.getTime() - 3600000);
-    const notasUltimaHoraList = dadosFiltrados.filter(row => {
-      const ts = parseTimestampFull(row["Carimbo de data/hora"]);
-      return ts && ts >= umaHoraAtras && ts <= agora;
-    }).slice(-20).reverse();
-    document.getElementById('lastHourNotesList').innerHTML = notasUltimaHoraList.map(row => `
-      <div class="nota-item"><span>${row["Nº da nota"] || '-'}</span><span>${row.Matricula}</span><span class="badge ${row.Status.toLowerCase()}">${row.Status || '-'}</span></div>
-    `).join('') || '<div class="text-muted">Nenhuma nota na última hora.</div>';
-
-    // Equipe
-    if (isSupervisor) {
-      const filtroMat = document.getElementById('filtroMatricula')?.value || '';
-      const notasEquipe = dadosFiltrados.filter(row => !filtroMat || String(row.Matricula).includes(filtroMat)).slice(-50).reverse();
-      document.getElementById('teamNotesList').innerHTML = notasEquipe.map(row => `
-        <div class="nota-item"><span>${row["Carimbo de data/hora"]?.split(' ')[0] || '-'}</span><span>${row["Nº da nota"] || '-'}</span><span>${row.Matricula}</span><span class="badge ${row.Status.toLowerCase()}">${row.Status || '-'}</span></div>
-      `).join('') || '<div class="text-muted">Nenhuma nota encontrada.</div>';
-    }
-
-    // Tabela individual
-    if (isSupervisor) {
-      const individuais = calcularMetricasIndividuais();
-      document.getElementById('integrantesEquipe').innerText = individuais.length;
-      document.getElementById('individualTableBody').innerHTML = individuais.map(p => `
-        <tr>
-          <td><strong>${p.mat}</strong></td><td>${p.feitasHoje}</td><td>${p.feitasMes}</td>
-          <td>${p.finalizadasCriaHoje}</td><td>${p.finalizadasCriaMes}</td>
-          <td>${p.finalizadasBacklogHoje}</td><td>${p.finalizadasBacklogMes}</td>
-          <td>${p.veriRediCria}</td><td>${p.veriRediBacklog}</td><td>${p.viteTotal}</td>
-        </tr>
-      `).join('');
-    }
 
     // Tabela completa
     renderizarTabelaCompleta(dadosFiltrados);
@@ -1045,9 +937,9 @@
 
   async function refresh() {
     const fab = document.getElementById('refreshFab');
-    fab.style.transform = 'rotate(360deg)';
+    if (fab) fab.style.transform = 'rotate(360deg)';
     await carregarDadosEAtualizar();
-    setTimeout(() => fab.style.transform = '', 300);
+    if (fab) setTimeout(() => fab.style.transform = '', 300);
   }
 
   // ============================================================
@@ -1073,7 +965,7 @@
       if (!isSupervisor) dados = dados.filter(r => String(r.Matricula) === currentUser.matricula);
       const encontrado = dados.find(r => String(r["Nº da nota"] || '') === numero);
       if (encontrado) {
-        resultDiv.innerHTML = `<div style="background:var(--bg); padding:16px; border-radius:16px; border:1px solid var(--border);">
+        resultDiv.innerHTML = `<div style="background:var(--card-bg); padding:16px; border-radius:16px; border:1px solid var(--glass-border);">
           <strong>✅ Nota encontrada</strong><br>
           📅 ${encontrado["Carimbo de data/hora"]}<br>
           🆔 ${encontrado.Matricula}<br>
@@ -1087,30 +979,19 @@
   }
 
   // ============================================================
-  // GERADOR DE RESPOSTAS (GEMINI) COM SELEÇÃO DE DISTRIBUIDORA
+  // GERADOR DE RESPOSTAS (ESTILO CHAT)
   // ============================================================
   function setupGerador() {
-    const modal = document.getElementById('geradorModal');
-    const openBtn = document.getElementById('gerarRespostaBtn');
-    const closeBtn = document.getElementById('closeGeradorBtn');
     const gerarBtn = document.getElementById('gerarRespostaGeminiBtn');
     const loading = document.getElementById('geradorLoading');
     const resultados = document.getElementById('geradorResultados');
-
-    openBtn.addEventListener('click', () => {
-      modal.style.display = 'flex';
-      resultados.style.display = 'none';
-      loading.style.display = 'none';
-    });
-
-    closeBtn.addEventListener('click', () => modal.style.display = 'none');
-    window.addEventListener('click', (e) => { if(e.target === modal) modal.style.display = 'none'; });
 
     gerarBtn.addEventListener('click', async () => {
       const distribuidora = document.getElementById('distribuidoraSelect').value;
       const protocolo = document.getElementById('protocolo').value.trim();
       const reclamacao = document.getElementById('reclamacao').value.trim();
       const motivo = document.getElementById('motivoBase').value;
+      let parecerPrevio = document.getElementById('parecerPrevio').value.trim();
 
       if (!protocolo || !reclamacao) {
         alert('Preencha o protocolo e a reclamação.');
@@ -1124,11 +1005,14 @@
       }
 
       const modelo = modelos[motivo];
+      const parecerBase = parecerPrevio || modelo.parecerBase;
+      const emailBase = modelo.emailBase;
+
       const prompt = `
         Você é um assistente de atendimento da Neoenergia ${distribuidora.charAt(0).toUpperCase() + distribuidora.slice(1)}.
         Baseado na reclamação do cliente a seguir: "${reclamacao}"
-        E com base neste modelo padrão de Parecer Técnico: "${modelo.parecerBase}"
-        E neste modelo padrão de E-mail: "${modelo.emailBase}"
+        E com base neste modelo padrão de Parecer Técnico: "${parecerBase}"
+        E neste modelo padrão de E-mail: "${emailBase}"
 
         Sua tarefa é adaptar esses modelos inserindo o número do protocolo (${protocolo}), corrigindo o contexto se necessário, e me devolver EXATAMENTE neste formato de texto:
 
@@ -1186,12 +1070,34 @@
   }
 
   function initEvents() {
-    document.getElementById('btnLogin').addEventListener('click', () => {
-      const mat = document.getElementById('matricula').value.trim();
-      const sen = document.getElementById('senha').value;
+    const btnLogin = document.getElementById('btnLogin');
+    const matInput = document.getElementById('matricula');
+    const senInput = document.getElementById('senha');
+
+    // Função de login
+    function doLogin() {
+      const mat = matInput.value.trim();
+      const sen = senInput.value;
       if (mat && sen) fazerLogin(mat, sen);
       else mostrarErro("Preencha ambos.");
+    }
+
+    btnLogin.addEventListener('click', doLogin);
+
+    // Pressionar Enter nos campos de login
+    matInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        senInput.focus();
+      }
     });
+    senInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        doLogin();
+      }
+    });
+
     document.getElementById('logoutBtn').addEventListener('click', () => location.reload());
     document.getElementById('refreshFab').addEventListener('click', refresh);
     document.getElementById('toggleSupervisorBtn').addEventListener('click', () => {
@@ -1209,13 +1115,6 @@
       const dadosFiltrados = filtrarDados();
       renderizarTabelaCompleta(dadosFiltrados);
     });
-    document.getElementById('filtroMatricula').addEventListener('input', () => {
-      if ((currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode)) {
-        atualizarTudo();
-      }
-    });
-    document.getElementById('openSidebarBtn').addEventListener('click', () => document.getElementById('sidebarPanel').classList.add('open'));
-    document.getElementById('closeSidebarBtn').addEventListener('click', () => document.getElementById('sidebarPanel').classList.remove('open'));
 
     setupSearchModal();
     setupGerador();
@@ -1225,6 +1124,14 @@
 
   initTheme();
   initEvents();
+
+  // Adicionar FAB de refresh
+  const fab = document.createElement('button');
+  fab.className = 'fab';
+  fab.id = 'refreshFab';
+  fab.innerHTML = '↻';
+  document.body.appendChild(fab);
+  fab.addEventListener('click', refresh);
 </script>
 </body>
 </html>
