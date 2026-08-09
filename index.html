@@ -557,6 +557,7 @@
         <div><strong>🔎 Tabulação completa</strong> <span id="tabScopeMsg" style="font-size:12px; color:var(--text-muted);"></span></div>
         <div class="filter-bar">
           <input type="text" id="searchTab" placeholder="Buscar (data, matrícula, nota...)">
+          <input type="text" id="filtroMatriculaTabela" placeholder="Filtrar por matrícula específica">
           <select id="filterStatus">
             <option value="">Todos status</option>
             <option value="FINL">Finalizado</option>
@@ -632,7 +633,8 @@
   const SHEET_ID = '18fouQ0lBF5fKKB8kovxNNK-ww187kQVqZiETMfK-x3o';
   const LINKS_SHEET_ID = '1m_sD07RmMn4W-i7-aLtCOL8N1SntoZnp03aExbn6F6c';
   const ABA_CREDENCIAIS = 'credenciais';
-  const ABA_BRASILIA = 'Tabulação Brasília';
+  // ABA PRINCIPAL ALTERADA PARA 'contagem' CONFORME SEU PEDIDO
+  const ABA_BRASILIA = 'contagem'; 
   const ABA_RONITON = 'Produtividade Mensal Roniton';
   const ABA_LINKS = 'Página1';
   const DIAS_UTEIS_MES = 26;
@@ -734,6 +736,7 @@
       const roniton = await carregarAba(SHEET_ID, ABA_RONITON);
       dados = roniton.map(row => normalizarRegistro(row));
     } else {
+      // Caso contrário, usa a aba 'contagem' (antiga Tabulação Brasília)
       const brasilia = await carregarAba(SHEET_ID, ABA_BRASILIA);
       dados = brasilia.map(row => normalizarRegistro(row));
     }
@@ -1119,15 +1122,23 @@
 
   function renderizarTabelaCompleta(dados) {
     const search = document.getElementById('searchTab')?.value.toLowerCase() || '';
+    const matriculaFiltro = document.getElementById('filtroMatriculaTabela')?.value.trim() || '';
     const statusFilter = document.getElementById('filterStatus')?.value.toUpperCase() || '';
+    
     let filtered = dados.filter(r => {
       const matchSearch = !search ||
         (r["Carimbo de data/hora"] || '').toLowerCase().includes(search) ||
         (r.Matricula || '').toLowerCase().includes(search) ||
         (r["Nº da nota"] || '').toLowerCase().includes(search);
+      
+      const matchMatricula = !matriculaFiltro ||
+        (r.Matricula || '').toLowerCase() === matriculaFiltro.toLowerCase();
+      
       const matchStatus = !statusFilter || (r.Status || '') === statusFilter;
-      return matchSearch && matchStatus;
+      
+      return matchSearch && matchMatricula && matchStatus;
     }).slice(0, 300);
+    
     const badge = (s) => {
       const u = s || '';
       if (u === 'FINL') return '<span class="badge badge-finl">FINL</span>';
@@ -1372,6 +1383,11 @@
       }
     });
     document.getElementById('searchTab').addEventListener('input', () => {
+      const dadosFiltrados = filtrarDados();
+      renderizarTabelaCompleta(dadosFiltrados);
+    });
+    // NOVO EVENTO PARA O FILTRO DE MATRÍCULA NA TABELA
+    document.getElementById('filtroMatriculaTabela').addEventListener('input', () => {
       const dadosFiltrados = filtrarDados();
       renderizarTabelaCompleta(dadosFiltrados);
     });
