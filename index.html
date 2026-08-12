@@ -495,7 +495,7 @@
         </div>
       </div>
 
-      <!-- Métricas Cria vs Backlog (Serão 0 pois não há coluna na aba Dashboard) -->
+      <!-- Métricas Cria vs Backlog -->
       <div class="metric-grid">
         <div class="metric-card"><div class="metric-label">✅ FINALIZADAS Cria (hoje)</div><div class="metric-value" id="finalizadasCriaHoje">—</div></div>
         <div class="metric-card"><div class="metric-label">✅ FINALIZADAS Cria (mês)</div><div class="metric-value" id="finalizadasCriaMes">—</div></div>
@@ -508,6 +508,13 @@
         <div class="metric-card"><div class="metric-label">🔄 VERI+REDI Cria</div><div class="metric-value" id="veriRediCria">—</div></div>
         <div class="metric-card"><div class="metric-label">🔄 VERI+REDI Backlog</div><div class="metric-value" id="veriRediBacklog">—</div></div>
         <div class="metric-card"><div class="metric-label">⚠️ VITE (Visita Técnica)</div><div class="metric-value" id="viteTotal">—</div></div>
+        <!-- NOVO CARD: Finalizadas totais (FINL) com expansão -->
+        <div class="metric-card" id="finalizadasCard" style="border-left: 4px solid var(--secondary); cursor:pointer;">
+          <span class="expand-icon">⏬</span>
+          <div class="metric-label">✅ Finalizadas (FINL) hoje</div>
+          <div class="metric-value" id="finalizadasHoje">—</div>
+          <div class="meta-fixa" id="finalizadasMesHint"></div>
+        </div>
       </div>
 
       <!-- Progresso -->
@@ -626,6 +633,26 @@
   </div>
 </div>
 
+<!-- NOVO MODAL: Detalhamento de Finalizadas (FINL) -->
+<div id="finalizadasModal" class="modal">
+  <div class="modal-content" style="max-width:800px;">
+    <button class="modal-close" id="closeFinalizadasBtn">✕</button>
+    <h2>✅ Detalhamento – Finalizadas (FINL)</h2>
+    <p class="sub" id="finalizadasSub">Últimas 12 horas</p>
+    <div style="height:200px; margin:16px 0;"><canvas id="finalizadasChart"></canvas></div>
+    <div class="hour-detail-grid">
+      <div>
+        <h4 style="font-weight:600; margin-bottom:8px;">📋 Últimas finalizadas (hora atual)</h4>
+        <div id="finalizadasLastHourList" class="list"></div>
+      </div>
+      <div>
+        <h4 style="font-weight:600; margin-bottom:8px;">📊 Distribuição por hora</h4>
+        <div id="finalizadasHourList" class="list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   // ============================================================
   // CONFIGURAÇÕES GERAIS
@@ -633,8 +660,7 @@
   const SHEET_ID = '18fouQ0lBF5fKKB8kovxNNK-ww187kQVqZiETMfK-x3o';
   const LINKS_SHEET_ID = '1m_sD07RmMn4W-i7-aLtCOL8N1SntoZnp03aExbn6F6c';
   const ABA_CREDENCIAIS = 'credenciais';
-  // ABA PRINCIPAL ALTERADA PARA A NOVA ABA 'Dashboard' CONFORME O PRINT
-  const ABA_DASHBOARD = 'Dashboard'; 
+  const ABA_DASHBOARD = 'Dashboard';
   const ABA_RONITON = 'Produtividade Mensal Roniton';
   const ABA_LINKS = 'Página1';
   const DIAS_UTEIS_MES = 26;
@@ -653,7 +679,7 @@
   let metaIndividualDia = META_DIARIA_FIXA_ATENDENTE;
   let metaIndividualMes = META_MENSAL_FIXA_ATENDENTE;
   let metaEquipeDia = 200;
-  let statusChart = null, hourlyChart = null, hourDetailChart = null;
+  let statusChart = null, hourlyChart = null, hourDetailChart = null, finalizadasChart = null;
   let refreshInterval = null;
 
   // ============================================================
@@ -709,35 +735,49 @@
   }
 
   // ============================================================
-  // NORMALIZAÇÃO ROBUSTA PARA FUNCIONAR COM A ABA 'Dashboard'
+  // NORMALIZAÇÃO ROBUSTA
   // ============================================================
-  function normalizarRegistro(row) {
-    // Mapeia as colunas da aba 'Dashboard' e de outras abas antigas
-    let timestamp = row["Carimbo de data/hora"] || row["Data"] || "";
-    let mat = row["Matrícula"] || row["Matricula"] || row.matricula || "";
-    let nota = row["Nº da nota"] || row["N.º da nota"] || row["Nota"] || "";
-    let statusRaw = (row.Status || "").toUpperCase();
-    if (statusRaw === "FINALIZADO") statusRaw = "FINL";
-    if (statusRaw === "REDIRECIONADO") statusRaw = "REDI";
-    if (statusRaw === "VERIFICAÇÃO") statusRaw = "VERI";
-    if (statusRaw === "URGENTE") statusRaw = "VITE";
-    let tipoRaw = row["Back ou Cria?"] || row["Tipo de resposta"] || row["Tipo"] || "";
-    tipoRaw = tipoRaw.toLowerCase().trim();
+  function normalizarRegistro(row, colMap) {
+    // colMap: mapeamento opcional para colunas com nomes diferentes
+    const get = (key) => {
+      if (colMap && colMap[key]) return row[colMap[key]] || '';
+      return row[key] || '';
+    };
+
+    let timestamp = get("Carimbo de data/hora") || get("Data") || get("data") || "";
+    let mat = get("Matrícula") || get("Matricula") || get("matricula") || "";
+    let nota = get("Nº da nota") || get("N.º da nota") || get("Nota") || get("nota") || "";
+    let statusRaw = (get("Status") || get("status") || "").toUpperCase().trim();
+    // Converte variações para códigos internos
+    if (statusRaw.includes("FINALIZADO") || statusRaw.includes("FINALIZADA")) statusRaw = "FINL";
+    else if (statusRaw.includes("REDIRECIONADO") || statusRaw.includes("REDIRECIONADA")) statusRaw = "REDI";
+    else if (statusRaw.includes("VERIFICAÇÃO") || statusRaw.includes("VERIFICACAO")) statusRaw = "VERI";
+    else if (statusRaw.includes("VITE") || statusRaw.includes("VISITA")) statusRaw = "VITE";
+    let tipoRaw = (get("Back ou Cria?") || get("Tipo de resposta") || get("Tipo") || get("tipo") || "").toLowerCase().trim();
     let tipo = "";
     if (tipoRaw.includes("cria")) tipo = "cria";
     else if (tipoRaw.includes("backlog")) tipo = "backlog";
     return { "Carimbo de data/hora": timestamp, "Matricula": mat, "Nº da nota": nota, "Status": statusRaw, "Back ou Cria?": tipo };
   }
 
+  // ============================================================
+  // CARREGAR DADOS CONSOLIDADOS
+  // ============================================================
   async function carregarDadosConsolidados() {
     let dados = [];
     
-    // Se o usuário for E738097, usar a aba dele
     if (currentUser && currentUser.matricula === 'E738097') {
       const roniton = await carregarAba(SHEET_ID, ABA_RONITON);
-      dados = roniton.map(row => normalizarRegistro(row));
+      // Mapeamento de colunas para a aba Roniton (caso os nomes sejam diferentes)
+      const colMap = {
+        "Carimbo de data/hora": "Data",
+        "Matrícula": "Matricula",
+        "Nº da nota": "Nota",
+        "Status": "Status",
+        "Back ou Cria?": "Tipo"
+      };
+      dados = roniton.map(row => normalizarRegistro(row, colMap));
     } else {
-      // Carrega a aba 'Dashboard' que ele mostrou no print
       const dashboardData = await carregarAba(SHEET_ID, ABA_DASHBOARD);
       dados = dashboardData.map(row => normalizarRegistro(row));
     }
@@ -757,7 +797,6 @@
     const usuario = creds.find(r => String(r.Matrícula || r.matricula) === mat && String(r.Senha || r.senha) === sen);
     if (!usuario) { mostrarErro("Matrícula ou senha inválidos"); return; }
 
-    // Mapa de usuários (para puxar os nomes da aba credenciais)
     usuariosMap = {};
     for (const row of creds) {
       const matricula = String(row.Matrícula || row.matricula || '');
@@ -884,6 +923,7 @@
     let feitasHoje = 0, feitasMes = 0;
     let finalizadasCriaHoje = 0, finalizadasCriaMes = 0;
     let finalizadasBacklogHoje = 0, finalizadasBacklogMes = 0;
+    let finalizadasHoje = 0, finalizadasMes = 0;
     let veriRediCria = 0, veriRediBacklog = 0;
     let viteTotal = 0;
     let notasUltimaHora = 0;
@@ -904,6 +944,8 @@
         if (isMesAtual) feitasMes++;
 
         if (status === 'FINL') {
+          if (isHoje) finalizadasHoje++;
+          if (isMesAtual) finalizadasMes++;
           if (tipo === 'cria') {
             if (isHoje) finalizadasCriaHoje++;
             if (isMesAtual) finalizadasCriaMes++;
@@ -927,6 +969,7 @@
 
     return { feitasHoje, feitasMes, finalizadasCriaHoje, finalizadasCriaMes,
              finalizadasBacklogHoje, finalizadasBacklogMes,
+             finalizadasHoje, finalizadasMes,
              veriRediCria, veriRediBacklog, viteTotal, notasUltimaHora, statusCount, totalNotas };
   }
 
@@ -968,7 +1011,7 @@
   // ============================================================
   // GRÁFICOS E LISTAS
   // ============================================================
-  function calcularNotasPorHora(dados, horas = 12) {
+  function calcularNotasPorHora(dados, horas = 12, statusFiltro = null) {
     const agora = new Date();
     const intervalos = [];
     for (let i = horas - 1; i >= 0; i--) {
@@ -978,6 +1021,7 @@
     }
     const contagem = new Array(horas).fill(0);
     for (const row of dados) {
+      if (statusFiltro && row.Status !== statusFiltro) continue;
       const ts = parseTimestampFull(row["Carimbo de data/hora"]);
       if (!ts) continue;
       for (let i=0; i<intervalos.length; i++) {
@@ -1022,6 +1066,10 @@
     document.getElementById('veriRediBacklog').innerText = metrics.veriRediBacklog;
     document.getElementById('viteTotal').innerText = metrics.viteTotal;
     document.getElementById('notasUltimaHoraMetrica').innerText = metrics.notasUltimaHora;
+
+    // Novas métricas de finalizadas totais
+    document.getElementById('finalizadasHoje').innerText = metrics.finalizadasHoje;
+    document.getElementById('finalizadasMesHint').innerText = `📅 Mês: ${metrics.finalizadasMes}`;
 
     // Gráfico status
     if (statusChart) statusChart.destroy();
@@ -1235,6 +1283,70 @@
     document.getElementById('ultimaHoraCard').addEventListener('click', openHourDetail);
   }
 
+  // NOVO: Modal de Finalizadas
+  function openFinalizadasModal() {
+    const modal = document.getElementById('finalizadasModal');
+    const dadosFiltrados = filtrarDados();
+    const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
+
+    document.getElementById('finalizadasSub').innerText = isSupervisor ? 'Últimas 12 horas - Finalizadas (FINL) - Todos' : `Últimas 12 horas - ${currentUser.matricula}`;
+
+    // Filtrar apenas FINL
+    const finlRows = dadosFiltrados.filter(row => row.Status === 'FINL');
+    const { labels, contagem } = calcularNotasPorHora(finlRows, 12);
+    const ctx = document.getElementById('finalizadasChart').getContext('2d');
+    if (finalizadasChart) finalizadasChart.destroy();
+    finalizadasChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Finalizadas por hora',
+          data: contagem,
+          backgroundColor: 'rgba(0,166,81,0.6)',
+          borderColor: '#00a651',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1 } }
+        }
+      }
+    });
+
+    const agora = new Date();
+    const umaHoraAtras = new Date(agora.getTime() - 3600000);
+    const ultimasFinl = finlRows.filter(row => {
+      const ts = parseTimestampFull(row["Carimbo de data/hora"]);
+      return ts && ts >= umaHoraAtras && ts <= agora;
+    }).slice(-20).reverse();
+
+    document.getElementById('finalizadasLastHourList').innerHTML = ultimasFinl.map(row => `
+      <div class="nota-item"><span>${row["Nº da nota"] || '-'}</span><span>${obterNomeMatricula(row.Matricula)}</span><span class="badge badge-finl">FINL</span></div>
+    `).join('') || '<div class="text-muted">Nenhuma finalizada na última hora.</div>';
+
+    const { labels: labelsList, contagem: contagemList } = calcularNotasPorHora(finlRows, 12);
+    let listHtml = '';
+    for (let i = 0; i < labelsList.length; i++) {
+      listHtml += `<div class="nota-item"><span>${labelsList[i]}</span><span>${contagemList[i]} finalizada${contagemList[i] !== 1 ? 's' : ''}</span></div>`;
+    }
+    document.getElementById('finalizadasHourList').innerHTML = listHtml || '<div class="text-muted">Nenhum dado.</div>';
+
+    modal.style.display = 'flex';
+  }
+
+  function setupFinalizadasModal() {
+    const modal = document.getElementById('finalizadasModal');
+    const closeBtn = document.getElementById('closeFinalizadasBtn');
+    closeBtn.addEventListener('click', () => modal.style.display = 'none');
+    window.addEventListener('click', (e) => { if(e.target === modal) modal.style.display = 'none'; });
+    document.getElementById('finalizadasCard').addEventListener('click', openFinalizadasModal);
+  }
+
   function openLinksModal() {
     const modal = document.getElementById('linksModal');
     const list = document.getElementById('linksList');
@@ -1298,6 +1410,8 @@
         <div><strong>VERI+REDI Cria:</strong> ${metrics.veriRediCria}</div>
         <div><strong>VERI+REDI Backlog:</strong> ${metrics.veriRediBacklog}</div>
         <div style="grid-column:span 2;"><strong>VITE (Visita Técnica):</strong> ${metrics.viteTotal}</div>
+        <div style="grid-column:span 2;"><strong>✅ Total FINALIZADAS (hoje):</strong> ${metrics.finalizadasHoje}</div>
+        <div style="grid-column:span 2;"><strong>✅ Total FINALIZADAS (mês):</strong> ${metrics.finalizadasMes}</div>
       </div>
     `;
     modal.style.display = 'flex';
@@ -1407,6 +1521,7 @@
     setupStatsModal();
     setupHourDetailModal();
     setupLinksModal();
+    setupFinalizadasModal(); // Novo modal
   }
 
   function mostrarErro(msg) { const e = document.getElementById('loginError'); e.innerText = msg; e.style.display = 'block'; setTimeout(() => e.style.display='none', 3000); }
