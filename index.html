@@ -508,7 +508,6 @@
         <div class="metric-card"><div class="metric-label">🔄 VERI+REDI Cria</div><div class="metric-value" id="veriRediCria">—</div></div>
         <div class="metric-card"><div class="metric-label">🔄 VERI+REDI Backlog</div><div class="metric-value" id="veriRediBacklog">—</div></div>
         <div class="metric-card"><div class="metric-label">⚠️ VITE (Visita Técnica)</div><div class="metric-value" id="viteTotal">—</div></div>
-        <!-- NOVO CARD: Finalizadas totais (FINL) com expansão -->
         <div class="metric-card" id="finalizadasCard" style="border-left: 4px solid var(--secondary); cursor:pointer;">
           <span class="expand-icon">⏬</span>
           <div class="metric-label">✅ Finalizadas (FINL) hoje</div>
@@ -633,7 +632,7 @@
   </div>
 </div>
 
-<!-- NOVO MODAL: Detalhamento de Finalizadas (FINL) -->
+<!-- MODAL FINALIZADAS -->
 <div id="finalizadasModal" class="modal">
   <div class="modal-content" style="max-width:800px;">
     <button class="modal-close" id="closeFinalizadasBtn">✕</button>
@@ -738,25 +737,53 @@
   // NORMALIZAÇÃO ROBUSTA
   // ============================================================
   function normalizarRegistro(row, colMap) {
-    // colMap: mapeamento opcional para colunas com nomes diferentes
+    // Função auxiliar para obter valor com fallback
     const get = (key) => {
-      if (colMap && colMap[key]) return row[colMap[key]] || '';
-      return row[key] || '';
+      if (colMap && colMap[key]) {
+        const val = row[colMap[key]];
+        if (val !== undefined && val !== null && val !== '') return String(val).trim();
+      }
+      const direct = row[key];
+      if (direct !== undefined && direct !== null && direct !== '') return String(direct).trim();
+      // Tenta chave com variações
+      const variations = {
+        "Carimbo de data/hora": ["Data", "data", "Timestamp"],
+        "Matricula": ["Matrícula", "matricula", "MATRICULA"],
+        "Nº da nota": ["Nota", "nota", "N.º da nota"],
+        "Status": ["status", "STATUS"],
+        "Back ou Cria?": ["Tipo", "tipo", "TIPO"]
+      };
+      if (variations[key]) {
+        for (let alt of variations[key]) {
+          if (row[alt] !== undefined && row[alt] !== null && row[alt] !== '') return String(row[alt]).trim();
+        }
+      }
+      return '';
     };
 
-    let timestamp = get("Carimbo de data/hora") || get("Data") || get("data") || "";
-    let mat = get("Matrícula") || get("Matricula") || get("matricula") || "";
-    let nota = get("Nº da nota") || get("N.º da nota") || get("Nota") || get("nota") || "";
-    let statusRaw = (get("Status") || get("status") || "").toUpperCase().trim();
-    // Converte variações para códigos internos
-    if (statusRaw.includes("FINALIZADO") || statusRaw.includes("FINALIZADA")) statusRaw = "FINL";
-    else if (statusRaw.includes("REDIRECIONADO") || statusRaw.includes("REDIRECIONADA")) statusRaw = "REDI";
-    else if (statusRaw.includes("VERIFICAÇÃO") || statusRaw.includes("VERIFICACAO")) statusRaw = "VERI";
+    let timestamp = get("Carimbo de data/hora");
+    let mat = get("Matricula");
+    let nota = get("Nº da nota");
+    let statusRaw = get("Status").toUpperCase();
+    let tipoRaw = get("Back ou Cria?").toLowerCase();
+
+    // Normaliza status
+    if (statusRaw.includes("FINAL") || statusRaw === "FINL") statusRaw = "FINL";
+    else if (statusRaw.includes("REDIRECIONADO") || statusRaw.includes("REDIRECIONADA") || statusRaw === "REDI") statusRaw = "REDI";
+    else if (statusRaw.includes("VERIFICAÇÃO") || statusRaw.includes("VERIFICACAO") || statusRaw === "VERI") statusRaw = "VERI";
     else if (statusRaw.includes("VITE") || statusRaw.includes("VISITA")) statusRaw = "VITE";
-    let tipoRaw = (get("Back ou Cria?") || get("Tipo de resposta") || get("Tipo") || get("tipo") || "").toLowerCase().trim();
+    else statusRaw = statusRaw;
+
+    // Normaliza tipo
     let tipo = "";
-    if (tipoRaw.includes("cria")) tipo = "cria";
-    else if (tipoRaw.includes("backlog")) tipo = "backlog";
+    if (tipoRaw.includes("cria") || tipoRaw === "cria") tipo = "cria";
+    else if (tipoRaw.includes("backlog") || tipoRaw === "backlog") tipo = "backlog";
+
+    // Se timestamp for apenas data (sem hora), adiciona "00:00:00" para compatibilidade
+    if (timestamp && !timestamp.includes(':')) {
+      timestamp = timestamp + " 00:00:00";
+    }
+
     return { "Carimbo de data/hora": timestamp, "Matricula": mat, "Nº da nota": nota, "Status": statusRaw, "Back ou Cria?": tipo };
   }
 
@@ -768,11 +795,11 @@
     
     if (currentUser && currentUser.matricula === 'E738097') {
       const roniton = await carregarAba(SHEET_ID, ABA_RONITON);
-      // Mapeamento de colunas para a aba Roniton (caso os nomes sejam diferentes)
+      // Mapeamento específico para a aba Roniton conforme print
       const colMap = {
         "Carimbo de data/hora": "Data",
-        "Matrícula": "Matricula",
-        "Nº da nota": "Nota",
+        "Matricula": "Matrícula",
+        "Nº da nota": "Nº da nota",
         "Status": "Status",
         "Back ou Cria?": "Tipo"
       };
@@ -895,21 +922,25 @@
   // ============================================================
   function parseDataHora(str) {
     if (!str) return null;
-    const [dataPart] = str.split(' ');
-    if (!dataPart) return null;
+    // Se a string tem apenas data, adiciona 00:00:00
+    let partes = str.split(' ');
+    let dataPart = partes[0];
+    let horaPart = partes.length > 1 ? partes[1] : '00:00:00';
     const [dia, mes, ano] = dataPart.split('/');
     if (!ano) return null;
-    return new Date(parseInt(ano), parseInt(mes)-1, parseInt(dia));
+    const [hora, minuto, segundo] = horaPart.split(':');
+    return new Date(parseInt(ano), parseInt(mes)-1, parseInt(dia), parseInt(hora)||0, parseInt(minuto)||0, parseInt(segundo)||0);
   }
 
   function parseTimestampFull(str) {
     if (!str) return null;
-    const [dataPart, horaPart] = str.split(' ');
-    if (!dataPart || !horaPart) return null;
+    let partes = str.split(' ');
+    let dataPart = partes[0];
+    let horaPart = partes.length > 1 ? partes[1] : '00:00:00';
     const [dia, mes, ano] = dataPart.split('/');
+    if (!ano) return null;
     const [hora, minuto, segundo] = horaPart.split(':');
-    if (!ano || !hora) return null;
-    return new Date(parseInt(ano), parseInt(mes)-1, parseInt(dia), parseInt(hora), parseInt(minuto), parseInt(segundo||0));
+    return new Date(parseInt(ano), parseInt(mes)-1, parseInt(dia), parseInt(hora)||0, parseInt(minuto)||0, parseInt(segundo)||0);
   }
 
   // ============================================================
@@ -938,6 +969,7 @@
       const tipo = row["Back ou Cria?"] || '';
 
       if (dataObj) {
+        // Comparar apenas a data (ignorar hora)
         const isHoje = dataObj.toDateString() === hoje.toDateString();
         const isMesAtual = (dataObj.getMonth() === hoje.getMonth() && dataObj.getFullYear() === hoje.getFullYear());
         if (isHoje) feitasHoje++;
@@ -1066,12 +1098,9 @@
     document.getElementById('veriRediBacklog').innerText = metrics.veriRediBacklog;
     document.getElementById('viteTotal').innerText = metrics.viteTotal;
     document.getElementById('notasUltimaHoraMetrica').innerText = metrics.notasUltimaHora;
-
-    // Novas métricas de finalizadas totais
     document.getElementById('finalizadasHoje').innerText = metrics.finalizadasHoje;
     document.getElementById('finalizadasMesHint').innerText = `📅 Mês: ${metrics.finalizadasMes}`;
 
-    // Gráfico status
     if (statusChart) statusChart.destroy();
     const ctx = document.getElementById('statusChart').getContext('2d');
     statusChart = new Chart(ctx, {
@@ -1080,7 +1109,6 @@
       options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } } }
     });
 
-    // Gráfico hora (sidebar)
     const { labels, contagem } = calcularNotasPorHora(dadosFiltrados);
     const hourlyCtx = document.getElementById('hourlyEvolutionChart').getContext('2d');
     if (hourlyChart) hourlyChart.destroy();
@@ -1090,7 +1118,6 @@
       options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } } }
     });
 
-    // Última hora (sidebar)
     const agora = new Date();
     const umaHoraAtras = new Date(agora.getTime() - 3600000);
     const notasUltimaHoraList = dadosFiltrados.filter(row => {
@@ -1101,7 +1128,6 @@
       <div class="nota-item"><span>${row["Nº da nota"] || '-'}</span><span>${obterNomeMatricula(row.Matricula)}</span><span class="badge ${row.Status.toLowerCase()}">${row.Status || '-'}</span></div>
     `).join('') || '<div class="text-muted">Nenhuma nota na última hora.</div>';
 
-    // Equipe (sidebar)
     if (isSupervisor) {
       const filtro = document.getElementById('filtroMatricula')?.value.toLowerCase() || '';
       const notasEquipe = dadosFiltrados
@@ -1116,7 +1142,6 @@
       `).join('') || '<div class="text-muted">Nenhuma nota encontrada.</div>';
     }
 
-    // Ranking e Tabela Individual (Apenas visíveis para Supervisores)
     if (isSupervisor) {
       const individuais = calcularMetricasIndividuais();
       individuais.sort((a, b) => b.feitasHoje - a.feitasHoje);
@@ -1283,7 +1308,6 @@
     document.getElementById('ultimaHoraCard').addEventListener('click', openHourDetail);
   }
 
-  // NOVO: Modal de Finalizadas
   function openFinalizadasModal() {
     const modal = document.getElementById('finalizadasModal');
     const dadosFiltrados = filtrarDados();
@@ -1291,7 +1315,6 @@
 
     document.getElementById('finalizadasSub').innerText = isSupervisor ? 'Últimas 12 horas - Finalizadas (FINL) - Todos' : `Últimas 12 horas - ${currentUser.matricula}`;
 
-    // Filtrar apenas FINL
     const finlRows = dadosFiltrados.filter(row => row.Status === 'FINL');
     const { labels, contagem } = calcularNotasPorHora(finlRows, 12);
     const ctx = document.getElementById('finalizadasChart').getContext('2d');
@@ -1521,7 +1544,7 @@
     setupStatsModal();
     setupHourDetailModal();
     setupLinksModal();
-    setupFinalizadasModal(); // Novo modal
+    setupFinalizadasModal();
   }
 
   function mostrarErro(msg) { const e = document.getElementById('loginError'); e.innerText = msg; e.style.display = 'block'; setTimeout(() => e.style.display='none', 3000); }
