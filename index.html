@@ -342,7 +342,7 @@
 
 <script>
   // ============================================================
-  // CONFIGURAÇÕES GERAIS (MANTIDAS)
+  // CONFIGURAÇÕES GERAIS
   // ============================================================
   const SHEET_ID = '18fouQ0lBF5fKKB8kovxNNK-ww187kQVqZiETMfK-x3o';
   const LINKS_SHEET_ID = '1m_sD07RmMn4W-i7-aLtCOL8N1SntoZnp03aExbn6F6c';
@@ -353,7 +353,7 @@
   const DIAS_UTEIS_MES = 26;
   const META_MENSAL_FIXA_ATENDENTE = 800;
   const META_DIARIA_FIXA_ATENDENTE = Math.ceil(META_MENSAL_FIXA_ATENDENTE / DIAS_UTEIS_MES);
-  const DATA_INICIO = new Date(2026, 7, 9); // 09/08/2026
+  const DATA_INICIO = new Date(2026, 7, 9);
 
   // ============================================================
   // ESTADO GLOBAL
@@ -370,7 +370,7 @@
   let refreshInterval = null;
 
   // ============================================================
-  // FUNÇÕES GOOGLE SHEETS (MANTIDAS)
+  // FUNÇÕES GOOGLE SHEETS
   // ============================================================
   async function gviz(sheetId, sheetName) {
     const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&t=${Date.now()}`;
@@ -422,7 +422,7 @@
   }
 
   // ============================================================
-  // NORMALIZAÇÃO ROBUSTA (MANTIDA)
+  // NORMALIZAÇÃO ROBUSTA
   // ============================================================
   function normalizarRegistro(row, colMap) {
     const get = (key) => {
@@ -471,26 +471,36 @@
   }
 
   // ============================================================
-  // CARREGAR DADOS CONSOLIDADOS (MANTIDA)
+  // CARREGAR DADOS CONSOLIDADOS (CORRIGIDO PARA INCLUIR RONITON AOS SUPERVISORES)
   // ============================================================
   async function carregarDadosConsolidados() {
     let dados = [];
     
-    if (currentUser && currentUser.matricula === 'E738097') {
-      const roniton = await carregarAba(SHEET_ID, ABA_RONITON);
-      const colMap = {
-        "Carimbo de data/hora": "Data",
-        "Matricula": "Matrícula",
-        "Nº da nota": "Nº da nota",
-        "Status": "Status",
-        "Back ou Cria?": "Tipo"
-      };
-      dados = roniton.map(row => normalizarRegistro(row, colMap));
-    } else {
+    const isCurrentUserRoniton = currentUser && currentUser.matricula === 'E738097';
+    const isSupervisor = currentUser && (currentUser.papel === "supervisor" || (currentUser.papel === "gm" && supervisorMode));
+
+    const colMapRoniton = {
+      "Carimbo de data/hora": "Data",
+      "Matricula": "Matrícula",
+      "Nº da nota": "Nº da nota",
+      "Status": "Status",
+      "Back ou Cria?": "Tipo"
+    };
+
+    // Carrega a Dashboard padrão (a menos que seja o próprio Roniton logado)
+    if (!isCurrentUserRoniton) {
       const dashboardData = await carregarAba(SHEET_ID, ABA_DASHBOARD);
       dados = dashboardData.map(row => normalizarRegistro(row));
     }
 
+    // Carrega a aba do Roniton se ele estiver logado OU se for um Supervisor (para ter visão completa)
+    if (isCurrentUserRoniton || isSupervisor) {
+      const ronitonData = await carregarAba(SHEET_ID, ABA_RONITON);
+      const ronitonNormalizado = ronitonData.map(row => normalizarRegistro(row, colMapRoniton));
+      dados = dados.concat(ronitonNormalizado);
+    }
+
+    // Filtrar apenas notas a partir de 09/08/2026
     allRows = dados.filter(row => {
       const ts = parseTimestampFull(row["Carimbo de data/hora"]);
       return ts && ts >= DATA_INICIO;
@@ -498,7 +508,7 @@
   }
 
   // ============================================================
-  // LOGIN (MANTIDO, com pequenos ajustes visuais)
+  // LOGIN
   // ============================================================
   async function fazerLogin(mat, sen) {
     const creds = await carregarAba(SHEET_ID, ABA_CREDENCIAIS);
@@ -611,7 +621,7 @@
   }
 
   // ============================================================
-  // UTILITÁRIOS DE DATA (MANTIDOS)
+  // UTILITÁRIOS DE DATA
   // ============================================================
   function parseDataHora(str) {
     if (!str) return null;
@@ -636,7 +646,7 @@
   }
 
   // ============================================================
-  // CÁLCULOS (MANTIDOS)
+  // CÁLCULOS
   // ============================================================
   function calcularMetricas(rows) {
     const hoje = new Date();
@@ -756,7 +766,7 @@
   }
 
   // ============================================================
-  // ATUALIZAÇÃO DA INTERFACE (MANTIDA, com pequenos ajustes visuais)
+  // ATUALIZAÇÃO DA INTERFACE
   // ============================================================
   async function atualizarTudo() {
     await carregarDadosConsolidados();
@@ -939,7 +949,7 @@
   }
 
   // ============================================================
-  // MODAIS & EVENTOS (NOVO PADRÃO DAISYUI COM showModal)
+  // MODAIS & EVENTOS (CORRIGIDO PARA GARANTIR A ABERTURA)
   // ============================================================
   function openHourDetail() {
     const modal = document.getElementById('hourDetailModal');
