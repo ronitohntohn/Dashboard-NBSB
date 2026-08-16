@@ -525,6 +525,26 @@
         </div>
       </div>
 
+      <!-- ⭐ CARD DE MONITORIAS (REPOSICIONADO LOGO ABAIXO DO PROGRESSO) -->
+      <div class="card" id="monitoriasCard" style="border: 2px solid var(--primary);">
+        <div><strong>📋 Minhas Monitorias</strong> <span id="monitoriasCount" style="font-size:14px; color:var(--text-muted);"></span></div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Nota</th>
+                <th>Motivo/Erro</th>
+                <th>Orientação</th>
+              </tr>
+            </thead>
+            <tbody id="monitoriasBody">
+              <tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Carregando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Ranking (Visível para Supervisores) -->
       <div id="rankingArea" class="card" style="display:none;">
         <div><strong>🏆 Ranking de produção diária (com base na aba Dashboard)</strong></div>
@@ -574,26 +594,6 @@
           </table>
         </div>
         <div id="tabCount" style="font-size:12px; text-align:right; margin-top:12px; color:var(--text-muted);"></div>
-      </div>
-
-      <!-- ⭐ CARD DE MONITORIAS INDIVIDUAIS (USANDO A ABA 'monitoria') -->
-      <div class="card" id="monitoriasCard" style="border: 2px solid var(--primary);">
-        <div><strong>📋 Minhas Monitorias</strong> <span id="monitoriasCount" style="font-size:14px; color:var(--text-muted);"></span></div>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Nota</th>
-                <th>Motivo/Erro</th>
-                <th>Orientação</th>
-              </tr>
-            </thead>
-            <tbody id="monitoriasBody">
-              <tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Carregando...</td></tr>
-            </tbody>
-          </table>
-        </div>
       </div>
 
     </div>
@@ -652,14 +652,12 @@
   // ============================================================
   // CONFIGURAÇÕES GERAIS
   // ============================================================
-  // Planilha principal (a que contém a aba 'monitoria')
   const SHEET_ID = '18fouQ0lBF5fKKB8kovxNNK-ww187kQVqZiETMfK-x3o';
   const LINKS_SHEET_ID = '1m_sD07RmMn4W-i7-aLtCOL8N1SntoZnp03aExbn6F6c';
   const ABA_CREDENCIAIS = 'credenciais';
   const ABA_DASHBOARD = 'Dashboard';
   const ABA_RONITON = 'Produtividade Mensal Roniton';
   const ABA_LINKS = 'Página1';
-  // Nova aba de monitorias (única, consolidada)
   const ABA_MONITORIA = 'monitoria';
 
   const DIAS_UTEIS_MES = 26;
@@ -817,7 +815,7 @@
   }
 
   // ============================================================
-  // CARREGAR MONITORIAS (ABA ÚNICA 'monitoria')
+  // CARREGAR MONITORIAS (FORÇANDO A COLUNA "COLABORADOR(A)")
   // ============================================================
   async function carregarMonitorias() {
     try {
@@ -828,13 +826,18 @@
         return;
       }
 
-      // Mapeia as colunas de forma flexível
       const cabecalho = Object.keys(dados[0]);
-      const colNome = cabecalho.find(c => /nome|colaborador|atendente/i.test(c));
-      const colData = cabecalho.find(c => /data|data da nota/i.test(c));
-      const colNota = cabecalho.find(c => /nota|nota\/is|nº/i.test(c));
-      const colMotivo = cabecalho.find(c => /motivo|erro|motivo \/ erro/i.test(c));
-      const colOrient = cabecalho.find(c => /orientação|orientacao/i.test(c));
+      console.log('🔍 Cabeçalhos encontrados na aba monitoria:', cabecalho);
+
+      // FORÇA a coluna "COLABORADOR(A)" exata (conforme especificado)
+      const colNome = cabecalho.find(c => c.trim() === 'COLABORADOR(A)');
+      // Para as demais, mantém a busca flexível
+      const colData = cabecalho.find(c => /^(data|data da nota|dt|data nota)$/i.test(c.trim()));
+      const colNota = cabecalho.find(c => /^(nota|nota\/is|nº nota|numero nota|nota\/is|nota is)$/i.test(c.trim()));
+      const colMotivo = cabecalho.find(c => /^(motivo|erro|motivo \/ erro|motivo\/erro|justificativa)$/i.test(c.trim()));
+      const colOrient = cabecalho.find(c => /^(orientação|orientacao|orientação|orientacao|resposta|solução)$/i.test(c.trim()));
+
+      console.log('📌 Colunas mapeadas:', { colNome, colData, colNota, colMotivo, colOrient });
 
       monitoriasData = dados.map(row => ({
         nome: colNome ? row[colNome] : '',
@@ -844,7 +847,9 @@
         orientacao: colOrient ? row[colOrient] : ''
       }));
 
-      console.log(`✅ Monitorias carregadas: ${monitoriasData.length} registros da aba "monitoria".`);
+      console.log(`✅ Monitorias carregadas: ${monitoriasData.length} registros.`);
+      // Mostra alguns nomes para verificação
+      console.log('📋 Primeiros nomes (até 5):', monitoriasData.slice(0, 5).map(i => i.nome));
     } catch (e) {
       console.warn('Erro ao carregar aba "monitoria":', e);
       monitoriasData = [];
@@ -852,7 +857,7 @@
   }
 
   // ============================================================
-  // RENDERIZAR MONITORIAS (Filtradas pelo nome do usuário)
+  // RENDERIZAR MONITORIAS COM NORMALIZAÇÃO E LOGS
   // ============================================================
   function renderizarMonitorias() {
     const container = document.getElementById('monitoriasBody');
@@ -861,14 +866,21 @@
 
     const nomeUsuario = currentUser ? currentUser.nome : '';
     const nomeNormalizado = normalizeText(nomeUsuario);
+    console.log(`🔍 Filtrando monitorias para: "${nomeUsuario}" (normalizado: "${nomeNormalizado}")`);
 
+    // Filtra pela coluna 'nome' normalizada
     const minhas = monitoriasData.filter(item => {
       const nomeItem = normalizeText(item.nome);
       return nomeItem === nomeNormalizado;
     });
 
+    console.log(`📌 Encontradas ${minhas.length} monitorias para este usuário.`);
+
     if (minhas.length === 0) {
-      container.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Nenhuma monitoria encontrada para você.</td></tr>`;
+      container.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">
+        Nenhuma monitoria encontrada para <strong>${nomeUsuario}</strong>. 
+        Verifique se a aba 'monitoria' contém registros com este nome e se a coluna "COLABORADOR(A)" está preenchida corretamente.
+      </td></tr>`;
       if (countSpan) countSpan.textContent = '';
       return;
     }
