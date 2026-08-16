@@ -525,21 +525,22 @@
         </div>
       </div>
 
-      <!-- ⭐ CARD DE MONITORIAS (REPOSICIONADO LOGO ABAIXO DO PROGRESSO) -->
+      <!-- ⭐ CARD DE MONITORIAS (AGORA FILTRADO POR MATRÍCULA) -->
       <div class="card" id="monitoriasCard" style="border: 2px solid var(--primary);">
         <div><strong>📋 Minhas Monitorias</strong> <span id="monitoriasCount" style="font-size:14px; color:var(--text-muted);"></span></div>
         <div class="table-wrapper">
           <table>
             <thead>
               <tr>
-                <th>Data</th>
+                <th>Data da Nota</th>
+                <th>Data da Auditoria</th>
                 <th>Nota</th>
                 <th>Motivo/Erro</th>
                 <th>Orientação</th>
               </tr>
             </thead>
             <tbody id="monitoriasBody">
-              <tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Carregando...</td></tr>
+              <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Carregando...</td></tr>
             </tbody>
           </table>
         </div>
@@ -658,7 +659,7 @@
   const ABA_DASHBOARD = 'Dashboard';
   const ABA_RONITON = 'Produtividade Mensal Roniton';
   const ABA_LINKS = 'Página1';
-  const ABA_MONITORIA = 'monitoria';
+  const ABA_MONITORIA = 'Monitorias'; // Nome exato da aba
 
   const DIAS_UTEIS_MES = 26;
   const META_MENSAL_FIXA_ATENDENTE = 800;
@@ -806,80 +807,87 @@
     return new Date(parseInt(ano), parseInt(mes)-1, parseInt(dia), parseInt(hora), parseInt(minuto), parseInt(segundo||0));
   }
 
-  function excelSerialToDate(serial) {
-    if (!serial || isNaN(serial)) return '';
-    const utc_days = Math.floor(serial - 25569);
-    const utc_value = utc_days * 86400;
-    const date = new Date(utc_value * 1000);
-    return date.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+  function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    // Se for uma data no formato DD/MM/YYYY, retorna como está
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) return dateStr;
+    // Se for número serial do Excel
+    const num = parseFloat(dateStr);
+    if (!isNaN(num)) {
+      const utc_days = Math.floor(num - 25569);
+      const utc_value = utc_days * 86400;
+      const date = new Date(utc_value * 1000);
+      return date.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+    }
+    return dateStr;
   }
 
   // ============================================================
-  // CARREGAR MONITORIAS (FORÇANDO A COLUNA "COLABORADOR(A)")
+  // CARREGAR MONITORIAS (ABA 'Monitorias' com coluna MATRÍCULA)
   // ============================================================
   async function carregarMonitorias() {
     try {
       const dados = await carregarAba(SHEET_ID, ABA_MONITORIA);
       if (!dados || dados.length === 0) {
         monitoriasData = [];
-        console.log('⚠️ Nenhum dado encontrado na aba "monitoria".');
+        console.log('⚠️ Nenhum dado encontrado na aba "Monitorias".');
         return;
       }
 
       const cabecalho = Object.keys(dados[0]);
-      console.log('🔍 Cabeçalhos encontrados na aba monitoria:', cabecalho);
+      console.log('🔍 Cabeçalhos encontrados na aba Monitorias:', cabecalho);
 
-      // FORÇA a coluna "COLABORADOR(A)" exata (conforme especificado)
-      const colNome = cabecalho.find(c => c.trim() === 'COLABORADOR(A)');
-      // Para as demais, mantém a busca flexível
-      const colData = cabecalho.find(c => /^(data|data da nota|dt|data nota)$/i.test(c.trim()));
-      const colNota = cabecalho.find(c => /^(nota|nota\/is|nº nota|numero nota|nota\/is|nota is)$/i.test(c.trim()));
-      const colMotivo = cabecalho.find(c => /^(motivo|erro|motivo \/ erro|motivo\/erro|justificativa)$/i.test(c.trim()));
-      const colOrient = cabecalho.find(c => /^(orientação|orientacao|orientação|orientacao|resposta|solução)$/i.test(c.trim()));
+      // Mapeamento exato das colunas conforme a imagem
+      const colDataNota = cabecalho.find(c => /data da nota/i.test(c));
+      const colDataAuditoria = cabecalho.find(c => /data da auditoria/i.test(c));
+      const colMatricula = cabecalho.find(c => /matrícula|matricula/i.test(c));
+      const colColaborador = cabecalho.find(c => /colaborador/i.test(c));
+      const colNota = cabecalho.find(c => /notas|nota/i.test(c) && !/data/i.test(c));
+      const colMotivo = cabecalho.find(c => /motivo|erro/i.test(c));
+      const colOrientacao = cabecalho.find(c => /orientação|orientacao/i.test(c));
 
-      console.log('📌 Colunas mapeadas:', { colNome, colData, colNota, colMotivo, colOrient });
+      console.log('📌 Colunas mapeadas:', { colDataNota, colDataAuditoria, colMatricula, colColaborador, colNota, colMotivo, colOrientacao });
 
       monitoriasData = dados.map(row => ({
-        nome: colNome ? row[colNome] : '',
-        data: colData ? row[colData] : '',
+        dataNota: colDataNota ? row[colDataNota] : '',
+        dataAuditoria: colDataAuditoria ? row[colDataAuditoria] : '',
+        matricula: colMatricula ? String(row[colMatricula]).trim() : '',
+        colaborador: colColaborador ? row[colColaborador] : '',
         nota: colNota ? row[colNota] : '',
         motivo: colMotivo ? row[colMotivo] : '',
-        orientacao: colOrient ? row[colOrient] : ''
+        orientacao: colOrientacao ? row[colOrientacao] : ''
       }));
 
       console.log(`✅ Monitorias carregadas: ${monitoriasData.length} registros.`);
-      // Mostra alguns nomes para verificação
-      console.log('📋 Primeiros nomes (até 5):', monitoriasData.slice(0, 5).map(i => i.nome));
+      console.log('📋 Exemplos de matrículas:', monitoriasData.slice(0, 5).map(i => i.matricula));
     } catch (e) {
-      console.warn('Erro ao carregar aba "monitoria":', e);
+      console.warn('Erro ao carregar aba "Monitorias":', e);
       monitoriasData = [];
     }
   }
 
   // ============================================================
-  // RENDERIZAR MONITORIAS COM NORMALIZAÇÃO E LOGS
+  // RENDERIZAR MONITORIAS (FILTRADO POR MATRÍCULA)
   // ============================================================
   function renderizarMonitorias() {
     const container = document.getElementById('monitoriasBody');
     const countSpan = document.getElementById('monitoriasCount');
     if (!container) return;
 
-    const nomeUsuario = currentUser ? currentUser.nome : '';
-    const nomeNormalizado = normalizeText(nomeUsuario);
-    console.log(`🔍 Filtrando monitorias para: "${nomeUsuario}" (normalizado: "${nomeNormalizado}")`);
+    const matriculaUsuario = currentUser ? currentUser.matricula : '';
+    console.log(`🔍 Filtrando monitorias para matrícula: "${matriculaUsuario}"`);
 
-    // Filtra pela coluna 'nome' normalizada
+    // Filtra pela matrícula (exata, case-sensitive)
     const minhas = monitoriasData.filter(item => {
-      const nomeItem = normalizeText(item.nome);
-      return nomeItem === nomeNormalizado;
+      return item.matricula === matriculaUsuario;
     });
 
-    console.log(`📌 Encontradas ${minhas.length} monitorias para este usuário.`);
+    console.log(`📌 Encontradas ${minhas.length} monitorias para esta matrícula.`);
 
     if (minhas.length === 0) {
-      container.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">
-        Nenhuma monitoria encontrada para <strong>${nomeUsuario}</strong>. 
-        Verifique se a aba 'monitoria' contém registros com este nome e se a coluna "COLABORADOR(A)" está preenchida corretamente.
+      container.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">
+        Nenhuma monitoria encontrada para a matrícula <strong>${matriculaUsuario}</strong>. 
+        Verifique se a aba 'Monitorias' contém registros com esta matrícula.
       </td></tr>`;
       if (countSpan) countSpan.textContent = '';
       return;
@@ -889,7 +897,8 @@
 
     container.innerHTML = minhas.map(item => `
       <tr>
-        <td>${excelSerialToDate(item.data) || item.data || '-'}</td>
+        <td>${formatDate(item.dataNota)}</td>
+        <td>${formatDate(item.dataAuditoria)}</td>
         <td>${item.nota || '-'}</td>
         <td>${item.motivo || '-'}</td>
         <td style="white-space:pre-wrap; max-width:300px;">${item.orientacao || '-'}</td>
