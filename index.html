@@ -576,7 +576,7 @@
         <div id="tabCount" style="font-size:12px; text-align:right; margin-top:12px; color:var(--text-muted);"></div>
       </div>
 
-      <!-- ⭐ CARD DE MONITORIAS INDIVIDUAIS (CORRIGIDO) -->
+      <!-- ⭐ CARD DE MONITORIAS INDIVIDUAIS (USANDO A ABA 'monitoria') -->
       <div class="card" id="monitoriasCard" style="border: 2px solid var(--primary);">
         <div><strong>📋 Minhas Monitorias</strong> <span id="monitoriasCount" style="font-size:14px; color:var(--text-muted);"></span></div>
         <div class="table-wrapper">
@@ -652,19 +652,21 @@
   // ============================================================
   // CONFIGURAÇÕES GERAIS
   // ============================================================
+  // Planilha principal (a que contém a aba 'monitoria')
   const SHEET_ID = '18fouQ0lBF5fKKB8kovxNNK-ww187kQVqZiETMfK-x3o';
   const LINKS_SHEET_ID = '1m_sD07RmMn4W-i7-aLtCOL8N1SntoZnp03aExbn6F6c';
   const ABA_CREDENCIAIS = 'credenciais';
   const ABA_DASHBOARD = 'Dashboard';
   const ABA_RONITON = 'Produtividade Mensal Roniton';
   const ABA_LINKS = 'Página1';
+  // Nova aba de monitorias (única, consolidada)
+  const ABA_MONITORIA = 'monitoria';
+
   const DIAS_UTEIS_MES = 26;
   const META_MENSAL_FIXA_ATENDENTE = 800;
   const META_DIARIA_FIXA_ATENDENTE = Math.ceil(META_MENSAL_FIXA_ATENDENTE / DIAS_UTEIS_MES);
   const DATA_INICIO = new Date(2026, 7, 9);
 
-  // ===== CONSTANTES PARA MONITORIAS =====
-  const ABAS_MONITORIA = ['MONIT.SAYO', 'MONIT.TATI', 'MONIT.IATIANA'];
   let monitoriasData = [];
 
   // ============================================================
@@ -780,7 +782,7 @@
       return ts && ts >= DATA_INICIO;
     });
 
-    // Carrega as monitorias
+    // Carrega as monitorias da aba unificada
     await carregarMonitorias();
   }
 
@@ -815,41 +817,42 @@
   }
 
   // ============================================================
-  // CARREGAR MONITORIAS COM MAPEAMENTO FLEXÍVEL
+  // CARREGAR MONITORIAS (ABA ÚNICA 'monitoria')
   // ============================================================
   async function carregarMonitorias() {
-    let todas = [];
-    for (const aba of ABAS_MONITORIA) {
-      try {
-        const dados = await carregarAba(SHEET_ID, aba);
-        if (!dados || dados.length === 0) continue;
-
-        // Mapeia as colunas procurando por palavras-chave
-        const cabecalho = Object.keys(dados[0]);
-        const colData = cabecalho.find(c => /data|data da nota/i.test(c));
-        const colColab = cabecalho.find(c => /colaborador|colaborador\(a\)/i.test(c));
-        const colNota = cabecalho.find(c => /nota|nota\/is/i.test(c));
-        const colMotivo = cabecalho.find(c => /motivo|erro|motivo \/ erro/i.test(c));
-        const colOrient = cabecalho.find(c => /orientação|orientacao/i.test(c));
-
-        const mapeados = dados.map(row => ({
-          data: colData ? row[colData] : '',
-          colaborador: colColab ? row[colColab] : '',
-          nota: colNota ? row[colNota] : '',
-          motivo: colMotivo ? row[colMotivo] : '',
-          orientacao: colOrient ? row[colOrient] : ''
-        }));
-        todas = todas.concat(mapeados);
-      } catch (e) {
-        console.warn(`Erro ao carregar aba ${aba}:`, e);
+    try {
+      const dados = await carregarAba(SHEET_ID, ABA_MONITORIA);
+      if (!dados || dados.length === 0) {
+        monitoriasData = [];
+        console.log('⚠️ Nenhum dado encontrado na aba "monitoria".');
+        return;
       }
+
+      // Mapeia as colunas de forma flexível
+      const cabecalho = Object.keys(dados[0]);
+      const colNome = cabecalho.find(c => /nome|colaborador|atendente/i.test(c));
+      const colData = cabecalho.find(c => /data|data da nota/i.test(c));
+      const colNota = cabecalho.find(c => /nota|nota\/is|nº/i.test(c));
+      const colMotivo = cabecalho.find(c => /motivo|erro|motivo \/ erro/i.test(c));
+      const colOrient = cabecalho.find(c => /orientação|orientacao/i.test(c));
+
+      monitoriasData = dados.map(row => ({
+        nome: colNome ? row[colNome] : '',
+        data: colData ? row[colData] : '',
+        nota: colNota ? row[colNota] : '',
+        motivo: colMotivo ? row[colMotivo] : '',
+        orientacao: colOrient ? row[colOrient] : ''
+      }));
+
+      console.log(`✅ Monitorias carregadas: ${monitoriasData.length} registros da aba "monitoria".`);
+    } catch (e) {
+      console.warn('Erro ao carregar aba "monitoria":', e);
+      monitoriasData = [];
     }
-    monitoriasData = todas;
-    console.log(`✅ Monitorias carregadas: ${monitoriasData.length} registros`);
   }
 
   // ============================================================
-  // RENDERIZAR MONITORIAS COM NORMALIZAÇÃO
+  // RENDERIZAR MONITORIAS (Filtradas pelo nome do usuário)
   // ============================================================
   function renderizarMonitorias() {
     const container = document.getElementById('monitoriasBody');
@@ -858,14 +861,11 @@
 
     const nomeUsuario = currentUser ? currentUser.nome : '';
     const nomeNormalizado = normalizeText(nomeUsuario);
-    console.log(`🔍 Filtrando monitorias para: "${nomeUsuario}" (normalizado: "${nomeNormalizado}")`);
 
     const minhas = monitoriasData.filter(item => {
-      const colabNormalizado = normalizeText(item.colaborador);
-      return colabNormalizado === nomeNormalizado;
+      const nomeItem = normalizeText(item.nome);
+      return nomeItem === nomeNormalizado;
     });
-
-    console.log(`📌 Encontradas ${minhas.length} monitorias para este usuário.`);
 
     if (minhas.length === 0) {
       container.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Nenhuma monitoria encontrada para você.</td></tr>`;
