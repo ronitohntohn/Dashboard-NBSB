@@ -7,6 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
   <style>
+    /* (CSS IDÊNTICO AO ANTERIOR, SEM ALTERAÇÕES) */
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     :root {
       --primary: #0057a0;
@@ -43,7 +44,6 @@
     ::-webkit-scrollbar-track { background:transparent; }
     ::-webkit-scrollbar-thumb { background:var(--primary-light); border-radius:10px; }
 
-    /* Login */
     .login-container {
       max-width:400px;
       width:92%;
@@ -111,12 +111,10 @@
     .login-container .btn:active { transform:scale(0.97); }
     .error-msg { color:#d32f2f; margin-top:16px; font-size:14px; display:none; }
 
-    /* Dashboard */
     #dashboard { display:none; max-width:1400px; margin:0 auto; }
     .app-wrapper { display:flex; gap:20px; }
     .dashboard-container { flex:1; min-width:0; }
 
-    /* Sidebar */
     .sidebar-panel {
       width:0; overflow:hidden; transition:width 0.35s ease;
       background:var(--card-bg);
@@ -135,7 +133,6 @@
     .close-sidebar { background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text-muted); }
     .sidebar-content h4 { font-weight:600; margin:16px 0 8px; font-size:14px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); }
 
-    /* Cards */
     .card {
       background:var(--card-bg);
       backdrop-filter:blur(12px);
@@ -148,7 +145,6 @@
     }
     .card:hover { box-shadow:0 16px 40px rgba(0,0,0,0.08); }
 
-    /* Métricas */
     .metric-grid {
       display:grid;
       grid-template-columns:repeat(auto-fit, minmax(150px,1fr));
@@ -181,7 +177,6 @@
     .metric-value { font-size:28px; font-weight:800; font-family:'JetBrains Mono',monospace; color:var(--text); }
     .meta-fixa { font-size:12px; color:var(--text-muted); margin-top:4px; }
 
-    /* Progresso */
     .progress-bar { background:var(--glass-border); border-radius:20px; height:8px; margin-top:10px; overflow:hidden; }
     .progress-fill { height:100%; background:linear-gradient(90deg, var(--primary-light), var(--secondary)); width:0%; transition:width 0.6s ease; }
 
@@ -203,7 +198,6 @@
     body.dark .badge-veri { background:#1a3e44; color:#4dd0e1; }
     body.dark .badge-vite { background:#4a1a1a; color:#f05a5a; }
 
-    /* Tabelas */
     .table-wrapper { overflow-x:auto; margin-top:8px; }
     table { width:100%; border-collapse:collapse; font-size:13px; }
     th { text-align:left; padding:10px 8px; font-weight:600; color:var(--text-muted); border-bottom:2px solid var(--glass-border); }
@@ -228,7 +222,6 @@
     }
     .filter-bar input:focus, .filter-bar select:focus { outline:none; border-color:var(--primary-light); }
 
-    /* Botões */
     .btn {
       background:var(--primary);
       border:none;
@@ -251,7 +244,6 @@
     .btn-logout { background:transparent; border:1px solid var(--glass-border); padding:8px 18px; border-radius:40px; font-weight:600; cursor:pointer; color:var(--text-muted); transition:0.2s; }
     .btn-logout:hover { background:#fee2e2; color:#b91c1c; border-color:#fecaca; }
 
-    /* Top bar */
     .top-bar {
       display:flex;
       justify-content:space-between;
@@ -270,7 +262,6 @@
     .user-info strong { font-weight:600; }
     .theme-toggle { cursor:pointer; font-size:26px; background:transparent; border:none; color:var(--text); transition:0.2s; }
 
-    /* Modal */
     .modal {
       display:none;
       position:fixed;
@@ -302,7 +293,6 @@
     .modal-content .sub { color:var(--text-muted); font-size:14px; margin-bottom:20px; }
     .modal-close { background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text-muted); position:absolute; top:16px; right:20px; }
 
-    /* Fab */
     .fab {
       position:fixed;
       bottom:24px;
@@ -325,7 +315,6 @@
     .fab:hover { background:var(--primary-dark); transform:scale(1.05); }
     .fab:active { transform:scale(0.9); }
 
-    /* Itens de nota */
     .nota-item {
       display:flex;
       justify-content:space-between;
@@ -337,7 +326,6 @@
     }
     .nota-item:last-child { border-bottom:none; }
 
-    /* Ranking */
     .ranking-item {
       display:flex;
       align-items:center;
@@ -355,7 +343,6 @@
     .ranking-item .name { flex:1; font-weight:500; }
     .ranking-item .count { font-weight:600; font-family:'JetBrains Mono',monospace; }
 
-    /* Links úteis */
     .link-item {
       display:flex;
       align-items:center;
@@ -378,7 +365,6 @@
     .link-item .link-url { font-size:12px; color:var(--text-muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .link-item:hover .link-url { color:rgba(255,255,255,0.8); }
 
-    /* Detalhamento horas */
     .hour-detail-grid {
       display:grid;
       grid-template-columns:1fr 1fr;
@@ -387,7 +373,6 @@
     }
     .hour-detail-grid .list { max-height:300px; overflow-y:auto; }
 
-    /* Responsivo */
     @media (max-width:860px) {
       .app-wrapper { flex-direction:column; }
       .sidebar-panel {
@@ -426,6 +411,36 @@
       .metric-grid { grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); }
       .metric-card { padding:10px; }
       .metric-value { font-size:20px; }
+    }
+
+    /* Campos do supervisor */
+    .supervisor-settings {
+      display:flex;
+      flex-wrap:wrap;
+      gap:16px;
+      margin-top:12px;
+      padding-top:12px;
+      border-top:1px solid var(--glass-border);
+    }
+    .supervisor-settings label {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:500;
+    }
+    .supervisor-settings input {
+      width:90px;
+      padding:6px 10px;
+      border-radius:30px;
+      border:1px solid var(--glass-border);
+      background:rgba(255,255,255,0.4);
+      backdrop-filter:blur(4px);
+      color:var(--text);
+      font-weight:600;
+      text-align:center;
+    }
+    body.dark .supervisor-settings input {
+      background:rgba(255,255,255,0.06);
     }
   </style>
 </head>
@@ -523,9 +538,20 @@
           <label><strong>👥 Notas a tratar hoje (equipe):</strong> <input type="number" id="metaEquipeDia" style="width:120px; padding:8px 12px; border-radius:40px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.4); backdrop-filter:blur(4px); color:var(--text);"> notas</label>
           <div style="margin-top:8px;"><span id="integrantesEquipe"></span> integrantes ativos no mês</div>
         </div>
+
+        <!-- NOVO: Configurações do Supervisor -->
+        <div id="supervisorSettings" style="display:none;" class="supervisor-settings">
+          <label>🎯 Meta diária por atendente:
+            <input type="number" id="metaDiariaGlobalInput" min="1" max="200" value="40">
+          </label>
+          <label>📊 Meta geral do dia (equipe):
+            <input type="number" id="metaGeralDiaInput" min="1" max="2000" value="600">
+          </label>
+          <span id="metaGeralStatus" style="font-weight:600; margin-left:8px;"></span>
+        </div>
       </div>
 
-      <!-- ⭐ CARD DE MONITORIAS (AGORA FILTRADO POR MATRÍCULA) -->
+      <!-- ⭐ CARD DE MONITORIAS -->
       <div class="card" id="monitoriasCard" style="border: 2px solid var(--primary);">
         <div><strong>📋 Minhas Monitorias</strong> <span id="monitoriasCount" style="font-size:14px; color:var(--text-muted);"></span></div>
         <div class="table-wrapper">
@@ -602,7 +628,7 @@
   <button class="fab" id="refreshFab">↻</button>
 </div>
 
-<!-- MODAIS -->
+<!-- MODAIS (idênticos) -->
 <div id="searchModal" class="modal">
   <div class="modal-content">
     <button class="modal-close" id="closeModalBtn">✕</button>
@@ -612,7 +638,6 @@
     <div id="modalResultado" style="margin-top:16px;"></div>
   </div>
 </div>
-
 <div id="linksModal" class="modal">
   <div class="modal-content">
     <button class="modal-close" id="closeLinksBtn">✕</button>
@@ -621,7 +646,6 @@
     <div id="linksList" style="margin-top:16px;"></div>
   </div>
 </div>
-
 <div id="statsModal" class="modal">
   <div class="modal-content">
     <button class="modal-close" id="closeStatsBtn">✕</button>
@@ -629,7 +653,6 @@
     <div id="statsContent" style="margin-top:16px;"></div>
   </div>
 </div>
-
 <div id="hourDetailModal" class="modal">
   <div class="modal-content" style="max-width:800px;">
     <button class="modal-close" id="closeHourDetailBtn">✕</button>
@@ -659,12 +682,11 @@
   const ABA_DASHBOARD = 'Dashboard';
   const ABA_RONITON = 'Produtividade Mensal Roniton';
   const ABA_LINKS = 'Página1';
-  const ABA_MONITORIA = 'Monitorias'; // Nome exato da aba
+  const ABA_MONITORIA = 'Monitorias';
 
   const DIAS_UTEIS_MES = 26;
   const META_MENSAL_FIXA_ATENDENTE = 800;
-  const META_DIARIA_FIXA_ATENDENTE = Math.ceil(META_MENSAL_FIXA_ATENDENTE / DIAS_UTEIS_MES);
-  const DATA_INICIO = new Date(2026, 7, 9);
+  const META_DIARIA_FIXA_ATENDENTE = 31; // valor padrão
 
   let monitoriasData = [];
 
@@ -676,9 +698,16 @@
   let allRows = [];
   let linksData = [];
   let usuariosMap = {};
-  let metaIndividualDia = META_DIARIA_FIXA_ATENDENTE;
+
+  // Metas configuráveis pelo supervisor
+  let metaDiariaGlobal = parseInt(localStorage.getItem('metaDiariaGlobal_Neoenergia')) || 31;
+  let metaGeralDia = parseInt(localStorage.getItem('metaGeralDia_Neoenergia')) || 600;
+
+  // Meta individual (usada para o atendente comum)
+  let metaIndividualDia = metaDiariaGlobal; // passa a ser a global
   let metaIndividualMes = META_MENSAL_FIXA_ATENDENTE;
-  let metaEquipeDia = 200;
+
+  let metaEquipeDia = 200; // (não usado mais, mantido por compatibilidade)
   let statusChart = null, hourlyChart = null, hourDetailChart = null;
   let refreshInterval = null;
 
@@ -735,7 +764,7 @@
   }
 
   // ============================================================
-  // NORMALIZAÇÃO DE TEXTO (para comparação de nomes)
+  // NORMALIZAÇÃO DE TEXTO
   // ============================================================
   function normalizeText(str) {
     if (!str) return '';
@@ -780,8 +809,6 @@
       const ts = parseTimestampFull(row["Carimbo de data/hora"]);
       return ts && ts >= DATA_INICIO;
     });
-
-    // Carrega as monitorias da aba unificada
     await carregarMonitorias();
   }
 
@@ -809,9 +836,7 @@
 
   function formatDate(dateStr) {
     if (!dateStr) return '-';
-    // Se for uma data no formato DD/MM/YYYY, retorna como está
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) return dateStr;
-    // Se for número serial do Excel
     const num = parseFloat(dateStr);
     if (!isNaN(num)) {
       const utc_days = Math.floor(num - 25569);
@@ -823,7 +848,7 @@
   }
 
   // ============================================================
-  // CARREGAR MONITORIAS (ABA 'Monitorias' com coluna MATRÍCULA)
+  // CARREGAR MONITORIAS
   // ============================================================
   async function carregarMonitorias() {
     try {
@@ -833,11 +858,7 @@
         console.log('⚠️ Nenhum dado encontrado na aba "Monitorias".');
         return;
       }
-
       const cabecalho = Object.keys(dados[0]);
-      console.log('🔍 Cabeçalhos encontrados na aba Monitorias:', cabecalho);
-
-      // Mapeamento exato das colunas conforme a imagem
       const colDataNota = cabecalho.find(c => /data da nota/i.test(c));
       const colDataAuditoria = cabecalho.find(c => /data da auditoria/i.test(c));
       const colMatricula = cabecalho.find(c => /matrícula|matricula/i.test(c));
@@ -845,8 +866,6 @@
       const colNota = cabecalho.find(c => /notas|nota/i.test(c) && !/data/i.test(c));
       const colMotivo = cabecalho.find(c => /motivo|erro/i.test(c));
       const colOrientacao = cabecalho.find(c => /orientação|orientacao/i.test(c));
-
-      console.log('📌 Colunas mapeadas:', { colDataNota, colDataAuditoria, colMatricula, colColaborador, colNota, colMotivo, colOrientacao });
 
       monitoriasData = dados.map(row => ({
         dataNota: colDataNota ? row[colDataNota] : '',
@@ -857,9 +876,7 @@
         motivo: colMotivo ? row[colMotivo] : '',
         orientacao: colOrientacao ? row[colOrientacao] : ''
       }));
-
       console.log(`✅ Monitorias carregadas: ${monitoriasData.length} registros.`);
-      console.log('📋 Exemplos de matrículas:', monitoriasData.slice(0, 5).map(i => i.matricula));
     } catch (e) {
       console.warn('Erro ao carregar aba "Monitorias":', e);
       monitoriasData = [];
@@ -867,7 +884,7 @@
   }
 
   // ============================================================
-  // RENDERIZAR MONITORIAS (FILTRADO POR MATRÍCULA)
+  // RENDERIZAR MONITORIAS
   // ============================================================
   function renderizarMonitorias() {
     const container = document.getElementById('monitoriasBody');
@@ -875,19 +892,11 @@
     if (!container) return;
 
     const matriculaUsuario = currentUser ? currentUser.matricula : '';
-    console.log(`🔍 Filtrando monitorias para matrícula: "${matriculaUsuario}"`);
-
-    // Filtra pela matrícula (exata, case-sensitive)
-    const minhas = monitoriasData.filter(item => {
-      return item.matricula === matriculaUsuario;
-    });
-
-    console.log(`📌 Encontradas ${minhas.length} monitorias para esta matrícula.`);
+    const minhas = monitoriasData.filter(item => item.matricula === matriculaUsuario);
 
     if (minhas.length === 0) {
       container.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">
-        Nenhuma monitoria encontrada para a matrícula <strong>${matriculaUsuario}</strong>. 
-        Verifique se a aba 'Monitorias' contém registros com esta matrícula.
+        Nenhuma monitoria encontrada para a matrícula <strong>${matriculaUsuario}</strong>.
       </td></tr>`;
       if (countSpan) countSpan.textContent = '';
       return;
@@ -1002,18 +1011,27 @@
     return resultado;
   }
 
-  function calcularMetricasAdicionais(feitasHoje, feitasMes, usarMetaEquipe) {
+  // ============================================================
+  // CÁLCULO DE PROGRESSO (com as novas metas)
+  // ============================================================
+  function calcularAdicionais(feitasHoje, feitasMes, usarMetaEquipe) {
     const hoje = new Date();
-    let metaDiaUsar = usarMetaEquipe ? metaEquipeDia : metaIndividualDia;
+    // A meta diária usada é a global (definida pelo supervisor) OU a individual se não houver supervisor
+    let metaDiaUsar = metaDiariaGlobal; // sempre usa a global (supervisor define)
+    if (!usarMetaEquipe && !(currentUser.papel === "supervisor" || currentUser.papel === "gm")) {
+      // Para usuários comuns, também usa a meta global
+      metaDiaUsar = metaDiariaGlobal;
+    }
+
     let faltamHoje = Math.max(0, metaDiaUsar - feitasHoje);
     let pctDia = Math.min(100, Math.round((feitasHoje / metaDiaUsar) * 100));
     const mediaDiaria = (feitasMes / Math.max(1, hoje.getDate())).toFixed(1);
     const ritmoAtual = feitasMes / Math.max(1, hoje.getDate());
     const diasRestantes = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0).getDate() - hoje.getDate();
     const projFinal = Math.round(feitasMes + ritmoAtual * diasRestantes);
-    const metaMesUsar = usarMetaEquipe ? metaEquipeDia * DIAS_UTEIS_MES : metaIndividualMes;
+    const metaMesUsar = metaDiariaGlobal * DIAS_UTEIS_MES;
     const diasParaMeta = projFinal >= metaMesUsar ? 0 : Math.ceil((metaMesUsar - feitasMes) / Math.max(0.1, ritmoAtual));
-    return { faltamHoje, pctDia, mediaDiaria, diasParaMeta };
+    return { faltamHoje, pctDia, mediaDiaria, diasParaMeta, metaDiaUsar };
   }
 
   // ============================================================
@@ -1050,15 +1068,30 @@
     const dadosFiltrados = filtrarDados();
     const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
 
+    // Para o supervisor, usar todos os dados para calcular a meta geral
+    const dadosEquipe = isSupervisor ? allRows : dadosFiltrados;
+    const metricsEquipe = calcularMetricas(dadosEquipe);
     const metrics = calcularMetricas(dadosFiltrados);
-    const adicionais = calcularMetricasAdicionais(metrics.feitasHoje, metrics.feitasMes, isSupervisor);
+
+    // Meta diária usada (global)
+    let metaDiaUsar = metaDiariaGlobal;
+    let metaMesUsar = metaDiariaGlobal * DIAS_UTEIS_MES;
+
+    // Para supervisor, mostra também o progresso da meta geral
+    if (isSupervisor) {
+      const feitasHojeEquipe = metricsEquipe.feitasHoje;
+      const faltamGeral = Math.max(0, metaGeralDia - feitasHojeEquipe);
+      const pctGeral = Math.min(100, Math.round((feitasHojeEquipe / metaGeralDia) * 100));
+      document.getElementById('metaGeralStatus').innerHTML = `
+        <span style="color:var(--text-muted);">Total hoje: ${feitasHojeEquipe} | Meta: ${metaGeralDia} | 
+        Faltam: <strong>${faltamGeral}</strong> | Progresso: <span style="color:var(--primary);">${pctGeral}%</span></span>
+      `;
+    }
+
+    const adicionais = calcularAdicionais(metrics.feitasHoje, metrics.feitasMes, isSupervisor);
 
     document.getElementById('feitasHoje').innerText = metrics.feitasHoje;
-    if (!isSupervisor) {
-      document.getElementById('metaDiaHint').innerText = `meta: ${metaIndividualDia} notas/dia`;
-    } else {
-      document.getElementById('metaDiaHint').innerText = '';
-    }
+    document.getElementById('metaDiaHint').innerHTML = `meta: ${metaDiaUsar} notas/dia`;
     document.getElementById('feitasMes').innerText = metrics.feitasMes;
     document.getElementById('faltamHoje').innerText = adicionais.faltamHoje;
     document.getElementById('mediaDiaria').innerText = adicionais.mediaDiaria;
@@ -1083,7 +1116,7 @@
       options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } } }
     });
 
-    // Gráfico hora (sidebar)
+    // Gráfico hora
     const { labels, contagem } = calcularNotasPorHora(dadosFiltrados);
     const hourlyCtx = document.getElementById('hourlyEvolutionChart').getContext('2d');
     if (hourlyChart) hourlyChart.destroy();
@@ -1093,7 +1126,7 @@
       options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } } }
     });
 
-    // Última hora (sidebar)
+    // Última hora
     const agora = new Date();
     const umaHoraAtras = new Date(agora.getTime() - 3600000);
     const notasUltimaHoraList = dadosFiltrados.filter(row => {
@@ -1104,7 +1137,7 @@
       <div class="nota-item"><span>${row["Nº da nota"] || '-'}</span><span>${obterNomeMatricula(row.Matricula)}</span><span class="badge ${row.Status.toLowerCase()}">${row.Status || '-'}</span></div>
     `).join('') || '<div class="text-muted">Nenhuma nota na última hora.</div>';
 
-    // Equipe (sidebar)
+    // Equipe
     if (isSupervisor) {
       const filtro = document.getElementById('filtroMatricula')?.value.toLowerCase() || '';
       const notasEquipe = dadosFiltrados
@@ -1170,9 +1203,16 @@
     }
 
     renderizarTabelaCompleta(dadosFiltrados);
-
-    // === RENDERIZAR MONITORIAS ===
     renderizarMonitorias();
+
+    // Atualiza campos de supervisor
+    if (isSupervisor) {
+      document.getElementById('metaDiariaGlobalInput').value = metaDiariaGlobal;
+      document.getElementById('metaGeralDiaInput').value = metaGeralDia;
+      document.getElementById('supervisorSettings').style.display = 'flex';
+    } else {
+      document.getElementById('supervisorSettings').style.display = 'none';
+    }
   }
 
   function renderizarTabelaCompleta(dados) {
@@ -1228,7 +1268,7 @@
   // ============================================================
   // MODAIS
   // ============================================================
-  function openHourDetail() {
+  function openHourDetail() { /* ... idêntico ao original ... */ 
     const modal = document.getElementById('hourDetailModal');
     const dadosFiltrados = filtrarDados();
     const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
@@ -1333,7 +1373,7 @@
     }
 
     const metrics = calcularMetricas(dados);
-    const adicionais = calcularMetricasAdicionais(metrics.feitasHoje, metrics.feitasMes, false);
+    const adicionais = calcularAdicionais(metrics.feitasHoje, metrics.feitasMes, false);
     const nome = obterNome(matricula);
 
     title.innerText = `📊 Estatísticas - ${nome} (${matricula})`;
@@ -1426,37 +1466,42 @@
     document.getElementById('dashboard').style.display = 'block';
 
     const isSupervisorFull = (papel === "supervisor") || (papel === "gm");
-    if (!isSupervisorFull) {
-      metaIndividualDia = META_DIARIA_FIXA_ATENDENTE;
-      metaIndividualMes = META_MENSAL_FIXA_ATENDENTE;
-      document.getElementById('metaIndividualArea').innerHTML = `
-        <div class="meta-fixa" style="margin-top:8px;">🎯 Meta diária: ${META_DIARIA_FIXA_ATENDENTE} notas</div>
-        <div class="meta-fixa">📆 Meta mensal: ${META_MENSAL_FIXA_ATENDENTE} notas</div>
-      `;
+
+    // Se for supervisor, mostra os campos de configuração
+    if (isSupervisorFull) {
+      document.getElementById('supervisorSettings').style.display = 'flex';
+
+      // Carrega valores salvos
+      document.getElementById('metaDiariaGlobalInput').value = metaDiariaGlobal;
+      document.getElementById('metaGeralDiaInput').value = metaGeralDia;
+
+      // Eventos para salvar alterações
+      document.getElementById('metaDiariaGlobalInput').addEventListener('change', (e) => {
+        const val = parseInt(e.target.value) || 31;
+        metaDiariaGlobal = val;
+        localStorage.setItem('metaDiariaGlobal_Neoenergia', val);
+        carregarDadosEAtualizar();
+      });
+      document.getElementById('metaGeralDiaInput').addEventListener('change', (e) => {
+        const val = parseInt(e.target.value) || 1;
+        metaGeralDia = val;
+        localStorage.setItem('metaGeralDia_Neoenergia', val);
+        carregarDadosEAtualizar();
+      });
     } else {
-      const savedDia = localStorage.getItem('metaIndDia_Neoenergia');
-      const savedMes = localStorage.getItem('metaIndMes_Neoenergia');
-      if (savedDia) metaIndividualDia = parseInt(savedDia);
-      if (savedMes) metaIndividualMes = parseInt(savedMes);
-      const savedEquipe = localStorage.getItem('metaEquipeDia_Neoenergia');
-      if (savedEquipe) metaEquipeDia = parseInt(savedEquipe);
-      document.getElementById('metaIndividualArea').innerHTML = `
-        <div><label>Minha meta por dia: <span id="metaDiaValue">${metaIndividualDia}</span></label><input type="range" id="metaDiaSlider" min="1" max="200" value="${metaIndividualDia}" class="slider" style="width:100%; accent-color:var(--primary);"></div>
-        <div><label>Minha meta do mês: <span id="metaMesValue">${metaIndividualMes}</span></label><input type="range" id="metaMesSlider" min="1" max="2000" value="${metaIndividualMes}" step="10" class="slider" style="width:100%; accent-color:var(--primary);"></div>
-      `;
-      document.getElementById('metaDiaSlider').addEventListener('input', (e) => {
-        metaIndividualDia = parseInt(e.target.value);
-        document.getElementById('metaDiaValue').innerText = metaIndividualDia;
-        localStorage.setItem('metaIndDia_Neoenergia', metaIndividualDia);
-        carregarDadosEAtualizar();
-      });
-      document.getElementById('metaMesSlider').addEventListener('input', (e) => {
-        metaIndividualMes = parseInt(e.target.value);
-        document.getElementById('metaMesValue').innerText = metaIndividualMes;
-        localStorage.setItem('metaIndMes_Neoenergia', metaIndividualMes);
-        carregarDadosEAtualizar();
-      });
+      document.getElementById('supervisorSettings').style.display = 'none';
     }
+
+    // Para usuários comuns, a meta diária é a global
+    metaIndividualDia = metaDiariaGlobal;
+    metaIndividualMes = metaDiariaGlobal * DIAS_UTEIS_MES;
+
+    // Área de meta individual (mostra apenas a meta global)
+    document.getElementById('metaIndividualArea').innerHTML = `
+      <div class="meta-fixa" style="margin-top:8px;">🎯 Meta diária: ${metaDiariaGlobal} notas</div>
+      <div class="meta-fixa">📆 Meta mensal: ${metaDiariaGlobal * DIAS_UTEIS_MES} notas</div>
+    `;
+
     document.getElementById('metaEquipeDia').value = metaEquipeDia;
     document.getElementById('metaEquipeDia').addEventListener('change', (e) => {
       if (isSupervisorFull) {
@@ -1481,6 +1526,11 @@
     document.getElementById('rankingArea').style.display = isSupervisor ? 'block' : 'none';
     document.getElementById('individualProductionArea').style.display = isSupervisor ? 'block' : 'none';
     document.getElementById('teamNotesSection').style.display = isSupervisor ? 'block' : 'none';
+    if (isSupervisor) {
+      document.getElementById('supervisorSettings').style.display = 'flex';
+    } else {
+      document.getElementById('supervisorSettings').style.display = 'none';
+    }
   }
 
   function mostrarErro(msg) { const e = document.getElementById('loginError'); e.innerText = msg; e.style.display = 'block'; setTimeout(() => e.style.display='none', 3000); }
@@ -1550,6 +1600,11 @@
     setupHourDetailModal();
     setupLinksModal();
   }
+
+  // ============================================================
+  // CONSTANTE ADICIONAL (DATA_INICIO)
+  // ============================================================
+  const DATA_INICIO = new Date(2026, 7, 9);
 
   initTheme();
   initEvents();
