@@ -236,7 +236,7 @@
           </div>
         </div>
 
-        <!-- Métricas principais (grid 5 itens) -->
+        <!-- Métricas principais -->
         <div class="metric-grid" style="grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));">
           <div class="metric-card" style="border-left:4px solid var(--primary);">
             <span class="metric-icon">📆</span>
@@ -266,10 +266,9 @@
           </div>
         </div>
 
-        <!-- CARD COMBINADO: NOTAS ÚLTIMA HORA + QUALIDADE -->
+        <!-- CARD COMBINADO -->
         <div class="card combo-card" style="margin-bottom:20px;">
           <div class="combo-container">
-            <!-- Lado esquerdo: Notas Última Hora -->
             <div class="last-hour-notes">
               <span class="label">🕒 Notas última hora</span>
               <div class="last-hour-values">
@@ -278,7 +277,6 @@
                 <span id="notasUltimaHoraEquipe" style="font-size:1.2rem; font-weight:500; color:var(--text-muted);">equipe: —</span>
               </div>
             </div>
-            <!-- Lado direito: Widget Qualidade (EXPANSÍVEL) -->
             <div class="quality-widget" id="qualityWidget" onclick="toggleQuality(event)">
               <div class="quality-header">
                 <span class="title">📊 Qualidade</span>
@@ -294,7 +292,6 @@
                   <span class="value na" id="qualidadeEquipe">—</span>
                 </div>
               </div>
-              <!-- Detalhes expansíveis -->
               <div class="quality-details">
                 <div class="detail-row">
                   <span class="label">🎯 Meta Individual</span>
@@ -322,7 +319,7 @@
           </div>
         </div>
 
-        <!-- Métricas Cria vs Backlog (mantidas) -->
+        <!-- Cria vs Backlog -->
         <div class="metric-grid">
           <div class="metric-card" style="border-left:4px solid #2ecc71;">
             <span class="metric-icon">✅</span>
@@ -365,7 +362,7 @@
           </div>
         </div>
 
-        <!-- Progresso da meta diária (mantido) -->
+        <!-- Progresso meta -->
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <span><strong>Progresso da meta diária</strong></span>
@@ -399,18 +396,18 @@
           </div>
         </div>
 
-        <!-- Ranking (Supervisor) -->
+        <!-- Ranking -->
         <div id="rankingArea" class="card" style="display:none;">
           <div><strong>🏆 Ranking de produção diária</strong></div>
           <div id="rankingList" style="margin-top:12px;"></div>
         </div>
 
-        <!-- Tabela individual (Supervisor) -->
+        <!-- Tabela individual -->
         <div id="individualProductionArea" class="card" style="display:none;">
           <div><strong>📊 Produtividade individual detalhada</strong></div>
           <div class="table-wrapper">
             <table class="prod-table">
-              <thead><th>Matrícula</th><th>Nome</th><th>Feitas hoje</th><th>Feitas mês</th><th>Finaliz. Cria (hoje)</th><th>Finaliz. Cria (mês)</th><th>Finaliz. Backlog (hoje)</th><th>Finaliz. Backlog (mês)</th><th>VERI+REDI Cria</th><th>VERI+REDI Backlog</th><th>VITE</th></thead>
+              <thead><tr><th>Matrícula</th><th>Nome</th><th>Feitas hoje</th><th>Feitas mês</th><th>Finaliz. Cria (hoje)</th><th>Finaliz. Cria (mês)</th><th>Finaliz. Backlog (hoje)</th><th>Finaliz. Backlog (mês)</th><th>VERI+REDI Cria</th><th>VERI+REDI Backlog</th><th>VITE</th></tr></thead>
               <tbody id="individualTableBody"></tbody>
             </table>
           </div>
@@ -440,7 +437,7 @@
           </div>
           <div class="table-wrapper">
             <table>
-              <thead><th>Data/Hora</th><th>Matrícula</th><th>Nome</th><th>Nº nota</th><th>Status</th><th>Tipo</th></thead>
+              <thead><tr><th>Data/Hora</th><th>Matrícula</th><th>Nome</th><th>Nº nota</th><th>Status</th><th>Tipo</th></tr></thead>
               <tbody id="tabBody"></tbody>
             </table>
           </div>
@@ -497,11 +494,15 @@
     const SHEET_ID = '18fouQ0lBF5fKKB8kovxNNK-ww187kQVqZiETMfK-x3o';
     const LINKS_SHEET_ID = '1m_sD07RmMn4W-i7-aLtCOL8N1SntoZnp03aExbn6F6c';
     const ABA_CREDENCIAIS = 'credenciais';
-    const ABAS_PRODUTIVIDADE = ['Dashboard', 'Produtividade Mensal Roniton'];
+
+    // ✅ CORRIGIDO: agora busca os dados da aba "Contagem" (conforme Print 1)
+    const ABAS_PRODUTIVIDADE = ['Contagem'];
+
     const ABA_MONITORIA = 'Monitorias';
     const ABA_LINKS = 'Página1';
-    // Nomes EXATOS das abas de qualidade (conforme sua planilha)
-    const ABA_QUALIDADE_INDIVIDUAL = 'QUALIDADE INDIVIDUAL'; // ajuste se necessário
+
+    // ✅ Nomes exatos das abas de qualidade (conforme Print 2)
+    const ABA_QUALIDADE_INDIVIDUAL = 'QUALIDADE INDIVIDUAL';
     const ABA_QUALIDADE_EQUIPE = 'QUALIDADE DA EQUIPE';
 
     const DIAS_UTEIS_MES = 20;
@@ -519,7 +520,6 @@
     let statusChart = null, hourlyChart = null, hourDetailChart = null;
     let refreshInterval = null;
 
-    // Dados de qualidade
     let qualidadeIndividualData = [];
     let qualidadeEquipeData = [];
 
@@ -531,94 +531,146 @@
       const resp = await fetch(url, { cache: 'no-store' });
       const txt = await resp.text();
       const match = txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);?\s*$/);
-      if (!match) throw new Error("Erro ao carregar dados");
+      if (!match) throw new Error("Erro ao carregar dados da aba " + sheetName);
       return JSON.parse(match[1]).table;
     }
+
     function parseTable(tbl) {
       if (!tbl || !tbl.rows) return [];
-      const cols = tbl.cols.map(c => c.label);
+      const cols = tbl.cols.map(c => c.label || '');
       return tbl.rows.map(row => {
         const obj = {};
         (row.c || []).forEach((cell, i) => {
           let val = cell?.v ?? '';
           if (cell?.v && typeof cell.v === 'string' && cell.v.startsWith('Date(')) val = cell.f || cell.v;
-          obj[cols[i]] = val;
+          obj[cols[i] || ('col' + i)] = val;
         });
         return obj;
       });
     }
+
     async function carregarAba(sheetId, nome) {
-      try { const tbl = await gviz(sheetId, nome); return parseTable(tbl); } catch (e) { console.warn(`Aba "${nome}" não encontrada:`, e); return []; }
-    }
-    async function carregarLinksUteis() {
-      try { const dados = await carregarAba(LINKS_SHEET_ID, ABA_LINKS); linksData = dados.filter(row => row.Nome && row.Link).map(row => ({ nome: row.Nome, link: row.Link })); } catch (e) { console.warn('Erro ao carregar links úteis:', e);
-        linksData = []; }
+      try {
+        const tbl = await gviz(sheetId, nome);
+        return parseTable(tbl);
+      } catch (e) {
+        console.warn(`Aba "${nome}" não encontrada:`, e);
+        return [];
+      }
     }
 
+    async function carregarLinksUteis() {
+      try {
+        const dados = await carregarAba(LINKS_SHEET_ID, ABA_LINKS);
+        linksData = dados.filter(row => row.Nome && row.Link).map(row => ({ nome: row.Nome, link: row.Link }));
+      } catch (e) {
+        console.warn('Erro ao carregar links úteis:', e);
+        linksData = [];
+      }
+    }
+
+    // ============================================================
+    // NORMALIZAÇÃO DE REGISTROS
+    // ============================================================
     function normalizarRegistro(row) {
       const keys = Object.keys(row);
-      const findKey = (patterns) => { for (const p of patterns) { const found = keys.find(k => k.toLowerCase().includes(p.toLowerCase())); if (found) return found; } return null; };
+      const findKey = (patterns) => {
+        for (const p of patterns) {
+          const found = keys.find(k => k.toLowerCase().includes(p.toLowerCase()));
+          if (found) return found;
+        }
+        return null;
+      };
+
       const timestampKey = findKey(['carimbo', 'data/hora', 'data hora', 'data']);
       const matriculaKey = findKey(['matrícula', 'matricula']);
-      const notaKey = findKey(['nº da nota', 'n.º da nota', 'nota', 'numero nota']);
-      const statusKey = findKey(['status']);
-      const tipoKey = findKey(['back', 'cria', 'tipo']);
+      const notaKey      = findKey(['nº da nota', 'n.º da nota', 'nota', 'numero nota']);
+      const statusKey    = findKey(['status']);
+      // ✅ CORRIGIDO: adicionado 'resposta' para ler a coluna "Resposta" (Cria/Backlog)
+      const tipoKey      = findKey(['resposta', 'back', 'cria', 'tipo']);
+
       let timestamp = row[timestampKey] || '';
-      let mat = row[matriculaKey] || '';
-      let nota = row[notaKey] || '';
+      let mat       = row[matriculaKey] || '';
+      let nota      = row[notaKey] || '';
       let statusRaw = (row[statusKey] || "").toUpperCase();
-      if (statusRaw === "FINALIZADO") statusRaw = "FINL";
-      if (statusRaw === "REDIRECIONADO") statusRaw = "REDI";
-      if (statusRaw === "VERIFICAÇÃO") statusRaw = "VERI";
-      if (statusRaw === "URGENTE") statusRaw = "VITE";
+      if (statusRaw === "FINALIZADO")      statusRaw = "FINL";
+      if (statusRaw === "REDIRECIONADO")   statusRaw = "REDI";
+      if (statusRaw === "VERIFICAÇÃO")     statusRaw = "VERI";
+      if (statusRaw === "URGENTE")         statusRaw = "VITE";
+
       let tipoRaw = (row[tipoKey] || "").toLowerCase().trim();
       let tipo = "";
-      if (tipoRaw.includes("cria")) tipo = "cria";
-      else if (tipoRaw.includes("backlog")) tipo = "backlog";
-      return { "Carimbo de data/hora": timestamp, "Matricula": mat, "Nº da nota": nota, "Status": statusRaw,
-      "Back ou Cria?": tipo };
+      if (tipoRaw.includes("cria"))         tipo = "cria";
+      else if (tipoRaw.includes("back"))    tipo = "backlog";
+
+      return {
+        "Carimbo de data/hora": timestamp,
+        "Matricula": mat,
+        "Nº da nota": nota,
+        "Status": statusRaw,
+        "Back ou Cria?": tipo
+      };
     }
 
+    // ============================================================
+    // CARREGAR DADOS CONSOLIDADOS
+    // ============================================================
     async function carregarDadosConsolidados() {
       let todos = [];
       for (const nomeAba of ABAS_PRODUTIVIDADE) {
         const dados = await carregarAba(SHEET_ID, nomeAba);
-        if (dados.length > 0) { const norm = dados.map(row => normalizarRegistro(row)); todos = todos.concat(norm); } else { console.warn(`⚠️ Aba "${nomeAba}" vazia ou não encontrada.`); }
+        if (dados.length > 0) {
+          console.log(`📊 ${nomeAba}: ${dados.length} registros carregados`);
+          const norm = dados.map(row => normalizarRegistro(row));
+          todos = todos.concat(norm);
+        } else {
+          console.warn(`⚠️ Aba "${nomeAba}" vazia ou não encontrada.`);
+        }
       }
       allRows = todos;
       console.log(`✅ Total de registros consolidados: ${allRows.length}`);
+      if (allRows.length > 0) {
+        console.log('Amostra do primeiro registro normalizado:', allRows[0]);
+      }
+
       await carregarMonitorias();
-      // Carregar dados de qualidade com os nomes exatos das abas
+
       qualidadeIndividualData = await carregarAba(SHEET_ID, ABA_QUALIDADE_INDIVIDUAL);
-      qualidadeEquipeData = await carregarAba(SHEET_ID, ABA_QUALIDADE_EQUIPE);
+      qualidadeEquipeData     = await carregarAba(SHEET_ID, ABA_QUALIDADE_EQUIPE);
+
       console.log(`✅ Qualidade Individual: ${qualidadeIndividualData.length} registros`);
       console.log(`✅ Qualidade da Equipe: ${qualidadeEquipeData.length} registros`);
       if (qualidadeEquipeData.length > 0) {
-        console.log('Amostra qualidade equipe (primeiro registro):', qualidadeEquipeData[0]);
-        console.log('Chaves da primeira linha:', Object.keys(qualidadeEquipeData[0]));
+        console.log('Chaves da primeira linha (equipe):', Object.keys(qualidadeEquipeData[0]));
+        console.log('Primeiro registro (equipe):', qualidadeEquipeData[0]);
+      }
+      if (qualidadeIndividualData.length > 0) {
+        console.log('Chaves da primeira linha (individual):', Object.keys(qualidadeIndividualData[0]));
       }
     }
 
     // ============================================================
-    // FUNÇÕES DE DATA E MONITORIAS
+    // FUNÇÕES DE DATA
     // ============================================================
     function parseDataHora(str) {
       if (!str) return null;
-      const [dataPart] = str.split(' ');
+      const [dataPart] = String(str).split(' ');
       if (!dataPart) return null;
       const [dia, mes, ano] = dataPart.split('/');
       if (!ano) return null;
       return new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia));
     }
+
     function parseTimestampFull(str) {
       if (!str) return null;
-      const [dataPart, horaPart] = str.split(' ');
+      const [dataPart, horaPart] = String(str).split(' ');
       if (!dataPart || !horaPart) return null;
       const [dia, mes, ano] = dataPart.split('/');
       const [hora, minuto, segundo] = horaPart.split(':');
       if (!ano || !hora) return null;
       return new Date(parseInt(ano), parseInt(mes) - 1, parseInt(dia), parseInt(hora), parseInt(minuto), parseInt(segundo || 0));
     }
+
     function formatDate(dateStr) {
       if (!dateStr) return '-';
       if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) return dateStr;
@@ -632,30 +684,36 @@
       return dateStr;
     }
 
+    // ============================================================
+    // MONITORIAS
+    // ============================================================
     async function carregarMonitorias() {
       try {
         const dados = await carregarAba(SHEET_ID, ABA_MONITORIA);
         if (!dados || dados.length === 0) { monitoriasData = []; return; }
         const cabecalho = Object.keys(dados[0]);
-        const colDataNota = cabecalho.find(c => /data da nota/i.test(c));
-        const colDataAuditoria = cabecalho.find(c => /data da auditoria/i.test(c));
-        const colMatricula = cabecalho.find(c => /matrícula|matricula/i.test(c));
-        const colColaborador = cabecalho.find(c => /colaborador/i.test(c));
-        const colNota = cabecalho.find(c => /notas|nota/i.test(c) && !/data/i.test(c));
-        const colMotivo = cabecalho.find(c => /motivo|erro/i.test(c));
-        const colOrientacao = cabecalho.find(c => /orientação|orientacao/i.test(c));
+        const colDataNota       = cabecalho.find(c => /data da nota/i.test(c));
+        const colDataAuditoria  = cabecalho.find(c => /data da auditoria/i.test(c));
+        const colMatricula      = cabecalho.find(c => /matrícula|matricula/i.test(c));
+        const colColaborador    = cabecalho.find(c => /colaborador/i.test(c));
+        const colNota           = cabecalho.find(c => /notas|nota/i.test(c) && !/data/i.test(c));
+        const colMotivo         = cabecalho.find(c => /motivo|erro/i.test(c));
+        const colOrientacao     = cabecalho.find(c => /orientação|orientacao/i.test(c));
+
         monitoriasData = dados.map(row => ({
-          dataNota: colDataNota ? row[colDataNota] : '',
+          dataNota:      colDataNota ? row[colDataNota] : '',
           dataAuditoria: colDataAuditoria ? row[colDataAuditoria] : '',
-          matricula: colMatricula ? String(row[colMatricula]).trim() : '',
-          colaborador: colColaborador ? row[colColaborador] : '',
-          nota: colNota ? row[colNota] : '',
-          motivo: colMotivo ? row[colMotivo] : '',
-          orientacao: colOrientacao ? row[colOrientacao] : ''
+          matricula:     colMatricula ? String(row[colMatricula]).trim() : '',
+          colaborador:   colColaborador ? row[colColaborador] : '',
+          nota:          colNota ? row[colNota] : '',
+          motivo:        colMotivo ? row[colMotivo] : '',
+          orientacao:    colOrientacao ? row[colOrientacao] : ''
         }));
         console.log(`✅ Monitorias carregadas: ${monitoriasData.length} registros.`);
-      } catch (e) { console.warn('Erro ao carregar monitorias:', e);
-        monitoriasData = []; }
+      } catch (e) {
+        console.warn('Erro ao carregar monitorias:', e);
+        monitoriasData = [];
+      }
     }
 
     function renderizarMonitorias() {
@@ -665,28 +723,34 @@
       const matriculaUsuario = currentUser ? currentUser.matricula : '';
       const minhas = monitoriasData.filter(item => item.matricula === matriculaUsuario);
       if (minhas.length === 0) {
-        container.innerHTML =
-          `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Nenhuma monitoria encontrada para a matrícula <strong>${matriculaUsuario}</strong>.</td></tr>`;
+        container.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Nenhuma monitoria encontrada para a matrícula <strong>${matriculaUsuario}</strong>.</td></tr>`;
         if (countSpan) countSpan.textContent = '';
         return;
       }
       if (countSpan) countSpan.textContent = `(${minhas.length} registro${minhas.length > 1 ? 's' : ''})`;
       container.innerHTML = minhas.map(item => `
-          <tr>
-            <td>${formatDate(item.dataNota)}</td>
-            <td>${formatDate(item.dataAuditoria)}</td>
-            <td>${item.nota || '-'}</td>
-            <td>${item.motivo || '-'}</td>
-            <td style="white-space:pre-wrap; max-width:300px;">${item.orientacao || '-'}</td>
-          </tr>
-        `).join('');
+        <tr>
+          <td>${formatDate(item.dataNota)}</td>
+          <td>${formatDate(item.dataAuditoria)}</td>
+          <td>${item.nota || '-'}</td>
+          <td>${item.motivo || '-'}</td>
+          <td style="white-space:pre-wrap; max-width:300px;">${item.orientacao || '-'}</td>
+        </tr>
+      `).join('');
     }
 
     // ============================================================
-    // FUNÇÕES DE NOMES E FILTROS
+    // NOMES E FILTROS
     // ============================================================
-    function obterNomeMatricula(mat) { const matNorm = String(mat).trim(); const nome = usuariosMap[matNorm] || matNorm; return nome !== matNorm ? `${nome} (${matNorm})` : matNorm; }
-    function obterNome(mat) { const matNorm = String(mat).trim(); return usuariosMap[matNorm] || matNorm; }
+    function obterNomeMatricula(mat) {
+      const matNorm = String(mat).trim();
+      const nome = usuariosMap[matNorm] || matNorm;
+      return nome !== matNorm ? `${nome} (${matNorm})` : matNorm;
+    }
+    function obterNome(mat) {
+      const matNorm = String(mat).trim();
+      return usuariosMap[matNorm] || matNorm;
+    }
     function filtrarDados() {
       const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
       if (isSupervisor) return allRows;
@@ -694,7 +758,7 @@
     }
 
     // ============================================================
-    // CÁLCULO DE MÉTRICAS DE PRODUTIVIDADE
+    // MÉTRICAS
     // ============================================================
     function calcularMetricas(rows) {
       const hoje = new Date();
@@ -708,28 +772,47 @@
       let notasUltimaHora = 0;
       const statusCount = { FINL: 0, REDI: 0, VERI: 0, VITE: 0 };
       let totalNotas = rows.length;
+
       for (const row of rows) {
         const timestamp = row["Carimbo de data/hora"] || '';
-        const dataObj = parseDataHora(timestamp);
-        const tsFull = parseTimestampFull(timestamp);
-        const status = row.Status || '';
-        const tipo = row["Back ou Cria?"] || '';
+        const dataObj   = parseDataHora(timestamp);
+        const tsFull    = parseTimestampFull(timestamp);
+        const status    = row.Status || '';
+        const tipo      = row["Back ou Cria?"] || '';
+
         if (dataObj) {
-          const isHoje = dataObj.toDateString() === hoje.toDateString();
+          const isHoje     = dataObj.toDateString() === hoje.toDateString();
           const isMesAtual = (dataObj.getMonth() === hoje.getMonth() && dataObj.getFullYear() === hoje.getFullYear());
-          if (isHoje) feitasHoje++;
+          if (isHoje)     feitasHoje++;
           if (isMesAtual) feitasMes++;
+
           if (status === 'FINL') {
-            if (tipo === 'cria') { if (isHoje) finalizadasCriaHoje++; if (isMesAtual) finalizadasCriaMes++; } else if (tipo === 'backlog') { if (isHoje) finalizadasBacklogHoje++; if (isMesAtual) finalizadasBacklogMes++; }
+            if (tipo === 'cria') {
+              if (isHoje)     finalizadasCriaHoje++;
+              if (isMesAtual) finalizadasCriaMes++;
+            } else if (tipo === 'backlog') {
+              if (isHoje)     finalizadasBacklogHoje++;
+              if (isMesAtual) finalizadasBacklogMes++;
+            }
           }
         }
-        if (status === 'VERI' || status === 'REDI') { if (tipo === 'cria') veriRediCria++; else if (tipo === 'backlog') veriRediBacklog++; }
+
+        if (status === 'VERI' || status === 'REDI') {
+          if (tipo === 'cria')          veriRediCria++;
+          else if (tipo === 'backlog')  veriRediBacklog++;
+        }
         if (status === 'VITE') viteTotal++;
         if (statusCount[status] !== undefined) statusCount[status]++;
         if (tsFull && tsFull >= umaHoraAtras && tsFull <= agora) notasUltimaHora++;
       }
-      return { feitasHoje, feitasMes, finalizadasCriaHoje, finalizadasCriaMes, finalizadasBacklogHoje, finalizadasBacklogMes,
-        veriRediCria, veriRediBacklog, viteTotal, notasUltimaHora, statusCount, totalNotas };
+
+      return {
+        feitasHoje, feitasMes,
+        finalizadasCriaHoje, finalizadasCriaMes,
+        finalizadasBacklogHoje, finalizadasBacklogMes,
+        veriRediCria, veriRediBacklog, viteTotal,
+        notasUltimaHora, statusCount, totalNotas
+      };
     }
 
     function calcularMetricasIndividuais() {
@@ -737,9 +820,17 @@
       let dados = allRows;
       if (!isSupervisor) dados = dados.filter(r => String(r.Matricula).trim() === currentUser.matricula);
       const mapa = new Map();
-      for (const row of dados) { const mat = row.Matricula.trim(); if (!mat) continue; if (!mapa.has(mat)) mapa.set(mat, []); mapa.get(mat).push(row); }
+      for (const row of dados) {
+        const mat = row.Matricula.trim();
+        if (!mat) continue;
+        if (!mapa.has(mat)) mapa.set(mat, []);
+        mapa.get(mat).push(row);
+      }
       const resultado = [];
-      for (let [mat, rows] of mapa.entries()) { const metrics = calcularMetricas(rows); resultado.push({ mat, ...metrics }); }
+      for (let [mat, rows] of mapa.entries()) {
+        const metrics = calcularMetricas(rows);
+        resultado.push({ mat, ...metrics });
+      }
       return resultado;
     }
 
@@ -760,90 +851,134 @@
     function calcularNotasPorHora(dados, horas = 12) {
       const agora = new Date();
       const intervalos = [];
-      for (let i = horas - 1; i >= 0; i--) { const h = new Date(agora.getTime() - i * 60 * 60 * 1000);
+      for (let i = horas - 1; i >= 0; i--) {
+        const h = new Date(agora.getTime() - i * 60 * 60 * 1000);
         h.setMinutes(0, 0, 0);
-        intervalos.push(h); }
+        intervalos.push(h);
+      }
       const contagem = new Array(horas).fill(0);
       for (const row of dados) {
         const ts = parseTimestampFull(row["Carimbo de data/hora"]);
         if (!ts) continue;
-        for (let i = 0; i < intervalos.length; i++) { if (ts >= intervalos[i] && ts < new Date(intervalos[i].getTime() + 3600000)) { contagem[i]++; break; } }
+        for (let i = 0; i < intervalos.length; i++) {
+          if (ts >= intervalos[i] && ts < new Date(intervalos[i].getTime() + 3600000)) {
+            contagem[i]++;
+            break;
+          }
+        }
       }
       const labels = intervalos.map(h => `${h.getHours().toString().padStart(2, '0')}:00`);
       return { labels, contagem };
     }
 
     // ============================================================
-    // FUNÇÕES DE QUALIDADE (CORRIGIDAS)
+    // ✅ QUALIDADE – funções com fallback posicional
     // ============================================================
+    function normalizarTexto(s) {
+      return String(s || '')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase().trim();
+    }
+    function encontrarChave(obj, patterns) {
+      if (!obj) return null;
+      const keys = Object.keys(obj);
+      for (const p of patterns) {
+        const pn = normalizarTexto(p);
+        const found = keys.find(k => normalizarTexto(k).includes(pn));
+        if (found) return found;
+      }
+      return null;
+    }
+    function parseValorPercentual(raw) {
+      if (raw === null || raw === undefined || raw === '') return null;
+      const s = String(raw).replace(/%/g, '').replace(/\s/g, '').replace(',', '.').trim();
+      const v = parseFloat(s);
+      return isNaN(v) ? null : v;
+    }
+
+    // -------- Qualidade Individual --------
     function obterQualidadeIndividual(matricula) {
       if (!qualidadeIndividualData || !qualidadeIndividualData.length) return null;
-      // Filtrar pela matrícula
-      const filtrados = qualidadeIndividualData.filter(item => {
-        const mat = String(item.MATRICULA || '').trim();
-        return mat === matricula;
-      });
-      if (!filtrados.length) return null;
-      // Ordenar por DATA decrescente (mais recente primeiro)
-      filtrados.sort((a,b) => {
-        const da = parseDataHora(a.DATA);
-        const db = parseDataHora(b.DATA);
-        if (!da && !db) return 0;
-        if (!da) return 1;
-        if (!db) return -1;
-        return db - da;
-      });
-      const maisRecente = filtrados[0];
-      // Buscar coluna que contém "QUALIDADE" e "INDIVIDUAL"
-      const keys = Object.keys(maisRecente);
-      let coluna = keys.find(k => /QUALIDADE.*INDIVIDUAL/i.test(k));
-      if (!coluna) {
-        // Fallback: qualquer coluna que tenha "QUALIDADE"
-        coluna = keys.find(k => /QUALIDADE/i.test(k));
-        if (!coluna) return null;
-      }
-      const valorRaw = maisRecente[coluna];
-      const valorStr = String(valorRaw).replace(/%/g, '').replace(',', '.').trim();
-      const valor = parseFloat(valorStr);
-      return isNaN(valor) ? null : valor;
-    }
-
-    function obterQualidadeEquipe() {
-      if (!qualidadeEquipeData || !qualidadeEquipeData.length) {
-        console.warn('Nenhum dado de qualidade da equipe.');
+      const first = qualidadeIndividualData[0];
+      const matKey  = encontrarChave(first, ['matricula']);
+      const dataKey = encontrarChave(first, ['data']);
+      if (!matKey) {
+        console.warn('Qualidade Individual: coluna de matrícula não encontrada. Chaves:', Object.keys(first));
         return null;
       }
-      // Ordenar por DATA decrescente (mais recente primeiro)
-      const sorted = [...qualidadeEquipeData].sort((a, b) => {
-        const da = parseDataHora(a.DATA);
-        const db = parseDataHora(b.DATA);
-        if (!da && !db) return 0;
-        if (!da) return 1;
-        if (!db) return -1;
-        return db - da;
-      });
-      const maisRecente = sorted[0];
-      // Buscar coluna que contenha "QUALIDADE" e "EQUIPE" (case-insensitive)
-      const keys = Object.keys(maisRecente);
-      console.log('Chaves disponíveis na aba equipe:', keys);
-      let coluna = keys.find(k => /QUALIDADE.*EQUIPE/i.test(k));
-      if (!coluna) {
-        // Fallback: se não achar, procura qualquer coluna com "QUALIDADE"
-        coluna = keys.find(k => /QUALIDADE/i.test(k));
-        if (!coluna) {
-          console.warn('Nenhuma coluna de qualidade encontrada na aba equipe.');
-          return null;
-        }
-        console.warn(`Usando coluna "${coluna}" como fallback para qualidade da equipe.`);
+
+      const filtrados = qualidadeIndividualData.filter(item =>
+        String(item[matKey] || '').trim() === String(matricula).trim()
+      );
+      if (!filtrados.length) return null;
+
+      let maisRecente;
+      if (dataKey) {
+        filtrados.sort((a, b) => {
+          const da = parseDataHora(a[dataKey]);
+          const db = parseDataHora(b[dataKey]);
+          if (!da && !db) return 0;
+          if (!da) return 1;
+          if (!db) return -1;
+          return db - da;
+        });
+        maisRecente = filtrados[0];
+      } else {
+        maisRecente = filtrados[filtrados.length - 1];
       }
-      const valorRaw = maisRecente[coluna];
-      const valorStr = String(valorRaw).replace(/%/g, '').replace(',', '.').trim();
-      const valor = parseFloat(valorStr);
-      return isNaN(valor) ? null : valor;
+
+      const keys = Object.keys(maisRecente);
+      let coluna = keys.find(k => /QUALIDADE.*INDIVIDUAL/i.test(k));
+      if (!coluna) coluna = keys.find(k => /QUALIDADE/i.test(k));
+      if (!coluna) coluna = keys[3] || keys[keys.length - 1];
+
+      console.log(`[Qualidade Individual] Coluna usada: "${coluna}" | valor bruto:`, maisRecente[coluna]);
+      return parseValorPercentual(maisRecente[coluna]);
+    }
+
+    // -------- Qualidade da Equipe --------
+    function obterQualidadeEquipe() {
+      if (!qualidadeEquipeData || !qualidadeEquipeData.length) {
+        console.warn('Qualidade da Equipe: nenhum dado carregado.');
+        return null;
+      }
+      const first = qualidadeEquipeData[0];
+      const dataKey = encontrarChave(first, ['data']);
+
+      let maisRecente;
+      if (dataKey) {
+        const sorted = [...qualidadeEquipeData].sort((a, b) => {
+          const da = parseDataHora(a[dataKey]);
+          const db = parseDataHora(b[dataKey]);
+          if (!da && !db) return 0;
+          if (!da) return 1;
+          if (!db) return -1;
+          return db - da;
+        });
+        maisRecente = sorted[0];
+      } else {
+        maisRecente = qualidadeEquipeData[qualidadeEquipeData.length - 1];
+      }
+
+      const keys = Object.keys(maisRecente);
+      console.log('[Qualidade Equipe] Chaves disponíveis:', keys);
+      console.log('[Qualidade Equipe] Registro mais recente:', maisRecente);
+
+      let coluna = keys.find(k => /QUALIDADE.*EQUIPE/i.test(k));
+      if (!coluna) coluna = keys.find(k => /QUALIDADE/i.test(k));
+      if (!coluna) {
+        coluna = keys[2] || keys[keys.length - 1];
+        console.warn(`[Qualidade Equipe] Usando fallback posicional: "${coluna}"`);
+      }
+
+      const valorBruto = maisRecente[coluna];
+      console.log(`[Qualidade Equipe] Coluna usada: "${coluna}" | valor bruto:`, valorBruto);
+
+      return parseValorPercentual(valorBruto);
     }
 
     // ============================================================
-    // FUNÇÃO PARA EXIBIR DETALHES DO ATENDENTE
+    // DETALHES DO ATENDENTE
     // ============================================================
     function showAgentDetails(matricula) {
       const modal = document.getElementById('agentDetailModal');
@@ -852,8 +987,14 @@
       const matNorm = matricula.trim();
       const nome = obterNome(matNorm);
       title.innerText = `📊 Detalhes de ${nome} (${matNorm})`;
+
       const notas = allRows.filter(row => String(row.Matricula).trim() === matNorm);
-      if (notas.length === 0) { content.innerHTML = `<div class="text-muted">Nenhuma nota encontrada para este atendente.</div>`; modal.style.display = 'flex'; return; }
+      if (notas.length === 0) {
+        content.innerHTML = `<div class="text-muted">Nenhuma nota encontrada para este atendente.</div>`;
+        modal.style.display = 'flex';
+        return;
+      }
+
       const metrics = calcularMetricas(notas);
       const adicionais = calcularAdicionais(metrics.feitasHoje, metrics.feitasMes);
       const q = obterQualidadeIndividual(matNorm);
@@ -862,9 +1003,13 @@
       const sorted = [...notas].sort((a, b) => {
         const tsA = parseTimestampFull(a["Carimbo de data/hora"]);
         const tsB = parseTimestampFull(b["Carimbo de data/hora"]);
-        if (!tsA && !tsB) return 0; if (!tsA) return 1; if (!tsB) return -1; return tsB - tsA;
+        if (!tsA && !tsB) return 0;
+        if (!tsA) return 1;
+        if (!tsB) return -1;
+        return tsB - tsA;
       });
       const ultima = sorted[0];
+
       const badge = (s) => {
         const u = s || '';
         if (u === 'FINL') return '<span class="badge badge-finl">FINL</span>';
@@ -873,6 +1018,7 @@
         if (u === 'VITE') return '<span class="badge badge-vite">VITE</span>';
         return '<span class="badge">—</span>';
       };
+
       content.innerHTML = `
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
           <div style="background:var(--bg-start); padding:14px; border-radius:16px; border:1px solid var(--glass-border);">
@@ -951,11 +1097,9 @@
       const notasEquipe = isSupervisor ? metricsEquipe.notasUltimaHora : metrics.notasUltimaHora;
       document.getElementById('notasUltimaHoraEquipe').innerText = `equipe: ${notasEquipe}`;
 
-      // ===== WIDGET DE QUALIDADE (DADOS REAIS) =====
+      // ===== QUALIDADE =====
       let qualInd = null;
-      if (currentUser) {
-        qualInd = obterQualidadeIndividual(currentUser.matricula);
-      }
+      if (currentUser) qualInd = obterQualidadeIndividual(currentUser.matricula);
       let qualEq = obterQualidadeEquipe();
 
       const displayVal = (val) => val !== null ? val.toFixed(1) + '%' : '—';
@@ -976,8 +1120,10 @@
       const ctx = document.getElementById('statusChart').getContext('2d');
       statusChart = new Chart(ctx, {
         type: 'bar',
-        data: { labels: Object.keys(metrics.statusCount), datasets: [{ data: Object.values(metrics.statusCount),
-            backgroundColor: '#0057a0' }] },
+        data: {
+          labels: Object.keys(metrics.statusCount),
+          datasets: [{ data: Object.values(metrics.statusCount), backgroundColor: '#0057a0' }]
+        },
         options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } } }
       });
 
@@ -987,8 +1133,14 @@
       if (hourlyChart) hourlyChart.destroy();
       hourlyChart = new Chart(hourlyCtx, {
         type: 'line',
-        data: { labels, datasets: [{ label: 'Notas por hora', data: contagem, borderColor: '#0057a0',
-            backgroundColor: 'rgba(0,87,160,0.05)', tension: 0.3, fill: true }] },
+        data: {
+          labels,
+          datasets: [{
+            label: 'Notas por hora', data: contagem,
+            borderColor: '#0057a0', backgroundColor: 'rgba(0,87,160,0.05)',
+            tension: 0.3, fill: true
+          }]
+        },
         options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } } }
       });
 
@@ -999,11 +1151,16 @@
         const ts = parseTimestampFull(row["Carimbo de data/hora"]);
         return ts && ts >= umaHoraAtras && ts <= agora;
       }).slice(-20).reverse();
-      document.getElementById('lastHourNotesList').innerHTML = notasUltimaHoraList.map(row => `
-          <div class="nota-item"><span>${row["Nº da nota"] || '-'}</span><span>${obterNomeMatricula(row.Matricula)}</span><span class="badge ${row.Status.toLowerCase()}">${row.Status || '-'}</span></div>
-        `).join('') || '<div class="text-muted">Nenhuma nota na última hora.</div>';
 
-      // Equipe – ÚLTIMA NOTA DE CADA ATENDENTE (supervisor)
+      document.getElementById('lastHourNotesList').innerHTML = notasUltimaHoraList.map(row => `
+        <div class="nota-item">
+          <span>${row["Nº da nota"] || '-'}</span>
+          <span>${obterNomeMatricula(row.Matricula)}</span>
+          <span class="badge ${(row.Status||'').toLowerCase()}">${row.Status || '-'}</span>
+        </div>
+      `).join('') || '<div class="text-muted">Nenhuma nota na última hora.</div>';
+
+      // Última nota de cada atendente
       if (isSupervisor) {
         const filtro = document.getElementById('filtroMatricula')?.value.toLowerCase() || '';
         const ultimasPorMat = new Map();
@@ -1023,16 +1180,16 @@
           .sort((a, b) => b.timestamp - a.timestamp);
 
         document.getElementById('teamNotesList').innerHTML = sorted.map(({ mat, row }) => `
-            <div class="nota-item" style="cursor:pointer;" onclick="showAgentDetails('${mat}')">
-              <span><strong>${obterNomeMatricula(mat)}</strong></span>
-              <span>${row["Nº da nota"] || '-'}</span>
-              <span>${row["Carimbo de data/hora"] || '-'}</span>
-              <span class="badge ${row.Status.toLowerCase()}">${row.Status || '-'}</span>
-            </div>
-          `).join('') || '<div class="text-muted">Nenhuma nota encontrada.</div>';
+          <div class="nota-item" style="cursor:pointer;" onclick="showAgentDetails('${mat}')">
+            <span><strong>${obterNomeMatricula(mat)}</strong></span>
+            <span>${row["Nº da nota"] || '-'}</span>
+            <span>${row["Carimbo de data/hora"] || '-'}</span>
+            <span class="badge ${(row.Status||'').toLowerCase()}">${row.Status || '-'}</span>
+          </div>
+        `).join('') || '<div class="text-muted">Nenhuma nota encontrada.</div>';
       }
 
-      // Ranking e Tabela Individual (com nomes)
+      // Ranking e tabela individual
       if (isSupervisor) {
         const individuais = calcularMetricasIndividuais();
         individuais.sort((a, b) => b.feitasHoje - a.feitasHoje);
@@ -1042,8 +1199,7 @@
         individuais.slice(0, 10).forEach((p, index) => {
           const pos = index + 1;
           let stars = '';
-          if (pos <= 5) { const starCount = 6 - pos;
-            stars = '⭐'.repeat(starCount); }
+          if (pos <= 5) stars = '⭐'.repeat(6 - pos);
           rankingHtml += `
             <div class="ranking-item" data-mat="${p.mat}" onclick="showAgentDetails('${p.mat}')">
               <span class="pos">#${pos}</span>
@@ -1080,7 +1236,7 @@
     }
 
     // ============================================================
-    // RENDERIZAR TABELA COMPLETA
+    // TABELA COMPLETA
     // ============================================================
     function renderizarTabelaCompleta(dados) {
       const search = document.getElementById('searchTab')?.value.toLowerCase() || '';
@@ -1088,6 +1244,7 @@
       const statusFilter = document.getElementById('filterStatus')?.value.toUpperCase() || '';
       const dataFilter = document.getElementById('filtroDataRegistros')?.value || '';
       const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
+
       let filtered = dados.filter(r => {
         const matchSearch = !search ||
           (r["Carimbo de data/hora"] || '').toLowerCase().includes(search) ||
@@ -1100,11 +1257,15 @@
           const dataRegistro = r["Carimbo de data/hora"]?.split(' ')[0] || '';
           if (dataRegistro) {
             const partes = dataRegistro.split('/');
-            if (partes.length === 3) { const dataFormatada = `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`; matchData = dataFormatada === dataFilter; } else matchData = dataRegistro === dataFilter;
+            if (partes.length === 3) {
+              const dataFormatada = `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+              matchData = dataFormatada === dataFilter;
+            } else matchData = dataRegistro === dataFilter;
           } else matchData = false;
         }
         return matchSearch && matchMatricula && matchStatus && matchData;
       }).slice(0, 300);
+
       const badge = (s) => {
         const u = s || '';
         if (u === 'FINL') return '<span class="badge badge-finl">FINL</span>';
@@ -1113,11 +1274,13 @@
         if (u === 'VITE') return '<span class="badge badge-vite">VITE</span>';
         return '<span class="badge">—</span>';
       };
+
       document.getElementById('tabBody').innerHTML = filtered.map(row => {
         const mat = row.Matricula || '';
         const nome = obterNome(mat);
-        const nomeDisplay = isSupervisor ? `<span class="clickable-name" onclick="showAgentDetails('${mat}')">${nome}</span>` :
-          nome;
+        const nomeDisplay = isSupervisor
+          ? `<span class="clickable-name" onclick="showAgentDetails('${mat}')">${nome}</span>`
+          : nome;
         return `
           <tr>
             <td>${row["Carimbo de data/hora"] || '-'}</td>
@@ -1139,8 +1302,7 @@
       fab.style.transform = 'rotate(360deg)';
       document.body.classList.add('updating');
       await carregarDadosEAtualizar();
-      setTimeout(() => { fab.style.transform = '';
-        document.body.classList.remove('updating'); }, 300);
+      setTimeout(() => { fab.style.transform = ''; document.body.classList.remove('updating'); }, 300);
     }
 
     // ============================================================
@@ -1159,32 +1321,48 @@
       const modal = document.getElementById('hourDetailModal');
       const dadosFiltrados = filtrarDados();
       const isSupervisor = (currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode);
-      document.getElementById('hourDetailSub').innerText = isSupervisor ? 'Últimas 12 horas - Todos os atendentes' :
-        `Últimas 12 horas - ${currentUser.matricula}`;
+      document.getElementById('hourDetailSub').innerText = isSupervisor
+        ? 'Últimas 12 horas - Todos os atendentes'
+        : `Últimas 12 horas - ${currentUser.matricula}`;
+
       const { labels, contagem } = calcularNotasPorHora(dadosFiltrados, 12);
       const ctx = document.getElementById('hourDetailChart').getContext('2d');
       if (hourDetailChart) hourDetailChart.destroy();
       hourDetailChart = new Chart(ctx, {
         type: 'bar',
-        data: { labels, datasets: [{ label: 'Notas por hora', data: contagem, backgroundColor: 'rgba(0,87,160,0.6)',
-            borderColor: '#0057a0', borderWidth: 1 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+        data: {
+          labels,
+          datasets: [{
+            label: 'Notas por hora', data: contagem,
+            backgroundColor: 'rgba(0,87,160,0.6)', borderColor: '#0057a0', borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
       });
+
       const agora = new Date();
       const umaHoraAtras = new Date(agora.getTime() - 3600000);
       const notasUltimaHora = dadosFiltrados.filter(row => {
         const ts = parseTimestampFull(row["Carimbo de data/hora"]);
         return ts && ts >= umaHoraAtras && ts <= agora;
       }).slice(-20).reverse();
+
       document.getElementById('hourDetailLastHourList').innerHTML = notasUltimaHora.map(row => `
-          <div class="nota-item"><span>${row["Nº da nota"] || '-'}</span><span>${obterNomeMatricula(row.Matricula)}</span><span class="badge ${row.Status.toLowerCase()}">${row.Status || '-'}</span></div>
-        `).join('') || '<div class="text-muted">Nenhuma nota na última hora.</div>';
+        <div class="nota-item">
+          <span>${row["Nº da nota"] || '-'}</span>
+          <span>${obterNomeMatricula(row.Matricula)}</span>
+          <span class="badge ${(row.Status||'').toLowerCase()}">${row.Status || '-'}</span>
+        </div>
+      `).join('') || '<div class="text-muted">Nenhuma nota na última hora.</div>';
+
       const { labels: labelsList, contagem: contagemList } = calcularNotasPorHora(dadosFiltrados, 12);
       let listHtml = '';
       for (let i = 0; i < labelsList.length; i++) {
-        listHtml +=
-          `<div class="nota-item"><span>${labelsList[i]}</span><span>${contagemList[i]} nota${contagemList[i] !== 1 ? 's' : ''}</span></div>`;
+        listHtml += `<div class="nota-item"><span>${labelsList[i]}</span><span>${contagemList[i]} nota${contagemList[i] !== 1 ? 's' : ''}</span></div>`;
       }
       document.getElementById('hourDetailList').innerHTML = listHtml || '<div class="text-muted">Nenhum dado.</div>';
       modal.style.display = 'flex';
@@ -1201,17 +1379,20 @@
       const modal = document.getElementById('linksModal');
       const list = document.getElementById('linksList');
       const sub = document.getElementById('linksSub');
-      if (linksData.length === 0) { sub.innerText = 'Nenhum link cadastrado.';
+      if (linksData.length === 0) {
+        sub.innerText = 'Nenhum link cadastrado.';
         list.innerHTML = '';
-        modal.style.display = 'flex'; return; }
+        modal.style.display = 'flex';
+        return;
+      }
       sub.innerText = `${linksData.length} link${linksData.length > 1 ? 's' : ''} disponívei${linksData.length > 1 ? 's' : ''}`;
       list.innerHTML = linksData.map(item => `
-          <a href="${item.link}" target="_blank" class="link-item">
-            <span class="link-icon">🔗</span>
-            <span class="link-name">${item.nome}</span>
-            <span class="link-url">${item.link}</span>
-          </a>
-        `).join('');
+        <a href="${item.link}" target="_blank" class="link-item">
+          <span class="link-icon">🔗</span>
+          <span class="link-name">${item.nome}</span>
+          <span class="link-url">${item.link}</span>
+        </a>
+      `).join('');
       modal.style.display = 'flex';
     }
 
@@ -1243,7 +1424,9 @@
             📌 ${encontrado.Status}<br>
             📂 ${encontrado["Back ou Cria?"] === 'cria' ? 'Cria' : (encontrado["Back ou Cria?"] === 'backlog' ? 'Backlog' : '-')}
           </div>`;
-        } else { resultDiv.innerHTML = '<div style="color:#d32f2f;">❌ Nota não encontrada.</div>'; }
+        } else {
+          resultDiv.innerHTML = '<div style="color:#d32f2f;">❌ Nota não encontrada.</div>';
+        }
       });
     }
 
@@ -1253,35 +1436,47 @@
     async function fazerLogin(mat, sen) {
       const creds = await carregarAba(SHEET_ID, ABA_CREDENCIAIS);
       console.log('Credenciais carregadas:', creds);
+
       const matNorm = mat.trim();
       const senNorm = sen.trim();
+
       const usuario = creds.find(r => {
         const matricula = String(r.Matrícula || r.matricula || '').trim();
         const senha = String(r.Senha || r.senha || '').trim();
         return matricula === matNorm && senha === senNorm;
       });
+
       if (!usuario) { mostrarErro("Matrícula ou senha inválidos"); return; }
+
       usuariosMap = {};
-      for (const row of creds) { const matricula = String(row.Matrícula || row.matricula || '').trim(); const nome = row
-          .Nome || row.nome || matricula; if (matricula) usuariosMap[matricula] = nome; }
+      for (const row of creds) {
+        const matricula = String(row.Matrícula || row.matricula || '').trim();
+        const nome = row.Nome || row.nome || matricula;
+        if (matricula) usuariosMap[matricula] = nome;
+      }
+
       const cargo = (usuario.Cargo || usuario.cargo || "").toLowerCase();
       const nome = usuario.Nome || usuario.nome || matNorm;
       let papel = "user";
       if (cargo === "gm") papel = "gm";
       else if (cargo === "supervisor") papel = "supervisor";
+
       currentUser = { matricula: matNorm, nome, cargo, papel };
       supervisorMode = (papel === "supervisor");
+
       document.getElementById('userName').innerText = nome;
-      document.getElementById('userRoleBadge').innerHTML = (papel === "supervisor" || papel === "gm") ?
-        '<span class="badge" style="background:var(--primary); color:#fff;">👁️ Supervisor</span>' : '';
+      document.getElementById('userRoleBadge').innerHTML = (papel === "supervisor" || papel === "gm")
+        ? '<span class="badge" style="background:var(--primary); color:#fff;">👁️ Supervisor</span>' : '';
       document.getElementById('toggleSupervisorBtn').style.display = (papel === "gm") ? 'inline-flex' : 'none';
       document.getElementById('loginContainer').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
+
       const isSupervisorFull = (papel === "supervisor") || (papel === "gm");
       if (isSupervisorFull) {
         document.getElementById('supervisorSettings').style.display = 'flex';
         document.getElementById('metaDiariaGlobalInput').value = metaDiariaGlobal;
         document.getElementById('metaGeralDiaInput').value = metaGeralDia;
+
         document.getElementById('metaDiariaGlobalInput').addEventListener('change', (e) => {
           const val = parseInt(e.target.value) || 40;
           metaDiariaGlobal = val;
@@ -1294,17 +1489,24 @@
           localStorage.setItem('metaGeralDia_Neoenergia', val);
           carregarDadosEAtualizar();
         });
-      } else { document.getElementById('supervisorSettings').style.display = 'none'; }
+      } else {
+        document.getElementById('supervisorSettings').style.display = 'none';
+      }
+
       document.getElementById('metaIndividualArea').innerHTML = `
         <div class="meta-fixa" style="margin-top:8px;">🎯 Meta diária: ${metaDiariaGlobal} notas</div>
         <div class="meta-fixa">📆 Meta mensal: ${metaDiariaGlobal * DIAS_UTEIS_MES} notas</div>
       `;
+
       document.getElementById('metaEquipeDia').value = metaEquipeDia;
       document.getElementById('metaEquipeDia').addEventListener('change', (e) => {
-        if (isSupervisorFull) { metaEquipeDia = parseInt(e.target.value);
+        if (isSupervisorFull) {
+          metaEquipeDia = parseInt(e.target.value);
           localStorage.setItem('metaEquipeDia_Neoenergia', metaEquipeDia);
-          carregarDadosEAtualizar(); }
+          carregarDadosEAtualizar();
+        }
       });
+
       await carregarLinksUteis();
       atualizarEscopoMsg();
       await carregarDadosConsolidados();
@@ -1320,14 +1522,15 @@
       document.getElementById('rankingArea').style.display = isSupervisor ? 'block' : 'none';
       document.getElementById('individualProductionArea').style.display = isSupervisor ? 'block' : 'none';
       document.getElementById('teamNotesSection').style.display = isSupervisor ? 'block' : 'none';
-      if (isSupervisor) { document.getElementById('supervisorSettings').style.display = 'flex'; } else { document
-          .getElementById('supervisorSettings').style.display = 'none'; }
+      document.getElementById('supervisorSettings').style.display = isSupervisor ? 'flex' : 'none';
     }
 
-    function mostrarErro(msg) { const e = document.getElementById('loginError');
+    function mostrarErro(msg) {
+      const e = document.getElementById('loginError');
       e.innerText = msg;
       e.style.display = 'block';
-      setTimeout(() => e.style.display = 'none', 3000); }
+      setTimeout(() => e.style.display = 'none', 3000);
+    }
 
     // ============================================================
     // INICIALIZAÇÃO
@@ -1335,8 +1538,8 @@
     function initTheme() {
       const btn = document.getElementById('themeToggle');
       const isDark = localStorage.getItem('theme_neoenergia') === 'dark';
-      if (isDark) { document.body.classList.add('dark');
-        btn.innerHTML = '🌙'; } else { btn.innerHTML = '☀️'; }
+      if (isDark) { document.body.classList.add('dark'); btn.innerHTML = '🌙'; }
+      else { btn.innerHTML = '☀️'; }
       btn.addEventListener('click', () => {
         document.body.classList.toggle('dark');
         const dark = document.body.classList.contains('dark');
@@ -1349,52 +1552,55 @@
       const matInput = document.getElementById('matricula');
       const senInput = document.getElementById('senha');
       const btnLogin = document.getElementById('btnLogin');
-      function doLogin() { const mat = matInput.value.trim(); const sen = senInput.value.trim(); if (mat && sen) fazerLogin(
-          mat, sen); else mostrarErro("Preencha ambos."); }
+
+      function doLogin() {
+        const mat = matInput.value.trim();
+        const sen = senInput.value.trim();
+        if (mat && sen) fazerLogin(mat, sen);
+        else mostrarErro("Preencha ambos.");
+      }
+
       btnLogin.addEventListener('click', doLogin);
-      matInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault();
-          senInput.focus(); } });
-      senInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault();
-          doLogin(); } });
+      matInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); senInput.focus(); } });
+      senInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doLogin(); } });
+
       document.getElementById('logoutBtn').addEventListener('click', () => location.reload());
       document.getElementById('refreshFab').addEventListener('click', refresh);
+
       document.getElementById('toggleSupervisorBtn').addEventListener('click', () => {
-        if (currentUser.papel === "gm") { supervisorMode = !supervisorMode;
+        if (currentUser.papel === "gm") {
+          supervisorMode = !supervisorMode;
           atualizarEscopoMsg();
-          carregarDadosEAtualizar(); }
+          carregarDadosEAtualizar();
+        }
       });
-      document.getElementById('searchTab').addEventListener('input', () => { const dadosFiltrados = filtrarDados();
-        renderizarTabelaCompleta(dadosFiltrados); });
-      document.getElementById('filtroMatriculaTabela').addEventListener('input', () => { const dadosFiltrados = filtrarDados();
-        renderizarTabelaCompleta(dadosFiltrados); });
-      document.getElementById('filterStatus').addEventListener('change', () => { const dadosFiltrados = filtrarDados();
-        renderizarTabelaCompleta(dadosFiltrados); });
-      document.getElementById('filtroDataRegistros').addEventListener('change', () => { const dadosFiltrados = filtrarDados();
-        renderizarTabelaCompleta(dadosFiltrados); });
+
+      document.getElementById('searchTab').addEventListener('input', () => renderizarTabelaCompleta(filtrarDados()));
+      document.getElementById('filtroMatriculaTabela').addEventListener('input', () => renderizarTabelaCompleta(filtrarDados()));
+      document.getElementById('filterStatus').addEventListener('change', () => renderizarTabelaCompleta(filtrarDados()));
+      document.getElementById('filtroDataRegistros').addEventListener('change', () => renderizarTabelaCompleta(filtrarDados()));
       document.getElementById('limparFiltrosRegistros').addEventListener('click', () => {
         document.getElementById('filtroDataRegistros').value = '';
-        const dadosFiltrados = filtrarDados();
-        renderizarTabelaCompleta(dadosFiltrados);
+        renderizarTabelaCompleta(filtrarDados());
       });
       document.getElementById('filtroMatricula').addEventListener('input', () => {
-        if ((currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode)) { atualizarTudo(); }
+        if ((currentUser.papel === "supervisor") || (currentUser.papel === "gm" && supervisorMode)) atualizarTudo();
       });
-      document.getElementById('openSidebarBtn').addEventListener('click', () => document.getElementById('sidebarPanel')
-        .classList.add('open'));
-      document.getElementById('closeSidebarBtn').addEventListener('click', () => document.getElementById('sidebarPanel')
-        .classList.remove('open'));
+
+      document.getElementById('openSidebarBtn').addEventListener('click', () => document.getElementById('sidebarPanel').classList.add('open'));
+      document.getElementById('closeSidebarBtn').addEventListener('click', () => document.getElementById('sidebarPanel').classList.remove('open'));
+
       const agentModal = document.getElementById('agentDetailModal');
       document.getElementById('closeAgentDetailBtn').addEventListener('click', () => agentModal.style.display = 'none');
       window.addEventListener('click', (e) => { if (e.target === agentModal) agentModal.style.display = 'none'; });
+
       setupSearchModal();
       setupHourDetailModal();
       setupLinksModal();
-      // Fecha o widget de qualidade se clicar fora
+
       document.addEventListener('click', function(e) {
         const widget = document.getElementById('qualityWidget');
-        if (widget && !widget.contains(e.target)) {
-          widget.classList.remove('expanded');
-        }
+        if (widget && !widget.contains(e.target)) widget.classList.remove('expanded');
       });
       document.getElementById('qualityWidget').addEventListener('click', function(e) {
         e.stopPropagation();
