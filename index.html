@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
   <title>Neoenergia · Produtividade + Monitorias</title>
 
-  <!-- Ícone da Neoenergia (Favicon) -->
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230033A0'/%3E%3Ctext x='50' y='68' font-family='Arial, sans-serif' font-size='50' font-weight='bold' fill='%23FFFFFF' text-anchor='middle'%3EN%3C/text%3E%3Cpath d='M70 30 L78 46 L62 50 L70 70 L38 50 L54 46 L46 30 Z' fill='%23FFD100' /%3E%3C/svg%3E" type="image/svg+xml" />
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -93,7 +92,7 @@
     .metric-card .expand-icon{position:absolute;top:6px;right:10px;font-size:14px;color:var(--text-muted);opacity:.4;}
     .combo-card{padding:16px 20px;grid-column:span 1;}
     .combo-container{display:flex;align-items:stretch;gap:20px;height:100%;}
-    .last-hour-notes{flex:1;display:flex;flex-direction:column;justify-content:center;border-right:2px solid rgba(0,0,0,0.06);padding-right:20px;}
+    .last-hour-notes{flex:1;display:flex;flex-direction:column;justify-content:center;border-right:2px solid rgba(0,0,0,0.06);padding-right:20px;cursor:pointer;}
     .last-hour-notes .label{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-light, #7085a8);font-weight:600;}
     .last-hour-values{display:flex;gap:24px;margin-top:2px;}
     .last-hour-values span{font-size:1.9rem;font-weight:700;color:var(--text);}
@@ -109,15 +108,29 @@
     .quality-summary .item .tag{font-size:0.7rem;font-weight:500;color:var(--text-muted);}
     .quality-summary .item .value{font-size:1.2rem;font-weight:700;color:var(--text);}
     .quality-summary .item .value.na{color:var(--text-muted);font-weight:500;}
-    .quality-details{max-height:0;overflow:hidden;transition:max-height 0.45s ease, padding 0.4s ease, opacity 0.35s ease;opacity:0;padding-top:0;}
-    .quality-widget.expanded .quality-details{max-height:260px;opacity:1;padding-top:16px;}
+    .quality-trend{font-size:0.85rem;font-weight:700;margin-left:4px;}
+    .quality-trend.up{color:#00a651;}
+    .quality-trend.down{color:#e74c3c;}
+    .quality-trend.neutral{color:var(--text-muted);}
+    .quality-details{max-height:0;overflow:hidden;transition:max-height 0.5s ease, padding 0.4s ease, opacity 0.35s ease;opacity:0;padding-top:0;}
+    .quality-widget.expanded .quality-details{max-height:520px;opacity:1;padding-top:16px;}
     .quality-details .detail-row{display:flex;justify-content:space-between;font-size:0.85rem;padding:6px 0;border-bottom:1px dashed rgba(0,0,0,0.05);}
     .quality-details .detail-row:last-of-type{border-bottom:none;}
     .quality-details .detail-row .label{color:var(--text-muted);}
     .quality-details .detail-row .val{font-weight:600;color:var(--text);}
     .quality-details .progress-bar{height:6px;background:rgba(0,0,0,0.06);border-radius:20px;margin-top:4px;overflow:hidden;}
-    .quality-details .progress-bar .fill{height:100%;width:0%;background:linear-gradient(90deg, var(--primary), var(--primary-light));border-radius:20px;}
+    .quality-details .progress-bar .fill{height:100%;width:0%;background:linear-gradient(90deg, var(--primary), var(--primary-light));border-radius:20px;transition:width .5s ease;}
     .quality-details .hint{font-size:0.7rem;color:var(--text-muted);text-align:center;margin-top:10px;font-weight:500;}
+    .section-mini-title{font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;margin:12px 0 6px;}
+    .qualidade-semanas .semana-row{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;border-radius:10px;font-size:0.85rem;margin:4px 0;background:rgba(0,0,0,0.035);border:1px solid rgba(0,0,0,0.03);}
+    body.dark .qualidade-semanas .semana-row{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.05);}
+    .qualidade-semanas .semana-label{font-weight:600;color:var(--text-muted);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;}
+    .qualidade-semanas .semana-right{display:flex;align-items:center;gap:8px;}
+    .qualidade-semanas .semana-value{font-weight:700;font-family:'JetBrains Mono',monospace;font-size:0.88rem;}
+    .qualidade-semanas .semana-delta{font-size:0.75rem;font-weight:700;min-width:70px;text-align:right;}
+    .qualidade-semanas .semana-delta.up{color:#00a651;}
+    .qualidade-semanas .semana-delta.down{color:#e74c3c;}
+    .qualidade-semanas .semana-delta.neutral{color:var(--text-muted);}
     .badge{display:inline-flex;padding:4px 14px;border-radius:40px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
     .badge-finl{background:#d4edda;color:#0f5c3f;}
     .badge-redi{background:#fff3cd;color:#856404;}
@@ -181,7 +194,7 @@
     .updating .fab{animation:pulse .8s ease infinite;}
     @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
     .progress-bar{height:10px;background:rgba(0,0,0,0.06);border-radius:20px;overflow:hidden;margin-top:6px;}
-    .progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--secondary));border-radius:20px;width:0%;}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--secondary));border-radius:20px;width:0%;transition:width .5s;}
     @media(max-width:860px){.app-wrapper{flex-direction:column;}.sidebar-panel{position:fixed;top:0;left:0;width:100%!important;height:100vh;border-radius:0;z-index:999;transform:translateX(-100%);transition:transform .35s ease;box-shadow:0 0 40px rgba(0,0,0,0.2);}.sidebar-panel.open{transform:translateX(0);width:100%!important;}.top-bar{flex-direction:column;align-items:stretch;border-radius:24px;}.user-info{flex-wrap:wrap;}.metric-grid{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));}.metric-value{font-size:24px;}.combo-container{flex-direction:column;}.last-hour-notes{border-right:none;padding-right:0;border-bottom:2px solid rgba(0,0,0,0.06);padding-bottom:12px;}}
     @media(max-width:480px){body{padding:12px;}.login-container{margin:40px auto;padding:24px 16px;}.card{padding:16px;}.modal-content{padding:20px;}.hour-detail-grid{grid-template-columns:1fr;}.top-bar{padding:10px;}.metric-grid{grid-template-columns:1fr 1fr;}}
     @media(orientation:landscape)and(max-height:500px){.login-container{margin:20px auto;padding:20px;}.top-bar{padding:8px 14px;}.metric-grid{grid-template-columns:repeat(auto-fit,minmax(120px,1fr));}.metric-card{padding:10px;}.metric-value{font-size:20px;}}
@@ -286,6 +299,7 @@
                 <div class="item">
                   <span class="tag">Individual</span>
                   <span class="value na" id="qualidadeIndividual">—</span>
+                  <span class="quality-trend neutral" id="qualidadeTendencia"></span>
                 </div>
                 <div class="item">
                   <span class="tag">Equipe</span>
@@ -297,13 +311,16 @@
                   <span class="label">🎯 Meta Individual</span>
                   <span class="val">≥ 96%</span>
                 </div>
-                <div class="detail-row">
-                  <span class="label">📈 Progresso Individual</span>
-                  <span class="val" id="progressoIndividual">—</span>
+                <div class="section-mini-title">📈 Evolução Semanal (S1 → S4)</div>
+                <div class="qualidade-semanas" id="qualidadeSemanasList">
+                  <div class="semana-row"><span class="semana-label">Semana 1</span><div class="semana-right"><span class="semana-value">—</span></div></div>
+                  <div class="semana-row"><span class="semana-label">Semana 2</span><div class="semana-right"><span class="semana-value">—</span></div></div>
+                  <div class="semana-row"><span class="semana-label">Semana 3</span><div class="semana-right"><span class="semana-value">—</span></div></div>
+                  <div class="semana-row"><span class="semana-label">Semana 4</span><div class="semana-right"><span class="semana-value">—</span></div></div>
                 </div>
-                <div class="progress-bar"><div class="fill" id="barraIndividual" style="width:0%;"></div></div>
 
-                <div class="detail-row" style="margin-top:10px;">
+                <div class="section-mini-title">🏆 Qualidade da Equipe</div>
+                <div class="detail-row">
                   <span class="label">🎯 Meta Equipe</span>
                   <span class="val">≥ 96%</span>
                 </div>
@@ -495,13 +512,13 @@
     const LINKS_SHEET_ID = '1m_sD07RmMn4W-i7-aLtCOL8N1SntoZnp03aExbn6F6c';
     const ABA_CREDENCIAIS = 'credenciais';
 
-    // ✅ CORRIGIDO: agora busca os dados da aba "Contagem" (conforme Print 1)
-    const ABAS_PRODUTIVIDADE = ['Contagem'];
+    // ✅ Agora inclui a aba "Produtividade Mensal Roniton"
+    const ABAS_PRODUTIVIDADE = ['Contagem', 'Produtividade Mensal Roniton'];
+    const MATRICULA_ESPECIAL_RONITON = 'E738097';
 
     const ABA_MONITORIA = 'Monitorias';
     const ABA_LINKS = 'Página1';
 
-    // ✅ Nomes exatos das abas de qualidade (conforme Print 2)
     const ABA_QUALIDADE_INDIVIDUAL = 'QUALIDADE INDIVIDUAL';
     const ABA_QUALIDADE_EQUIPE = 'QUALIDADE DA EQUIPE';
 
@@ -586,7 +603,6 @@
       const matriculaKey = findKey(['matrícula', 'matricula']);
       const notaKey      = findKey(['nº da nota', 'n.º da nota', 'nota', 'numero nota']);
       const statusKey    = findKey(['status']);
-      // ✅ CORRIGIDO: adicionado 'resposta' para ler a coluna "Resposta" (Cria/Backlog)
       const tipoKey      = findKey(['resposta', 'back', 'cria', 'tipo']);
 
       let timestamp = row[timestampKey] || '';
@@ -613,13 +629,45 @@
     }
 
     // ============================================================
+    // ✅ FILTRO ESPECIAL: aba "Produtividade Mensal Roniton"
+    // Pega apenas linhas referentes à matrícula E738097 que contenham "notas"
+    // ============================================================
+    function filtrarAbaRoniton(rows) {
+      return rows.filter(row => {
+        const valores = Object.values(row).map(v => String(v || '').trim());
+
+        // Precisa conter a matrícula E738097 em alguma célula
+        const temMatricula = valores.some(v =>
+          v === MATRICULA_ESPECIAL_RONITON ||
+          v.toUpperCase() === MATRICULA_ESPECIAL_RONITON.toUpperCase()
+        );
+        if (!temMatricula) return false;
+
+        // Precisa ter alguma célula com número de nota (dígitos longos) OU
+        // possuir status de nota (FINL/REDI/VERI/VITE)
+        const temNota = valores.some(v => /^\d{6,}$/.test(v.replace(/\s/g, '')));
+        const temStatus = valores.some(v =>
+          /^(FINALIZADO|REDIRECIONADO|VERIFICAÇÃO|URGENTE|FINL|REDI|VERI|VITE)$/i.test(v)
+        );
+
+        return temNota || temStatus;
+      });
+    }
+
+    // ============================================================
     // CARREGAR DADOS CONSOLIDADOS
     // ============================================================
     async function carregarDadosConsolidados() {
       let todos = [];
       for (const nomeAba of ABAS_PRODUTIVIDADE) {
-        const dados = await carregarAba(SHEET_ID, nomeAba);
+        let dados = await carregarAba(SHEET_ID, nomeAba);
         if (dados.length > 0) {
+          // ✅ Filtro especial para a aba Roniton
+          if (nomeAba === 'Produtividade Mensal Roniton') {
+            const antes = dados.length;
+            dados = filtrarAbaRoniton(dados);
+            console.log(`📋 Roniton: ${antes} → ${dados.length} linhas filtradas (matrícula ${MATRICULA_ESPECIAL_RONITON} + notas)`);
+          }
           console.log(`📊 ${nomeAba}: ${dados.length} registros carregados`);
           const norm = dados.map(row => normalizarRegistro(row));
           todos = todos.concat(norm);
@@ -640,12 +688,13 @@
 
       console.log(`✅ Qualidade Individual: ${qualidadeIndividualData.length} registros`);
       console.log(`✅ Qualidade da Equipe: ${qualidadeEquipeData.length} registros`);
-      if (qualidadeEquipeData.length > 0) {
-        console.log('Chaves da primeira linha (equipe):', Object.keys(qualidadeEquipeData[0]));
-        console.log('Primeiro registro (equipe):', qualidadeEquipeData[0]);
-      }
       if (qualidadeIndividualData.length > 0) {
-        console.log('Chaves da primeira linha (individual):', Object.keys(qualidadeIndividualData[0]));
+        console.log('[QI] Chaves da primeira linha:', Object.keys(qualidadeIndividualData[0]));
+        console.log('[QI] Primeiro registro:', qualidadeIndividualData[0]);
+      }
+      if (qualidadeEquipeData.length > 0) {
+        console.log('[QE] Chaves da primeira linha:', Object.keys(qualidadeEquipeData[0]));
+        console.log('[QE] Primeiro registro:', qualidadeEquipeData[0]);
       }
     }
 
@@ -872,7 +921,7 @@
     }
 
     // ============================================================
-    // ✅ QUALIDADE – funções com fallback posicional
+    // ✅ QUALIDADE
     // ============================================================
     function normalizarTexto(s) {
       return String(s || '')
@@ -896,12 +945,11 @@
       return isNaN(v) ? null : v;
     }
 
-    // -------- Qualidade Individual --------
-    function obterQualidadeIndividual(matricula) {
+    // -------- Qualidade Individual SEMANAL (colunas E, F, G, H = Semanas 1-4) --------
+    function obterQualidadeIndividualSemanal(matricula) {
       if (!qualidadeIndividualData || !qualidadeIndividualData.length) return null;
       const first = qualidadeIndividualData[0];
-      const matKey  = encontrarChave(first, ['matricula']);
-      const dataKey = encontrarChave(first, ['data']);
+      const matKey = encontrarChave(first, ['matricula']);
       if (!matKey) {
         console.warn('Qualidade Individual: coluna de matrícula não encontrada. Chaves:', Object.keys(first));
         return null;
@@ -912,9 +960,11 @@
       );
       if (!filtrados.length) return null;
 
+      // Escolhe a linha mais recente (por data, se houver coluna de data)
+      const dataKey = encontrarChave(first, ['data']);
       let maisRecente;
       if (dataKey) {
-        filtrados.sort((a, b) => {
+        const sorted = [...filtrados].sort((a, b) => {
           const da = parseDataHora(a[dataKey]);
           const db = parseDataHora(b[dataKey]);
           if (!da && !db) return 0;
@@ -922,21 +972,33 @@
           if (!db) return -1;
           return db - da;
         });
-        maisRecente = filtrados[0];
+        maisRecente = sorted[0];
       } else {
         maisRecente = filtrados[filtrados.length - 1];
       }
 
       const keys = Object.keys(maisRecente);
-      let coluna = keys.find(k => /QUALIDADE.*INDIVIDUAL/i.test(k));
-      if (!coluna) coluna = keys.find(k => /QUALIDADE/i.test(k));
-      if (!coluna) coluna = keys[3] || keys[keys.length - 1];
+      // ✅ Colunas E, F, G, H = índices 4, 5, 6, 7
+      // Tenta achar por nome primeiro (semana 1..4), senão usa posição
+      const colSem1 = encontrarChave(maisRecente, ['semana 1', 'semana1', 'sem 1', 'sem1', 's1']) || keys[4];
+      const colSem2 = encontrarChave(maisRecente, ['semana 2', 'semana2', 'sem 2', 'sem2', 's2']) || keys[5];
+      const colSem3 = encontrarChave(maisRecente, ['semana 3', 'semana3', 'sem 3', 'sem3', 's3']) || keys[6];
+      const colSem4 = encontrarChave(maisRecente, ['semana 4', 'semana4', 'sem 4', 'sem4', 's4']) || keys[7];
 
-      console.log(`[Qualidade Individual] Coluna usada: "${coluna}" | valor bruto:`, maisRecente[coluna]);
-      return parseValorPercentual(maisRecente[coluna]);
+      const s1 = colSem1 ? parseValorPercentual(maisRecente[colSem1]) : null;
+      const s2 = colSem2 ? parseValorPercentual(maisRecente[colSem2]) : null;
+      const s3 = colSem3 ? parseValorPercentual(maisRecente[colSem3]) : null;
+      const s4 = colSem4 ? parseValorPercentual(maisRecente[colSem4]) : null;
+
+      // Valor "atual" = última semana com dado
+      const atual = [s4, s3, s2, s1].find(v => v !== null) ?? null;
+
+      console.log(`[Qualidade Individual] Matrícula ${matricula} → S1=${s1} S2=${s2} S3=${s3} S4=${s4} | atual=${atual}`);
+
+      return { s1, s2, s3, s4, atual };
     }
 
-    // -------- Qualidade da Equipe --------
+    // -------- Qualidade da Equipe (aba QUALIDADE DA EQUIPE) --------
     function obterQualidadeEquipe() {
       if (!qualidadeEquipeData || !qualidadeEquipeData.length) {
         console.warn('Qualidade da Equipe: nenhum dado carregado.');
@@ -966,15 +1028,59 @@
 
       let coluna = keys.find(k => /QUALIDADE.*EQUIPE/i.test(k));
       if (!coluna) coluna = keys.find(k => /QUALIDADE/i.test(k));
-      if (!coluna) {
-        coluna = keys[2] || keys[keys.length - 1];
-        console.warn(`[Qualidade Equipe] Usando fallback posicional: "${coluna}"`);
-      }
+      if (!coluna) coluna = keys[2] || keys[keys.length - 1];
 
       const valorBruto = maisRecente[coluna];
       console.log(`[Qualidade Equipe] Coluna usada: "${coluna}" | valor bruto:`, valorBruto);
 
       return parseValorPercentual(valorBruto);
+    }
+
+    // ============================================================
+    // RENDERIZA LISTA DE SEMANAS
+    // ============================================================
+    function renderizarSemanasQualidade(qualSem) {
+      const container = document.getElementById('qualidadeSemanasList');
+      if (!container) return;
+
+      const semanas = [
+        { label: 'Semana 1', val: qualSem ? qualSem.s1 : null },
+        { label: 'Semana 2', val: qualSem ? qualSem.s2 : null },
+        { label: 'Semana 3', val: qualSem ? qualSem.s3 : null },
+        { label: 'Semana 4', val: qualSem ? qualSem.s4 : null }
+      ];
+
+      const fmt = (v) => v !== null ? v.toFixed(1) + '%' : '—';
+      const corMeta = (v) => v !== null ? (v >= 96 ? '#00a651' : '#e74c3c') : 'var(--text-muted)';
+
+      let html = '';
+      let anterior = null;
+      for (const s of semanas) {
+        let deltaHtml = '<span class="semana-delta neutral"></span>';
+        if (s.val !== null && anterior !== null) {
+          const diff = s.val - anterior;
+          if (Math.abs(diff) < 0.05) {
+            deltaHtml = `<span class="semana-delta neutral">→ 0.0</span>`;
+          } else if (diff > 0) {
+            deltaHtml = `<span class="semana-delta up">↑ +${diff.toFixed(1)}</span>`;
+          } else {
+            deltaHtml = `<span class="semana-delta down">↓ ${diff.toFixed(1)}</span>`;
+          }
+        } else if (s.val !== null) {
+          deltaHtml = `<span class="semana-delta neutral">• base</span>`;
+        }
+        html += `
+          <div class="semana-row">
+            <span class="semana-label">${s.label}</span>
+            <div class="semana-right">
+              <span class="semana-value" style="color:${corMeta(s.val)}">${fmt(s.val)}</span>
+              ${deltaHtml}
+            </div>
+          </div>
+        `;
+        if (s.val !== null) anterior = s.val;
+      }
+      container.innerHTML = html;
     }
 
     // ============================================================
@@ -997,8 +1103,20 @@
 
       const metrics = calcularMetricas(notas);
       const adicionais = calcularAdicionais(metrics.feitasHoje, metrics.feitasMes);
-      const q = obterQualidadeIndividual(matNorm);
-      const qualidadeDisplay = q !== null ? q.toFixed(1) + '%' : '—';
+      const qualSem = obterQualidadeIndividualSemanal(matNorm);
+      const qualidadeDisplay = qualSem && qualSem.atual !== null ? qualSem.atual.toFixed(1) + '%' : '—';
+
+      // Bloco de semanas
+      let semanasHtml = '';
+      if (qualSem) {
+        const fmt = (v) => v !== null ? v.toFixed(1) + '%' : '—';
+        semanasHtml = `
+          <div style="background:var(--bg-start); padding:14px; border-radius:16px; border:1px solid var(--glass-border); margin-top:16px;">
+            <h4 style="font-weight:600; margin-bottom:8px;">📈 Qualidade por Semana</h4>
+            <div class="qualidade-semanas" style="margin-top:4px;"></div>
+          </div>
+        `;
+      }
 
       const sorted = [...notas].sort((a, b) => {
         const tsA = parseTimestampFull(a["Carimbo de data/hora"]);
@@ -1028,7 +1146,7 @@
             <div><strong>📈 Média diária:</strong> ${adicionais.mediaDiaria}</div>
             <div><strong>🎯 Dias para meta:</strong> ${adicionais.diasParaMeta > 0 ? adicionais.diasParaMeta : '✅'}</div>
             <div><strong>📊 Total de notas:</strong> ${metrics.totalNotas}</div>
-            <div><strong>📈 Qualidade individual:</strong> ${qualidadeDisplay}</div>
+            <div><strong>📈 Qualidade atual:</strong> ${qualidadeDisplay}</div>
           </div>
           <div style="background:var(--bg-start); padding:14px; border-radius:16px; border:1px solid var(--glass-border);">
             <div><strong>✅ Finalizadas Cria (hoje):</strong> ${metrics.finalizadasCriaHoje}</div>
@@ -1040,7 +1158,8 @@
             <div><strong>⚠️ VITE:</strong> ${metrics.viteTotal}</div>
           </div>
         </div>
-        <div style="background:var(--bg-start); padding:14px; border-radius:16px; border:1px solid var(--glass-border);">
+        ${semanasHtml}
+        <div style="background:var(--bg-start); padding:14px; border-radius:16px; border:1px solid var(--glass-border); margin-top:16px;">
           <h4 style="font-weight:600; margin-bottom:8px;">📌 Última nota</h4>
           <div><strong>🕒 Data/Hora:</strong> ${ultima["Carimbo de data/hora"] || '—'}</div>
           <div><strong>📝 Nº da nota:</strong> ${ultima["Nº da nota"] || '—'}</div>
@@ -1048,6 +1167,46 @@
           <div><strong>📂 Tipo:</strong> ${ultima["Back ou Cria?"] === 'cria' ? 'Cria' : (ultima["Back ou Cria?"] === 'backlog' ? 'Backlog' : '—')}</div>
         </div>
       `;
+
+      // Preenche as semanas dentro do modal (reutiliza função adaptada)
+      if (qualSem) {
+        const cont = content.querySelector('.qualidade-semanas');
+        if (cont) {
+          const semanas = [
+            { label: 'Semana 1', val: qualSem.s1 },
+            { label: 'Semana 2', val: qualSem.s2 },
+            { label: 'Semana 3', val: qualSem.s3 },
+            { label: 'Semana 4', val: qualSem.s4 }
+          ];
+          const fmt = (v) => v !== null ? v.toFixed(1) + '%' : '—';
+          const corMeta = (v) => v !== null ? (v >= 96 ? '#00a651' : '#e74c3c') : 'var(--text-muted)';
+          let html = '';
+          let anterior = null;
+          for (const s of semanas) {
+            let deltaHtml = '<span class="semana-delta neutral"></span>';
+            if (s.val !== null && anterior !== null) {
+              const diff = s.val - anterior;
+              if (Math.abs(diff) < 0.05) deltaHtml = `<span class="semana-delta neutral">→ 0.0</span>`;
+              else if (diff > 0) deltaHtml = `<span class="semana-delta up">↑ +${diff.toFixed(1)}</span>`;
+              else deltaHtml = `<span class="semana-delta down">↓ ${diff.toFixed(1)}</span>`;
+            } else if (s.val !== null) {
+              deltaHtml = `<span class="semana-delta neutral">• base</span>`;
+            }
+            html += `
+              <div class="semana-row">
+                <span class="semana-label">${s.label}</span>
+                <div class="semana-right">
+                  <span class="semana-value" style="color:${corMeta(s.val)}">${fmt(s.val)}</span>
+                  ${deltaHtml}
+                </div>
+              </div>
+            `;
+            if (s.val !== null) anterior = s.val;
+          }
+          cont.innerHTML = html;
+        }
+      }
+
       modal.style.display = 'flex';
     }
 
@@ -1098,21 +1257,48 @@
       document.getElementById('notasUltimaHoraEquipe').innerText = `equipe: ${notasEquipe}`;
 
       // ===== QUALIDADE =====
-      let qualInd = null;
-      if (currentUser) qualInd = obterQualidadeIndividual(currentUser.matricula);
-      let qualEq = obterQualidadeEquipe();
+      let qualSem = null;
+      if (currentUser) qualSem = obterQualidadeIndividualSemanal(currentUser.matricula);
+      const qualIndAtual = qualSem ? qualSem.atual : null;
+      const qualEq = obterQualidadeEquipe();
 
       const displayVal = (val) => val !== null ? val.toFixed(1) + '%' : '—';
-      const displayProgress = (val) => val !== null ? val.toFixed(1) + '%' : '—';
       const barWidth = (val) => val !== null ? Math.min(100, val) : 0;
 
-      document.getElementById('qualidadeIndividual').innerText = displayVal(qualInd);
+      document.getElementById('qualidadeIndividual').innerText = displayVal(qualIndAtual);
+      document.getElementById('qualidadeIndividual').className = `value ${qualIndAtual === null ? 'na' : ''}`;
       document.getElementById('qualidadeEquipe').innerText = displayVal(qualEq);
-      document.getElementById('qualidadeIndividual').className = `value ${qualInd === null ? 'na' : ''}`;
       document.getElementById('qualidadeEquipe').className = `value ${qualEq === null ? 'na' : ''}`;
-      document.getElementById('progressoIndividual').innerText = displayProgress(qualInd);
-      document.getElementById('progressoEquipe').innerText = displayProgress(qualEq);
-      document.getElementById('barraIndividual').style.width = barWidth(qualInd) + '%';
+
+      // Tendência (última vs penúltima semana disponível)
+      const trendEl = document.getElementById('qualidadeTendencia');
+      if (qualSem) {
+        const vals = [qualSem.s4, qualSem.s3, qualSem.s2, qualSem.s1].filter(v => v !== null);
+        if (vals.length >= 2) {
+          const diff = vals[0] - vals[1];
+          if (Math.abs(diff) < 0.05) {
+            trendEl.className = 'quality-trend neutral';
+            trendEl.innerText = '→ 0.0';
+          } else if (diff > 0) {
+            trendEl.className = 'quality-trend up';
+            trendEl.innerText = `↑ +${diff.toFixed(1)}`;
+          } else {
+            trendEl.className = 'quality-trend down';
+            trendEl.innerText = `↓ ${diff.toFixed(1)}`;
+          }
+        } else {
+          trendEl.className = 'quality-trend neutral';
+          trendEl.innerText = '';
+        }
+      } else {
+        trendEl.className = 'quality-trend neutral';
+        trendEl.innerText = '';
+      }
+
+      // Preenche a lista de semanas
+      renderizarSemanasQualidade(qualSem);
+
+      document.getElementById('progressoEquipe').innerText = displayVal(qualEq);
       document.getElementById('barraEquipe').style.width = barWidth(qualEq) + '%';
 
       // Gráfico status
