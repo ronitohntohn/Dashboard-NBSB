@@ -113,7 +113,7 @@
     .quality-trend.down{color:#e74c3c;}
     .quality-trend.neutral{color:var(--text-muted);}
     .quality-details{max-height:0;overflow:hidden;transition:max-height 0.5s ease, padding 0.4s ease, opacity 0.35s ease;opacity:0;padding-top:0;}
-    .quality-widget.expanded .quality-details{max-height:520px;opacity:1;padding-top:16px;}
+    .quality-widget.expanded .quality-details{max-height:720px;opacity:1;padding-top:16px;}
     .quality-details .detail-row{display:flex;justify-content:space-between;font-size:0.85rem;padding:6px 0;border-bottom:1px dashed rgba(0,0,0,0.05);}
     .quality-details .detail-row:last-of-type{border-bottom:none;}
     .quality-details .detail-row .label{color:var(--text-muted);}
@@ -329,6 +329,15 @@
                   <span class="val" id="progressoEquipe">—</span>
                 </div>
                 <div class="progress-bar"><div class="fill" id="barraEquipe" style="width:0%;"></div></div>
+
+                <!-- ✅ NOVO: Evolução semanal da equipe -->
+                <div class="section-mini-title" style="margin-top:12px;">📈 Evolução Semanal Equipe (S1 → S4)</div>
+                <div class="qualidade-semanas" id="qualidadeSemanasEquipeList">
+                  <div class="semana-row"><span class="semana-label">Semana 1</span><div class="semana-right"><span class="semana-value">—</span></div></div>
+                  <div class="semana-row"><span class="semana-label">Semana 2</span><div class="semana-right"><span class="semana-value">—</span></div></div>
+                  <div class="semana-row"><span class="semana-label">Semana 3</span><div class="semana-right"><span class="semana-value">—</span></div></div>
+                  <div class="semana-row"><span class="semana-label">Semana 4</span><div class="semana-right"><span class="semana-value">—</span></div></div>
+                </div>
 
                 <div class="hint">Clique novamente para recolher</div>
               </div>
@@ -630,27 +639,13 @@
 
     // ============================================================
     // ✅ FILTRO ESPECIAL: aba "Produtividade Mensal Roniton"
-    // Pega apenas linhas referentes à matrícula E738097 que contenham "notas"
+    // Remove apenas linhas totalmente vazias. Toda a aba pertence
+    // à matrícula E738097 (a matrícula é forçada na consolidação).
     // ============================================================
     function filtrarAbaRoniton(rows) {
       return rows.filter(row => {
         const valores = Object.values(row).map(v => String(v || '').trim());
-
-        // Precisa conter a matrícula E738097 em alguma célula
-        const temMatricula = valores.some(v =>
-          v === MATRICULA_ESPECIAL_RONITON ||
-          v.toUpperCase() === MATRICULA_ESPECIAL_RONITON.toUpperCase()
-        );
-        if (!temMatricula) return false;
-
-        // Precisa ter alguma célula com número de nota (dígitos longos) OU
-        // possuir status de nota (FINL/REDI/VERI/VITE)
-        const temNota = valores.some(v => /^\d{6,}$/.test(v.replace(/\s/g, '')));
-        const temStatus = valores.some(v =>
-          /^(FINALIZADO|REDIRECIONADO|VERIFICAÇÃO|URGENTE|FINL|REDI|VERI|VITE)$/i.test(v)
-        );
-
-        return temNota || temStatus;
+        return valores.some(v => v.length > 0);
       });
     }
 
@@ -659,27 +654,37 @@
     // ============================================================
     async function carregarDadosConsolidados() {
       let todos = [];
+
       for (const nomeAba of ABAS_PRODUTIVIDADE) {
         let dados = await carregarAba(SHEET_ID, nomeAba);
-        if (dados.length > 0) {
-          // ✅ Filtro especial para a aba Roniton
-          if (nomeAba === 'Produtividade Mensal Roniton') {
-            const antes = dados.length;
-            dados = filtrarAbaRoniton(dados);
-            console.log(`📋 Roniton: ${antes} → ${dados.length} linhas filtradas (matrícula ${MATRICULA_ESPECIAL_RONITON} + notas)`);
-          }
-          console.log(`📊 ${nomeAba}: ${dados.length} registros carregados`);
-          const norm = dados.map(row => normalizarRegistro(row));
-          todos = todos.concat(norm);
-        } else {
+
+        if (!dados.length) {
           console.warn(`⚠️ Aba "${nomeAba}" vazia ou não encontrada.`);
+          continue;
+        }
+
+        if (nomeAba === 'Produtividade Mensal Roniton') {
+          // ✅ Toda a aba é do E738097 → força a matrícula em cada linha
+          const filtrados = filtrarAbaRoniton(dados);
+          const norm = filtrados.map(row => {
+            const reg = normalizarRegistro(row);
+            reg.Matricula = MATRICULA_ESPECIAL_RONITON;
+            return reg;
+          });
+          todos = todos.concat(norm);
+          console.log(`📋 Roniton: ${norm.length} registros (matrícula forçada ${MATRICULA_ESPECIAL_RONITON})`);
+        } else {
+          // ✅ Aba Contagem: exclui E738097 (métricas dele vêm só da aba Roniton)
+          const norm = dados.map(row => normalizarRegistro(row));
+          const semRoniton = norm.filter(r => String(r.Matricula).trim() !== MATRICULA_ESPECIAL_RONITON);
+          todos = todos.concat(semRoniton);
+          console.log(`📊 ${nomeAba}: ${semRoniton.length} registros (E738097 excluído p/ evitar duplicidade)`);
         }
       }
+
       allRows = todos;
       console.log(`✅ Total de registros consolidados: ${allRows.length}`);
-      if (allRows.length > 0) {
-        console.log('Amostra do primeiro registro normalizado:', allRows[0]);
-      }
+      if (allRows.length > 0) console.log('Amostra do 1º registro normalizado:', allRows[0]);
 
       await carregarMonitorias();
 
@@ -687,14 +692,13 @@
       qualidadeEquipeData     = await carregarAba(SHEET_ID, ABA_QUALIDADE_EQUIPE);
 
       console.log(`✅ Qualidade Individual: ${qualidadeIndividualData.length} registros`);
-      console.log(`✅ Qualidade da Equipe: ${qualidadeEquipeData.length} registros`);
+      console.log(`✅ Qualidade da Equipe:   ${qualidadeEquipeData.length} registros`);
+      if (qualidadeEquipeData.length > 0) {
+        console.log('[QE] Linha 2 (a que contém a qualidade):', qualidadeEquipeData[0]);
+      }
       if (qualidadeIndividualData.length > 0) {
         console.log('[QI] Chaves da primeira linha:', Object.keys(qualidadeIndividualData[0]));
         console.log('[QI] Primeiro registro:', qualidadeIndividualData[0]);
-      }
-      if (qualidadeEquipeData.length > 0) {
-        console.log('[QE] Chaves da primeira linha:', Object.keys(qualidadeEquipeData[0]));
-        console.log('[QE] Primeiro registro:', qualidadeEquipeData[0]);
       }
     }
 
@@ -941,8 +945,11 @@
     function parseValorPercentual(raw) {
       if (raw === null || raw === undefined || raw === '') return null;
       const s = String(raw).replace(/%/g, '').replace(/\s/g, '').replace(',', '.').trim();
-      const v = parseFloat(s);
-      return isNaN(v) ? null : v;
+      let v = parseFloat(s);
+      if (isNaN(v)) return null;
+      // Se o valor vier como fração (ex.: 0,965), converte para %
+      if (v > 0 && v < 1) v = v * 100;
+      return v;
     }
 
     // -------- Qualidade Individual SEMANAL (colunas E, F, G, H = Semanas 1-4) --------
@@ -978,8 +985,6 @@
       }
 
       const keys = Object.keys(maisRecente);
-      // ✅ Colunas E, F, G, H = índices 4, 5, 6, 7
-      // Tenta achar por nome primeiro (semana 1..4), senão usa posição
       const colSem1 = encontrarChave(maisRecente, ['semana 1', 'semana1', 'sem 1', 'sem1', 's1']) || keys[4];
       const colSem2 = encontrarChave(maisRecente, ['semana 2', 'semana2', 'sem 2', 'sem2', 's2']) || keys[5];
       const colSem3 = encontrarChave(maisRecente, ['semana 3', 'semana3', 'sem 3', 'sem3', 's3']) || keys[6];
@@ -990,7 +995,6 @@
       const s3 = colSem3 ? parseValorPercentual(maisRecente[colSem3]) : null;
       const s4 = colSem4 ? parseValorPercentual(maisRecente[colSem4]) : null;
 
-      // Valor "atual" = última semana com dado
       const atual = [s4, s3, s2, s1].find(v => v !== null) ?? null;
 
       console.log(`[Qualidade Individual] Matrícula ${matricula} → S1=${s1} S2=${s2} S3=${s3} S4=${s4} | atual=${atual}`);
@@ -998,46 +1002,39 @@
       return { s1, s2, s3, s4, atual };
     }
 
-    // -------- Qualidade da Equipe (aba QUALIDADE DA EQUIPE) --------
+    // -------- Qualidade da Equipe --------
+    // Aba "QUALIDADE DA EQUIPE":
+    //   • Linha 2 da planilha = valor da qualidade (índice 0 no array parseado)
+    //   • Coluna B = Semana 1, C = Semana 2, D = Semana 3, E = Semana 4
     function obterQualidadeEquipe() {
       if (!qualidadeEquipeData || !qualidadeEquipeData.length) {
         console.warn('Qualidade da Equipe: nenhum dado carregado.');
         return null;
       }
-      const first = qualidadeEquipeData[0];
-      const dataKey = encontrarChave(first, ['data']);
 
-      let maisRecente;
-      if (dataKey) {
-        const sorted = [...qualidadeEquipeData].sort((a, b) => {
-          const da = parseDataHora(a[dataKey]);
-          const db = parseDataHora(b[dataKey]);
-          if (!da && !db) return 0;
-          if (!da) return 1;
-          if (!db) return -1;
-          return db - da;
-        });
-        maisRecente = sorted[0];
-      } else {
-        maisRecente = qualidadeEquipeData[qualidadeEquipeData.length - 1];
-      }
+      // Linha 2 da planilha → índice 0 nos dados (linha 1 = cabeçalho)
+      const linha2 = qualidadeEquipeData[0];
+      if (!linha2) return null;
 
-      const keys = Object.keys(maisRecente);
-      console.log('[Qualidade Equipe] Chaves disponíveis:', keys);
-      console.log('[Qualidade Equipe] Registro mais recente:', maisRecente);
+      const keys = Object.keys(linha2);
+      console.log('[Qualidade Equipe] Linha 2 (keys):', keys);
+      console.log('[Qualidade Equipe] Linha 2 (valores):', linha2);
 
-      let coluna = keys.find(k => /QUALIDADE.*EQUIPE/i.test(k));
-      if (!coluna) coluna = keys.find(k => /QUALIDADE/i.test(k));
-      if (!coluna) coluna = keys[2] || keys[keys.length - 1];
+      // Colunas B, C, D, E → índices 1, 2, 3, 4 (0 = coluna A)
+      const s1 = parseValorPercentual(linha2[keys[1]]);
+      const s2 = parseValorPercentual(linha2[keys[2]]);
+      const s3 = parseValorPercentual(linha2[keys[3]]);
+      const s4 = parseValorPercentual(linha2[keys[4]]);
 
-      const valorBruto = maisRecente[coluna];
-      console.log(`[Qualidade Equipe] Coluna usada: "${coluna}" | valor bruto:`, valorBruto);
+      // "atual" = semana mais recente que possui valor
+      const atual = [s4, s3, s2, s1].find(v => v !== null) ?? null;
 
-      return parseValorPercentual(valorBruto);
+      console.log(`[Qualidade Equipe] S1=${s1} S2=${s2} S3=${s3} S4=${s4} | atual=${atual}`);
+      return { s1, s2, s3, s4, atual };
     }
 
     // ============================================================
-    // RENDERIZA LISTA DE SEMANAS
+    // RENDERIZA LISTA DE SEMANAS (INDIVIDUAL)
     // ============================================================
     function renderizarSemanasQualidade(qualSem) {
       const container = document.getElementById('qualidadeSemanasList');
@@ -1084,6 +1081,48 @@
     }
 
     // ============================================================
+    // RENDERIZA LISTA DE SEMANAS DA EQUIPE
+    // ============================================================
+    function renderizarSemanasQualidadeEquipe(qualEq) {
+      const container = document.getElementById('qualidadeSemanasEquipeList');
+      if (!container) return;
+
+      const semanas = [
+        { label: 'Semana 1', val: qualEq ? qualEq.s1 : null },
+        { label: 'Semana 2', val: qualEq ? qualEq.s2 : null },
+        { label: 'Semana 3', val: qualEq ? qualEq.s3 : null },
+        { label: 'Semana 4', val: qualEq ? qualEq.s4 : null }
+      ];
+
+      const fmt = (v) => v !== null ? v.toFixed(1) + '%' : '—';
+      const corMeta = (v) => v !== null ? (v >= 96 ? '#00a651' : '#e74c3c') : 'var(--text-muted)';
+
+      let html = '';
+      let anterior = null;
+      for (const s of semanas) {
+        let deltaHtml = '<span class="semana-delta neutral"></span>';
+        if (s.val !== null && anterior !== null) {
+          const diff = s.val - anterior;
+          if (Math.abs(diff) < 0.05)   deltaHtml = `<span class="semana-delta neutral">→ 0.0</span>`;
+          else if (diff > 0)           deltaHtml = `<span class="semana-delta up">↑ +${diff.toFixed(1)}</span>`;
+          else                         deltaHtml = `<span class="semana-delta down">↓ ${diff.toFixed(1)}</span>`;
+        } else if (s.val !== null) {
+          deltaHtml = `<span class="semana-delta neutral">• base</span>`;
+        }
+        html += `
+          <div class="semana-row">
+            <span class="semana-label">${s.label}</span>
+            <div class="semana-right">
+              <span class="semana-value" style="color:${corMeta(s.val)}">${fmt(s.val)}</span>
+              ${deltaHtml}
+            </div>
+          </div>`;
+        if (s.val !== null) anterior = s.val;
+      }
+      container.innerHTML = html;
+    }
+
+    // ============================================================
     // DETALHES DO ATENDENTE
     // ============================================================
     function showAgentDetails(matricula) {
@@ -1106,10 +1145,8 @@
       const qualSem = obterQualidadeIndividualSemanal(matNorm);
       const qualidadeDisplay = qualSem && qualSem.atual !== null ? qualSem.atual.toFixed(1) + '%' : '—';
 
-      // Bloco de semanas
       let semanasHtml = '';
       if (qualSem) {
-        const fmt = (v) => v !== null ? v.toFixed(1) + '%' : '—';
         semanasHtml = `
           <div style="background:var(--bg-start); padding:14px; border-radius:16px; border:1px solid var(--glass-border); margin-top:16px;">
             <h4 style="font-weight:600; margin-bottom:8px;">📈 Qualidade por Semana</h4>
@@ -1168,7 +1205,6 @@
         </div>
       `;
 
-      // Preenche as semanas dentro do modal (reutiliza função adaptada)
       if (qualSem) {
         const cont = content.querySelector('.qualidade-semanas');
         if (cont) {
@@ -1260,7 +1296,10 @@
       let qualSem = null;
       if (currentUser) qualSem = obterQualidadeIndividualSemanal(currentUser.matricula);
       const qualIndAtual = qualSem ? qualSem.atual : null;
-      const qualEq = obterQualidadeEquipe();
+
+      // ✅ obterQualidadeEquipe agora retorna { s1, s2, s3, s4, atual }
+      const qualEqObj = obterQualidadeEquipe();
+      const qualEq    = qualEqObj ? qualEqObj.atual : null;
 
       const displayVal = (val) => val !== null ? val.toFixed(1) + '%' : '—';
       const barWidth = (val) => val !== null ? Math.min(100, val) : 0;
@@ -1270,7 +1309,6 @@
       document.getElementById('qualidadeEquipe').innerText = displayVal(qualEq);
       document.getElementById('qualidadeEquipe').className = `value ${qualEq === null ? 'na' : ''}`;
 
-      // Tendência (última vs penúltima semana disponível)
       const trendEl = document.getElementById('qualidadeTendencia');
       if (qualSem) {
         const vals = [qualSem.s4, qualSem.s3, qualSem.s2, qualSem.s1].filter(v => v !== null);
@@ -1295,11 +1333,13 @@
         trendEl.innerText = '';
       }
 
-      // Preenche a lista de semanas
       renderizarSemanasQualidade(qualSem);
 
       document.getElementById('progressoEquipe').innerText = displayVal(qualEq);
       document.getElementById('barraEquipe').style.width = barWidth(qualEq) + '%';
+
+      // ✅ Renderiza evolução semanal da equipe
+      renderizarSemanasQualidadeEquipe(qualEqObj);
 
       // Gráfico status
       if (statusChart) statusChart.destroy();
