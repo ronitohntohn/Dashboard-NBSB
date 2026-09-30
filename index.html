@@ -203,6 +203,14 @@
     .kpi-box .kpi-sub{font-size:11px;color:var(--text-muted);margin-top:4px;}
     .kpi-box .kpi-bar{height:6px;background:rgba(0,0,0,0.06);border-radius:20px;margin-top:8px;overflow:hidden;}
     .kpi-box .kpi-bar .fill{height:100%;border-radius:20px;transition:width .6s ease;}
+    /* ✅ Hora mais produtiva */
+    .kpi-hora .kpi-value{font-size:32px;background:linear-gradient(135deg,#f39c12,#e67e22);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .hora-distrib{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;}
+    .hora-bar{flex:1;min-width:8px;height:24px;background:rgba(0,0,0,0.06);border-radius:4px;position:relative;transition:background .2s;cursor:help;}
+    .hora-bar.active{background:linear-gradient(180deg,#f39c12,#e67e22);}
+    .hora-bar:hover{background:rgba(243,156,18,0.5);}
+    .hora-bar.active:hover{background:linear-gradient(180deg,#e67e22,#d35400);}
+    .hora-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--text-muted);margin-top:2px;font-weight:600;}
     @media(max-width:860px){.app-wrapper{flex-direction:column;}.sidebar-panel{position:fixed;top:0;left:0;width:100%!important;height:100vh;border-radius:0;z-index:999;transform:translateX(-100%);transition:transform .35s ease;box-shadow:0 0 40px rgba(0,0,0,0.2);}.sidebar-panel.open{transform:translateX(0);width:100%!important;}.top-bar{flex-direction:column;align-items:stretch;border-radius:24px;}.user-info{flex-wrap:wrap;}.metric-grid{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));}.metric-value{font-size:24px;}.combo-container{flex-direction:column;}.last-hour-notes{border-right:none;padding-right:0;border-bottom:2px solid rgba(0,0,0,0.06);padding-bottom:12px;}.charts-row{grid-template-columns:1fr;}}
     @media(max-width:480px){body{padding:12px;}.login-container{margin:40px auto;padding:24px 16px;}.card{padding:16px;}.modal-content{padding:20px;}.hour-detail-grid{grid-template-columns:1fr;}.top-bar{padding:10px;}.metric-grid{grid-template-columns:1fr 1fr;}}
     @media(orientation:landscape)and(max-height:500px){.login-container{margin:20px auto;padding:20px;}.top-bar{padding:8px 14px;}.metric-grid{grid-template-columns:repeat(auto-fit,minmax(120px,1fr));}.metric-card{padding:10px;}.metric-value{font-size:20px;}}
@@ -287,6 +295,17 @@
           </div>
         </div>
 
+        <!-- ✅ NOVO KPI: HORA MAIS PRODUTIVA -->
+        <div class="kpi-row">
+          <div class="kpi-box kpi-hora" style="border-left:4px solid #f39c12;">
+            <div class="kpi-title">🕐 Hora Mais Produtiva</div>
+            <div class="kpi-value" id="kpiHoraTop">—</div>
+            <div class="kpi-sub" id="kpiHoraTopSub">Pico de produção no mês</div>
+            <div class="hora-distrib" id="horaDistrib"></div>
+            <div class="hora-labels"><span>00h</span><span>06h</span><span>12h</span><span>18h</span><span>23h</span></div>
+          </div>
+        </div>
+
         <!-- CARD COMBINADO -->
         <div class="card combo-card" style="margin-bottom:20px;">
           <div class="combo-container">
@@ -352,7 +371,7 @@
           </div>
         </div>
 
-        <!-- ✅ NOVOS KPIs: Índice de Eficiência + Taxa de Retrabalho + Projeção Mensal -->
+        <!-- KPIs: Índice de Eficiência + Taxa de Retrabalho + Projeção Mensal -->
         <div class="kpi-row">
           <div class="kpi-box" style="border-left:4px solid #16a085;">
             <div class="kpi-title">⚡ Índice de Eficiência</div>
@@ -374,7 +393,7 @@
           </div>
         </div>
 
-        <!-- Cria vs Backlog vs Transguedidas -->
+        <!-- Cria vs Backlog -->
         <div class="metric-grid">
           <div class="metric-card" style="border-left:4px solid #2ecc71;">
             <span class="metric-icon">✅</span>
@@ -398,7 +417,7 @@
           </div>
         </div>
 
-        <!-- ✅ NOVO WIDGET: TRANSGUEDIDAS -->
+        <!-- ✅ TRANSGUEDIDAS -->
         <div class="metric-grid">
           <div class="metric-card" style="border-left:4px solid #9b59b6;">
             <span class="metric-icon">🔄</span>
@@ -645,7 +664,7 @@
     }
 
     // ============================================================
-    // NORMALIZAÇÃO DE REGISTROS (com suporte a TRANSUEDIDAS)
+    // NORMALIZAÇÃO GERAL (aba "Contagem" e demais)
     // ============================================================
     function normalizarRegistro(row) {
       const keys = Object.keys(row);
@@ -672,16 +691,81 @@
       if (statusRaw === "VERIFICAÇÃO")     statusRaw = "VERI";
       if (statusRaw === "URGENTE")         statusRaw = "VITE";
 
-      // ✅ Detecção de tipo: prioriza transguedida sobre cria/backlog
-      let tipoRaw = (row[tipoKey] || "").toLowerCase().trim();
+      // Normaliza hífens/espaços para capturar "trans - gredida"
+      let tipoRaw = (row[tipoKey] || "").toLowerCase()
+        .replace(/\s+/g, ' ')
+        .replace(/\s*-\s*/g, '-')
+        .trim();
       let tipo = "";
-      if (tipoRaw.includes("transg"))        tipo = "transguedida";
+      if (tipoRaw.includes("trans"))         tipo = "transguedida";
       else if (tipoRaw.includes("cria"))     tipo = "cria";
       else if (tipoRaw.includes("back"))     tipo = "backlog";
 
       return {
         "Carimbo de data/hora": timestamp,
         "Matricula": mat,
+        "Nº da nota": nota,
+        "Status": statusRaw,
+        "Back ou Cria?": tipo
+      };
+    }
+
+    // ============================================================
+    // ✅ NORMALIZAÇÃO ESPECÍFICA PARA A ABA "Produtividade Mensal Roniton"
+    // Estrutura de colunas (fixas):
+    //   A = data/hora
+    //   B = matrícula
+    //   C = número da nota
+    //   D = status (VERI / REDI / CRIA / FINL)
+    //   E = tipo de resposta (email / SMS / carta) - ignorado
+    //   F = (livre)
+    //   G = classificação (cria / backlog / "trans - gredida")
+    // ============================================================
+    function normalizarRegistroRoniton(row) {
+      const keys = Object.keys(row);
+      const colData      = keys[0];
+      const colMat       = keys[1];
+      const colNota      = keys[2];
+      const colStatus    = keys[3];
+      const colTipoResp  = keys[4];
+      const colClass     = keys[6];
+
+      let timestamp = row[colData] || '';
+      let mat       = String(row[colMat] || '').trim();
+      let nota      = row[colNota] || '';
+
+      let statusRaw = String(row[colStatus] || '').toUpperCase().trim();
+      if (statusRaw.includes('FINAL') || statusRaw === 'FINL')           statusRaw = 'FINL';
+      else if (statusRaw.includes('REDIR'))                              statusRaw = 'REDI';
+      else if (statusRaw.includes('VERIF'))                              statusRaw = 'VERI';
+      else if (statusRaw.includes('URG') || statusRaw.includes('VITE'))  statusRaw = 'VITE';
+      else if (statusRaw.includes('CRIA'))                               statusRaw = 'FINL';
+
+      // ✅ Coluna G: cria / backlog / "trans - gredida"
+      let classRaw = String(row[colClass] || '').toLowerCase()
+        .replace(/\s+/g, ' ')
+        .replace(/\s*-\s*/g, '-')
+        .trim();
+
+      let tipo = '';
+      if (classRaw.includes('trans') && (classRaw.includes('gred') || classRaw.includes('gued') || classRaw.includes('gredi'))) {
+        tipo = 'transguedida';
+      } else if (classRaw.includes('trans')) {
+        tipo = 'transguedida';
+      } else if (classRaw.includes('cria')) {
+        tipo = 'cria';
+      } else if (classRaw.includes('back')) {
+        tipo = 'backlog';
+      }
+
+      if (!tipo && statusRaw === 'FINL') {
+        const rawStatus = String(row[colStatus] || '').toUpperCase();
+        if (rawStatus.includes('CRIA')) tipo = 'cria';
+      }
+
+      return {
+        "Carimbo de data/hora": timestamp,
+        "Matricula": MATRICULA_ESPECIAL_RONITON,
         "Nº da nota": nota,
         "Status": statusRaw,
         "Back ou Cria?": tipo
@@ -699,7 +783,7 @@
     }
 
     // ============================================================
-    // CARREGAR DADOS CONSOLIDADOS (com debug para Roniton)
+    // CARREGAR DADOS CONSOLIDADOS
     // ============================================================
     async function carregarDadosConsolidados() {
       let todos = [];
@@ -720,15 +804,22 @@
             console.log('📋 Primeira linha Roniton:', filtrados[0]);
           }
 
-          const norm = filtrados.map(row => {
-            const reg = normalizarRegistro(row);
-            // ✅ Força matrícula E738097 em TODAS as linhas dessa aba
-            reg.Matricula = MATRICULA_ESPECIAL_RONITON;
-            if (!reg["Nº da nota"]) {
-              console.warn('⚠️ Nota não capturada na linha Roniton:', row);
-            }
-            return reg;
-          });
+          const norm = filtrados.map(row => normalizarRegistroRoniton(row));
+
+          const amostra = norm.slice(0, 5).map(r => ({
+            nota: r["Nº da nota"],
+            status: r.Status,
+            tipo: r["Back ou Cria?"]
+          }));
+          console.log('📋 Amostra Roniton normalizada:', amostra);
+
+          const contagemTipos = norm.reduce((acc, r) => {
+            const t = r["Back ou Cria?"] || 'vazio';
+            acc[t] = (acc[t] || 0) + 1;
+            return acc;
+          }, {});
+          console.log('📋 Contagem por tipo (Roniton):', contagemTipos);
+
           todos = todos.concat(norm);
           console.log(`📋 Roniton: ${norm.length} registros (matrícula forçada ${MATRICULA_ESPECIAL_RONITON})`);
         } else {
@@ -861,7 +952,34 @@
     }
 
     // ============================================================
-    // MÉTRICAS (com TRANSUEDIDAS)
+    // ✅ HORA MAIS PRODUTIVA
+    // Retorna um array de 24 posições (0-23) com a contagem de notas
+    // por hora do dia (baseado no mês atual, para ser mais representativo)
+    // ============================================================
+    function calcularDistribuicaoPorHora(rows) {
+      const hoje = new Date();
+      const contagem = new Array(24).fill(0);
+      for (const row of rows) {
+        const ts = parseTimestampFull(row["Carimbo de data/hora"]);
+        if (!ts) continue;
+        // Considera apenas o mês atual
+        if (ts.getMonth() !== hoje.getMonth() || ts.getFullYear() !== hoje.getFullYear()) continue;
+        const hora = ts.getHours();
+        contagem[hora]++;
+      }
+      return contagem;
+    }
+
+    function obterHoraMaisProdutiva(contagem) {
+      let maxVal = 0, maxHora = -1;
+      for (let i = 0; i < 24; i++) {
+        if (contagem[i] > maxVal) { maxVal = contagem[i]; maxHora = i; }
+      }
+      return { hora: maxHora, total: maxVal };
+    }
+
+    // ============================================================
+    // MÉTRICAS
     // ============================================================
     function calcularMetricas(rows) {
       const hoje = new Date();
@@ -913,14 +1031,10 @@
         if (tsFull && tsFull >= umaHoraAtras && tsFull <= agora) notasUltimaHora++;
       }
 
-      // ===== KPIs derivados =====
-      const totalFinalizadas = finalizadasCriaHoje + finalizadasCriaMes + finalizadasBacklogHoje + finalizadasBacklogMes + transguedidasHoje + transguedidasMes;
       const totalVeriRedi = veriRediCria + veriRediBacklog;
-      // Índice de eficiência: FINL / (FINL + VERI + REDI) — usa dados do mês
       const finlMes = finalizadasCriaMes + finalizadasBacklogMes + transguedidasMes;
       const denomEficiencia = finlMes + totalVeriRedi;
       const indiceEficiencia = denomEficiencia > 0 ? (finlMes / denomEficiencia) * 100 : null;
-      // Taxa de retrabalho: (VERI + REDI) / total
       const taxaRetrabalho = totalNotas > 0 ? (totalVeriRedi / totalNotas) * 100 : null;
 
       return {
@@ -1073,7 +1187,7 @@
     }
 
     // ============================================================
-    // RENDERIZAR SEMANAS (INDIVIDUAL)
+    // RENDERIZAR SEMANAS
     // ============================================================
     function renderizarSemanasQualidade(qualSem) {
       const container = document.getElementById('qualidadeSemanasList');
@@ -1149,7 +1263,23 @@
     }
 
     // ============================================================
-    // DETALHES DO ATENDENTE (com transguedidas + KPIs)
+    // ✅ RENDERIZAR DISTRIBUIÇÃO POR HORA (barrinhas no KPI)
+    // ============================================================
+    function renderizarDistribuicaoHora(contagem, horaTop) {
+      const container = document.getElementById('horaDistrib');
+      if (!container) return;
+      const max = Math.max(...contagem, 1);
+      let html = '';
+      for (let i = 0; i < 24; i++) {
+        const altura = contagem[i] > 0 ? Math.max(20, (contagem[i] / max) * 100) : 8;
+        const ativo = (i === horaTop && contagem[i] > 0) ? 'active' : '';
+        html += `<div class="hora-bar ${ativo}" style="height:${altura}%;min-height:${altura}%" title="${i.toString().padStart(2,'0')}:00 — ${contagem[i]} nota(s)"></div>`;
+      }
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    // DETALHES DO ATENDENTE
     // ============================================================
     function showAgentDetails(matricula) {
       const modal = document.getElementById('agentDetailModal');
@@ -1172,6 +1302,13 @@
       const qualidadeDisplay = qualSem && qualSem.atual !== null ? qualSem.atual.toFixed(1) + '%' : '—';
       const eficiencia = metrics.indiceEficiencia !== null ? metrics.indiceEficiencia.toFixed(1) + '%' : '—';
       const retrabalho = metrics.taxaRetrabalho !== null ? metrics.taxaRetrabalho.toFixed(1) + '%' : '—';
+
+      // ✅ Hora mais produtiva deste atendente
+      const distHora = calcularDistribuicaoPorHora(notas);
+      const topHora = obterHoraMaisProdutiva(distHora);
+      const horaTopTexto = topHora.hora >= 0 && topHora.total > 0
+        ? `${topHora.hora.toString().padStart(2,'0')}:00 (${topHora.total})`
+        : '—';
 
       let semanasHtml = '';
       if (qualSem) {
@@ -1214,6 +1351,7 @@
             <div><strong>📈 Qualidade atual:</strong> ${qualidadeDisplay}</div>
             <div><strong>⚡ Índice Eficiência:</strong> ${eficiencia}</div>
             <div><strong>🔁 Taxa Retrabalho:</strong> ${retrabalho}</div>
+            <div><strong>🕐 Hora mais produtiva:</strong> ${horaTopTexto}</div>
           </div>
           <div style="background:var(--bg-start); padding:14px; border-radius:16px; border:1px solid var(--glass-border);">
             <div><strong>✅ Finalizadas Cria (hoje):</strong> ${metrics.finalizadasCriaHoje}</div>
@@ -1326,6 +1464,18 @@
       const notasEquipe = isSupervisor ? metricsEquipe.notasUltimaHora : metrics.notasUltimaHora;
       document.getElementById('notasUltimaHoraEquipe').innerText = `equipe: ${notasEquipe}`;
 
+      // ===== ✅ HORA MAIS PRODUTIVA =====
+      const distHora = calcularDistribuicaoPorHora(dadosFiltrados);
+      const topHora = obterHoraMaisProdutiva(distHora);
+      const horaTopTexto = topHora.hora >= 0 && topHora.total > 0
+        ? `${topHora.hora.toString().padStart(2,'0')}:00 - ${(topHora.hora+1).toString().padStart(2,'0')}:00`
+        : '—';
+      document.getElementById('kpiHoraTop').innerText = horaTopTexto;
+      document.getElementById('kpiHoraTopSub').innerText = topHora.total > 0
+        ? `${topHora.total} nota(s) nesta hora (mês atual)`
+        : 'Sem dados no mês atual';
+      renderizarDistribuicaoHora(distHora, topHora.hora);
+
       // ===== KPIs =====
       const eficiencia = metrics.indiceEficiencia;
       const retrabalho = metrics.taxaRetrabalho;
@@ -1397,7 +1547,7 @@
         options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } } }
       });
 
-      // ✅ Gráfico de tipos
+      // Gráfico de tipos
       if (tipoChart) tipoChart.destroy();
       const tipoCtx = document.getElementById('tipoChart').getContext('2d');
       const totalCria = metrics.finalizadasCriaMes;
